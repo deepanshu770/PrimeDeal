@@ -1,0 +1,115 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id             Int      @id @default(autoincrement())
+  fullname       String
+  email          String   @unique
+  password       String
+  contact        String
+  address        String   @default("")
+  city           String   @default("")
+  profilePicture String   @default("")
+  admin          Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  shops   Shop[]
+  orders  Order[]
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  title       String
+  name        String
+  price       Float
+  description String
+  image       String
+  netQty      String
+  outOfStock  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  shopId Int?
+  shop   Shop?   @relation(fields: [shopId], references: [id])
+  orderItems OrderItem[]
+}
+
+model Order {
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  shopId        Int
+  email         String
+  name          String
+  address       String
+  city          String
+  totalAmount   Float
+  status        OrderStatus
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  user       User    @relation(fields: [userId], references: [id])
+  shop       Shop    @relation(fields: [shopId], references: [id])
+  cartItems  OrderItem[]
+}
+
+model OrderItem {
+  id        Int      @id @default(autoincrement())
+  orderId   Int
+  productId Int
+  name      String
+  image     String
+  price     Float
+  quantity  Int
+  netQty    String
+
+  // Relations
+  order   Order   @relation(fields: [orderId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+}
+
+enum OrderStatus {
+  pending
+  confirmed
+  preparing
+  outfordelivery
+  delivered
+}
+
+model Shop {
+  id           Int       @id @default(autoincrement())
+  userId       Int
+  storeName    String
+  name         String
+  description  String?
+  storeBanner  String?
+  city         String
+  cityName     String
+  address      String
+  deliveryTime Int
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // Relations
+  user             User              @relation(fields: [userId], references: [id])
+  products         Product[]
+  orders           Order[]
+  productCategories ShopCategory[]
+}
+
+model ShopCategory {
+  id     Int    @id @default(autoincrement())
+  shopId Int
+  name   String
+
+  shop Shop @relation(fields: [shopId], references: [id])
+}
