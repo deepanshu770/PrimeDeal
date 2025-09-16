@@ -1,1 +1,6 @@
-QuickBasket is a quick commerce web application for daily essentials, built using the MERN stack with TypeScript. It offers a fast and seamless shopping experience, with real-time inventory updates, secure payments via Stripe, and state management using Zustand. 
+
+# Prime Deal
+
+PrimeDeal is a quick commerce web application for daily essentials, built using the MERN stack with TypeScript. It offers a fast and seamless shopping experience, with real-time inventory updates, secure payments via Stripe, and state management using Zustand. 
+
+
