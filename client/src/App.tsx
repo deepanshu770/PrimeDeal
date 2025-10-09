@@ -1,33 +1,40 @@
-import './App.css'
-import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom'
-import Signup from './auth/Signup'
-import ForgotPassword from './auth/ForgotPassword'
-import ResetPassword from './auth/ResetPassword'
-import VerifyEmail from './auth/VerifyEmail'
-import HeroSection from './components/HeroSection'
-import MainLayout from './Layout/MainLayout'
-import Profile from './components/Profile'
-import SearchPage from './components/SearchPage'
-import ShopDetails from './components/ShopDetails'
-import Cart from './components/Cart'
-import Store from './admin/Store'
-import AddProducts from './admin/AddProducts'
-import StoreOrders from './admin/StoreOrders'
-import OrderPage from './components/OrderPage'
-import { useUserStore } from './zustand/useUserStore'
-import { useEffect } from 'react'
-import Loading from './components/Loading'
-import Login from './auth/login'
-import NotFound from './components/NotFound'
-import { useThemeStore } from './zustand/useThemeStore'
+import "./App.css";
+import {
+  createBrowserRouter,
+  Navigate,
+  RouterProvider,
+} from "react-router-dom";
+import Signup from "./auth/Signup";
+import ForgotPassword from "./auth/ForgotPassword";
+import ResetPassword from "./auth/ResetPassword";
+import VerifyEmail from "./auth/VerifyEmail";
+import HeroSection from "./components/HeroSection";
+import MainLayout from "./Layout/MainLayout";
+import Profile from "./components/Profile";
+import SearchPage from "./components/SearchPage";
+import ShopDetails from "./components/ShopDetails";
+import Cart from "./components/Cart";
+import Store from "./admin/Store";
+import AddProducts from "./admin/AddProducts";
+import StoreOrders from "./admin/StoreOrders";
+import OrderPage from "./components/OrderPage";
+import { useUserStore } from "./zustand/useUserStore";
+import { useEffect } from "react";
+import Loading from "./components/Loading";
+import Login from "./auth/login";
+import NotFound from "./components/NotFound";
+import { useThemeStore } from "./zustand/useThemeStore";
+import Nearby from "./components/Nearby";
+import AdminStoreDetail from "./admin/StoreDetail";
+import SetupAddress from "./components/SetupAddress";
 
 const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, user } = useUserStore();
-  console.log(isAuthenticated,user)
+  console.log(isAuthenticated, user);
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace={true} />
+    return <Navigate to="/login" replace={true} />;
   }
-  
+
   if (user?.admin) {
     return <Navigate to="/admin/store" replace />;
   }
@@ -36,36 +43,37 @@ const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => {
 
 const AuthenticatedUser = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, user } = useUserStore();
-  console.log(isAuthenticated,user)
+  console.log(isAuthenticated, user);
   if (isAuthenticated) {
-    return <Navigate to="/profile" replace={true} />
+    return <Navigate to="/" replace={true} />;
   }
   return children;
 };
 
 const AdminRoutes = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, user } = useUserStore();
-  console.log(isAuthenticated,user)
+  console.log(isAuthenticated, user);
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace={true} />
+    return <Navigate to="/login" replace={true} />;
   }
   if (!user?.admin) {
-    return <Navigate to="/" replace={true} />
+    return <Navigate to="/" replace={true} />;
   }
   return children;
 };
 
-
-
-
 const appRouter = createBrowserRouter([
   {
     path: "/",
-    element: <MainLayout />,  // ✅ Navbar always stays
+    element: <MainLayout />, // ✅ Navbar always stays
     children: [
       {
         path: "/profile",
-        element: <Profile />, // ✅ Profile inside MainLayout (Navbar stays)
+        element: (
+          <ProtectedRoutes>
+            <Profile />,
+          </ProtectedRoutes>
+        ), // ✅ Profile inside MainLayout (Navbar stays)
       },
     ],
   },
@@ -73,10 +81,11 @@ const appRouter = createBrowserRouter([
   // ✅ Normal User Routes
   {
     path: "/",
-    element: 
-    <ProtectedRoutes>
-      <MainLayout />
-      </ProtectedRoutes>,
+    element: (
+      <ProtectedRoutes>
+        <MainLayout />
+      </ProtectedRoutes>
+    ),
     children: [
       {
         index: true,
@@ -91,8 +100,16 @@ const appRouter = createBrowserRouter([
         element: <ShopDetails />,
       },
       {
+        path: "nearby",
+        element: <Nearby />,
+      },
+      {
         path: "/cart",
         element: <Cart />,
+      },
+      {
+        path: "/setup-address",
+        element: <SetupAddress />,
       },
       {
         path: "/order/status",
@@ -104,11 +121,19 @@ const appRouter = createBrowserRouter([
   // ✅ Admin Routes
   {
     path: "/admin",
-    element: <AdminRoutes><MainLayout /></AdminRoutes>,
+    element: (
+      <AdminRoutes>
+        <MainLayout />
+      </AdminRoutes>
+    ),
     children: [
       {
         path: "/admin/store",
         element: <Store />,
+      },
+      {
+        path: "/admin/store/:id",
+        element: <AdminStoreDetail />,
       },
       {
         path: "/admin/products",
@@ -124,15 +149,27 @@ const appRouter = createBrowserRouter([
   // ✅ Authentication Routes
   {
     path: "/login",
-    element: <AuthenticatedUser><Login /></AuthenticatedUser>,
+    element: (
+      <AuthenticatedUser>
+        <Login />
+      </AuthenticatedUser>
+    ),
   },
   {
     path: "/signup",
-    element: <AuthenticatedUser><Signup /></AuthenticatedUser>,
+    element: (
+      <AuthenticatedUser>
+        <Signup />
+      </AuthenticatedUser>
+    ),
   },
   {
     path: "/forgotpassword",
-    element: <AuthenticatedUser><ForgotPassword /></AuthenticatedUser>,
+    element: (
+      <AuthenticatedUser>
+        <ForgotPassword />
+      </AuthenticatedUser>
+    ),
   },
   {
     path: "/resetpassword",
@@ -149,7 +186,7 @@ const appRouter = createBrowserRouter([
   },
 ]);
 function App() {
-  const initializeTheme = useThemeStore((state:any) => state.initializeTheme);
+  const initializeTheme = useThemeStore((state: any) => state.initializeTheme);
   const { checkAuthentication, isCheckingAuth } = useUserStore();
   useEffect(() => {
     try {
@@ -157,15 +194,13 @@ function App() {
     } catch (error) {
       console.error("Error initializing theme:", error);
     }
-    checkAuthentication();
-
-  }, [initializeTheme, checkAuthentication])
-  if (isCheckingAuth) return <Loading/>
+  }, [initializeTheme, checkAuthentication]);
+  if (isCheckingAuth) return <Loading />;
   return (
     <main>
       <RouterProvider router={appRouter} />
     </main>
-  )
+  );
 }
 
-export default App
+export default App;

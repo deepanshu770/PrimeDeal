@@ -44,7 +44,7 @@ const Signup = () => {
         // login API Implementation
         try {
             await signup(input);
-            navigate("/profile");
+            navigate("/");
         } catch (error) {
             console.log(error);
         }

@@ -5,7 +5,7 @@ export const ProductListSchema = z.object({
     description: z.string().min(10, "Description must be at least 10 characters").max(200, "Description must be less than 200 characters"),
     price: z.number().min(10, "Price must be at least 10").max(1000, "Price must be less than 1000"),
     netQty: z.string()
-    .regex(/^[1-9]\d*(kg|gms|ltr|ml)$/, "Net Quantity must be greater than zero and in format '1kg' or '500gms'"),
+    .regex(/^[1-9]\d*(unit|kg|gms|ltr|ml)$/, "Net Quantity must be greater than zero and in format '1kg' or '500gms'"),
     image: z
         .instanceof(File)
         .optional()

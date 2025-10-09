@@ -9,6 +9,7 @@ export type ProductItem = {
     image: string;
     netQty: string;
     outOfStock: boolean;
+    shopId:string
 }
  export type Shop = {
     id: string;
@@ -25,16 +26,14 @@ export type ProductItem = {
     products: ProductItem[];  
 }
 
-export type searchedShop = {
-    data: Shop[];
-}
-
 export type ShopState = {
     loading: boolean;
-    shop: Shop |null;
-    searchedShop:  searchedShop | null;
+    shop: Shop[];
+    searchedShop:  Shop[] ;
+    searchedProduct:  ProductItem[];
     singleShop: Shop | null;
     shopOrders : orderItem[];
+    
     createShop: (formData: FormData) => Promise<void>;
     getShop: () => Promise<void>;
     updateShop: (formData: FormData, existingBanner?: string) => Promise<void>;

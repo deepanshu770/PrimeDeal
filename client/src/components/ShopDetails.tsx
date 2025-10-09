@@ -67,6 +67,7 @@ const ShopDetails = () => {
         {singleShop?.products && (
           <AvailableProducts
             products={singleShop?.products!}
+            showTitle
             shopId={singleShop.id}
           />
         )}

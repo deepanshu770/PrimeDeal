@@ -7,7 +7,7 @@ export const addProduct = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { title, description, price, netQty } = req.body;
+    const { title, description, price, netQty,shopId } = req.body;
     const file = req.file;
 
     if (!file) {
@@ -21,9 +21,9 @@ export const addProduct = async (
       return;
     }
 
-    // ✅ Find shop for logged-in user
+    // ✅ Find shop 
     const shop = await prisma.shop.findUnique({
-      where: { id: Number(req.id) },
+      where: {  id: Number(shopId) },
     });
     if (!shop) {
       res.status(404).json({ success: false, message: "Shop not found" });

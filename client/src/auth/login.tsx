@@ -88,11 +88,7 @@ const Login = () => {
                             <Button type="submit" className="w-full bg-brandOrange text-white py-2 rounded-md hover:bg-opacity-90 transition border-transparent focus-visible:outline-noner-transparent">Login</Button>
                         )
                     }
-                    <div className="mt-2">
-                        <Link to="/forgotpassword" className="text-brandGreen text-sm no-underline hover:no-underline hover:text-brandGreen">
-                            Forgot Password?
-                        </Link>
-                    </div>
+                    
 
                 </div>
                 <Separator />

@@ -3,244 +3,180 @@ import bcrypt from "bcryptjs";
 import cloudinary from "../utils/cloudinary";
 import { generateToken } from "../utils/generatToken";
 import { prisma } from "../db/db";
+import { AppError, asyncHandler } from "../utils/asyncHandler";
 
 /* ---------------------- SIGN UP ---------------------- */
-export const signUp = async (req: Request, res: Response): Promise<void> => {
-  try {
-    let { fullname, email, password, contact } = req.body;
+export const signUp = asyncHandler(async (req, res) => {
+  let { fullname, email, password, contact } = req.body;
 
-    // check if user exists
-    let user = await prisma.user.findUnique({ where: { email } });
-    if (user) {
-      res.status(400).json({ message: "User already exists" });
-      return;
-    }
+  // check if user exists
+  let user = await prisma.user.findUnique({ where: { email } });
+  if (user) throw new AppError("User already exists", 400);
 
-    fullname = fullname.trim();
-    contact = contact.trim();
-    password = await bcrypt.hash(password, 10);
+  fullname = fullname.trim();
+  contact = contact.trim();
+  password = await bcrypt.hash(password, 10);
 
-    // create user
-    user = await prisma.user.create({
-      data: {
-        fullname,
-        email,
-        password,
-        contact, // keep as string since Prisma schema has String
-      },
-    });
+  // create user
+  user = await prisma.user.create({
+    data: {
+      fullname,
+      email,
+      password,
+      contact, // keep as string since Prisma schema has String
+    },
+  });
 
-    generateToken(res, user);
+  generateToken(res, user);
 
-    const userWithoutPassword = await prisma.user.findUnique({
-      where: { email },
-      select: {
-        id: true,
-        fullname: true,
-        email: true,
-        contact: true,
-        address: true,
-        city: true,
-        profilePicture: true,
-        admin: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+  const userWithoutPassword = await prisma.user.findUnique({
+    where: { email },
+    select: {
+      id: true,
+      fullname: true,
+      email: true,
+      contact: true,
+      address: true,
+      city: true,
+      profilePicture: true,
+      admin: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
 
-    res.status(201).json({
-      success: true,
-      message: "Account created successfully",
-      user: userWithoutPassword,
-    });
-  } catch (error) {
-    console.error("❌ SignUp Error:", error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-};
+  res.status(201).json({
+    success: true,
+    message: "Account created successfully",
+    user: userWithoutPassword,
+  });
+});
 
 /* ---------------------- LOGIN ---------------------- */
-export const Login = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { email, password } = req.body;
-    const user = await prisma.user.findUnique({ where: { email } });
+export const Login = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
 
-    if (!user) {
-      res
-        .status(400)
-        .json({ success: false, message: "No user found with this email" });
-      return;
-    }
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) throw new AppError("No user found with this email", 400);
 
-    const isPasswordCorrect = await bcrypt.compare(password, user.password);
-    if (!isPasswordCorrect) {
-      res.status(400).json({ success: false, message: "Incorrect password" });
-      return;
-    }
+  const isPasswordCorrect = await bcrypt.compare(password, user.password);
+  if (!isPasswordCorrect) throw new AppError("Incorrect Password", 400);
 
-    generateToken(res, user);
+  generateToken(res, user);
 
-    // Update last login
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { updatedAt: new Date() },
-    });
+  // Update last login
+  const createdUser = await prisma.user.update({
+    where: { id: user.id },
+    data: { updatedAt: new Date() },
+  });
+  //@ts-ignore
+  delete createdUser.password;
 
-    const userWithoutPassword = await prisma.user.findUnique({
-      where: { email },
-      select: {
-        id: true,
-        fullname: true,
-        email: true,
-        contact: true,
-        address: true,
-        city: true,
-        profilePicture: true,
-        admin: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
-
-    res.status(200).json({
-      success: true,
-      message: `Welcome back ${user.fullname}`,
-      user: userWithoutPassword,
-    });
-  } catch (error) {
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-};
+  res.status(200).json({
+    success: true,
+    message: `Welcome back ${user.fullname}`,
+    user: createdUser,
+  });
+});
 
 /* ---------------------- LOGOUT ---------------------- */
-export const logout = async (req: Request, res: Response): Promise<void> => {
-  try {
-    res
-      .clearCookie("token")
-      .status(200)
-      .json({ success: true, message: "Logged out successfully" });
-  } catch (error) {
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-};
+export const logout = asyncHandler(async (req, res) => {
+  res
+    .clearCookie("token")
+    .status(200)
+    .json({ success: true, message: "Logged out successfully" });
+});
 
 /* ---------------------- CHECK AUTH ---------------------- */
-export const checkAuth = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = req.id;
-    const user = await prisma.user.findUnique({
-      where: { id: Number(userId) },
-      select: {
-        id: true,
-        fullname: true,
-        email: true,
-        contact: true,
-        address: true,
-        city: true,
-        profilePicture: true,
-        admin: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+export const checkAuth = asyncHandler(async (req, res) => {
+  const userId = req.id;
+  const user = await prisma.user.findUnique({
+    where: { id: Number(userId) },
+    select: {
+      id: true,
+      fullname: true,
+      email: true,
+      contact: true,
+      address: true,
+      city: true,
+      profilePicture: true,
+      admin: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
 
-    if (!user) {
-      res.status(404).json({ success: false, message: "User not found" });
-      return;
-    }
+  if (!user) throw new AppError("User not found", 404);
 
-    res.status(200).json({ success: true, user });
-  } catch (error) {
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-};
+  res.status(200).json({ success: true, user });
+});
 
 /* ---------------------- UPDATE PROFILE ---------------------- */
-export const updateUserProfile = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  try {
-    const userId = req.id;
-    const { fullname, email, contact, address, city, profilePicture } =
-      req.body;
+export const updateUserProfile = asyncHandler(async (req, res) => {
+  const userId = req.id;
+  const { fullname, email, contact, address, city, profilePicture } = req.body;
 
-    // upload image on cloudinary
-    let uploadedImage = null;
-    if (profilePicture) {
-      const cloudResponse = await cloudinary.uploader.upload(profilePicture);
-      uploadedImage = cloudResponse.secure_url;
-    }
-
-    const updatedUser = await prisma.user.update({
-      where: { id: Number(userId) },
-      data: {
-        fullname: fullname.trim(),
-        email,
-        contact,
-        address: address.trim(),
-        city: city.trim(),
-        profilePicture: uploadedImage || profilePicture,
-      },
-      select: {
-        id: true,
-        fullname: true,
-        email: true,
-        contact: true,
-        address: true,
-        city: true,
-        profilePicture: true,
-        admin: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
-
-    res.status(200).json({
-      success: true,
-      message: "Profile updated successfully",
-      user: updatedUser,
-    });
-  } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Please make sure all the fields are filled correctly",
-      });
+  // upload image on cloudinary
+  let uploadedImage = null;
+  if (profilePicture) {
+    const cloudResponse = await cloudinary.uploader.upload(profilePicture);
+    uploadedImage = cloudResponse.secure_url;
   }
-};
+
+  const updatedUser = await prisma.user.update({
+    where: { id: Number(userId) },
+    data: {
+      fullname: fullname.trim(),
+      email,
+      contact,
+      address: address.trim(),
+      city: city.trim(),
+      profilePicture: uploadedImage || profilePicture,
+    },
+    select: {
+      id: true,
+      fullname: true,
+      email: true,
+      contact: true,
+      address: true,
+      city: true,
+      profilePicture: true,
+      admin: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  if (!updatedUser)
+    throw new AppError(
+      "Please make sure all the fields are filled correctly",
+      400
+    );
+
+  res.status(200).json({
+    success: true,
+    message: "Profile updated successfully",
+    user: updatedUser,
+  });
+});
 
 /* ---------------------- TOGGLE ADMIN ---------------------- */
-export const toggleAdminStatus = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  try {
-    const userId = req.id;
+export const toggleAdminStatus = asyncHandler(async (req, res) => {
+  const userId = req.id;
 
-    const user = await prisma.user.findUnique({
-      where: { id: Number(userId) },
-    });
-    if (!user) {
-      res.status(404).json({ success: false, message: "User not found" });
-      return;
-    }
+  const user = await prisma.user.findUnique({
+    where: { id: Number(userId) },
+  });
+  if (!user) throw new AppError("User not found", 404);
 
-    const updatedUser = await prisma.user.update({
-      where: { id: Number(userId) },
-      data: { admin: !user.admin },
-    });
+  const updatedUser = await prisma.user.update({
+    where: { id: Number(userId) },
+    data: { admin: !user.admin },
+  });
 
-    res.status(200).json({
-      success: true,
-      message: `User is now ${
-        updatedUser.admin ? "an Admin" : "a Normal User"
-      }`,
-      user: updatedUser,
-    });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Something went wrong. Please try again later." });
-  }
-};
+  res.status(200).json({
+    success: true,
+    message: `User is now ${updatedUser.admin ? "an Admin" : "a Normal User"}`,
+    user: updatedUser,
+  });
+});

@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import axios from "axios";
 import {
   LoginInputState,
   SignupInputState,
@@ -9,9 +8,8 @@ import {
 import { toast } from "sonner";
 import { useCartstore } from "./useCartstore";
 import { useShopStore } from "./useShopStore";
+import API from "@/config/api";
 
-const API_END_POINT = "http://localhost:3000/api/v1/user";
-axios.defaults.withCredentials = true;
 
 type User = {
   fullname: string;
@@ -32,11 +30,8 @@ type UserState = {
 
   signup: (input: SignupInputState) => Promise<void>;
   login: (input: LoginInputState) => Promise<void>;
-  verifyEmail: (verificationCode: string) => Promise<void>;
   checkAuthentication: () => Promise<void>;
   logout: () => Promise<void>;
-  forgotPassword: (email: string) => Promise<void>;
-  resetPassword: (token: string, newPassword: string) => Promise<void>;
   updateProfile: (input: ProfileInputState) => Promise<void>;
   toggleAdmin: () => Promise<void>;
 };
@@ -53,15 +48,16 @@ export const useUserStore = create<UserState>()(
       signup: async (input: SignupInputState) => {
         set({ loading: true });
         try {
-          const response = await axios.post(`${API_END_POINT}/signup`, input, {
+          const response = await API.post(`/user/signup`, input, {
             headers: {
               "Content-Type": "application/json",
             },
           });
           if (response.data.success) {
             toast.success(response.data.message);
+            set({ loading: false,user:response.data.user,isAuthenticated:true});
           } else {
-            set({ loading: false });
+            set({ loading: false})
           }
         } catch (error: any) {
           console.error("Signup error:", error);
@@ -75,10 +71,11 @@ export const useUserStore = create<UserState>()(
         
         try {
           set({ loading: true });
-          const response = await axios.post(`${API_END_POINT}/login`, input, {
+          const response = await API.post(`/user/login`, input, {
             headers: {
               "Content-Type": "application/json",
             },
+            timeout:10000,
           });
           if (response.data.success) {
             toast.success(response.data.message);
@@ -97,102 +94,36 @@ export const useUserStore = create<UserState>()(
         }
       },
 
-      //verify email api implementation
-      verifyEmail: async (verificationCode: string) => {
-        try {
-          set({ loading: true });
-          const response = await axios.post(
-            `${API_END_POINT}/verifyemail`,
-            { verificationCode },
-            {
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
-          if (response.data.success) {
-            toast.success(response.data.message);
-            set({
-              loading: false,
-              user: response.data.user,
-              isAuthenticated: true,
-            });
-          }
-        } catch (error: any) {
-          toast.error(error.response.data.message);
-          set({ loading: false });
-        }
-      },
-
       //checkAuthentication api implementation
       checkAuthentication: async () => {
-              set({
-                // user: response.data.user,
-                isAuthenticated: false,
-                isCheckingAuth: false,
-              });
-        // try {
-        //   set({ isCheckingAuth: true });
-        //   const response = await axios.get(`${API_END_POINT}/checkauth`);
-        //   if (response.data.success) {
-        //     set({
-        //       user: response.data.user,
-        //       isAuthenticated: true,
-        //       isCheckingAuth: false,
-        //     });
-        //   }
-        // } catch (error) {
-        //   set({ isAuthenticated: false, isCheckingAuth: false });
-        // }
+            
+        try {
+          set({ isCheckingAuth: true });
+          const response = await API.get(`/user/checkauth`);
+          if (response.data.success) {
+            set({
+              user: response.data.user,
+              isAuthenticated: true,
+              isCheckingAuth: false,
+            });
+          }
+        } catch (error) {
+          set({ isAuthenticated: false, isCheckingAuth: false });
+        }
       },
 
       //logout api implementation
       logout: async () => {
         try {
           set({ loading: true });
-          const response = await axios.post(`${API_END_POINT}/logout`);
+          const response = await API.post(`/user/logout`);
           if (response.data.success) {
             toast.success(response.data.message);
             useCartstore.getState().clearCart();
             useShopStore.getState().clearShop();
-            set({ loading: false, user: null, isAuthenticated: false });
           }
+          set({ loading: false, user: null, isAuthenticated: false });
         } catch (error) {
-          set({ loading: false });
-        }
-      },
-
-      //forgot password api implementation
-      forgotPassword: async (email: string) => {
-        try {
-          set({ loading: true });
-          const response = await axios.post(`${API_END_POINT}/forgotpassword`, {
-            email,
-          });
-          if (response.data.success) {
-            toast.success(response.data.message);
-            set({ loading: false });
-          }
-        } catch (error: any) {
-          toast.error(error.response.data.message);
-          set({ loading: false });
-        }
-      },
-
-      //reset password api implementation
-      resetPassword: async (token: string, newPassword: string) => {
-        try {
-          set({ loading: true });
-          const response = await axios.post(
-            `${API_END_POINT}/resetpassword/${token}`,
-            { newPassword }
-          );
-          if (response.data.success) {
-            toast.success(response.data.message);
-            set({ loading: false });
-          }
-        } catch (error: any) {
-          toast.error(error.response.data.message);
           set({ loading: false });
         }
       },
@@ -200,8 +131,8 @@ export const useUserStore = create<UserState>()(
       //update user profile api implementation
       updateProfile: async (input: ProfileInputState) => {
         try {
-          const response = await axios.put(
-            `${API_END_POINT}/profile/update`,
+          const response = await API.put(
+            `/user/profile/update`,
             input,
             {
               headers: {
@@ -220,8 +151,8 @@ export const useUserStore = create<UserState>()(
 
       toggleAdmin: async () => {
         try {
-          const response = await axios.patch(
-            `${API_END_POINT}/profile/toggle-admin`,
+          const response = await API.patch(
+            `/user/profile/toggle-admin`,
             {},
             {
               headers: { "Content-Type": "application/json" },

@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { prisma } from "../db/db"; // your Prisma client import
 import uploadImageOnCloudinary from "../utils/imageUpload";
 
+
 // ------------------ CREATE SHOP ------------------
 export const createShop = async (
   req: Request,
@@ -12,24 +13,11 @@ export const createShop = async (
       req.body;
     const file = req.file;
 
-    // check if shop already exists
-    const existingShop = await prisma.shop.findFirst({
-      where: { userId: Number(req.id) },
-    });
-    if (existingShop) {
-      res
-        .status(400)
-        .json({ success: false, message: "Shop already exists for this user" });
-      return;
-    }
-
     if (!file) {
-      res
-        .status(400)
-        .json({
-          success: false,
-          message: "Please upload a store banner image",
-        });
+      res.status(400).json({
+        success: false,
+        message: "Please upload a store banner image",
+      });
       return;
     }
 
@@ -75,13 +63,41 @@ export const createShop = async (
 // ------------------ GET SHOP ------------------
 export const getShop = async (req: Request, res: Response): Promise<void> => {
   try {
-    console.log(req.id)
-    const shop = await prisma.shop.findUnique({
-      where: { id: Number(req.id) },
+    console.log(req.id);
+    const shop = await prisma.shop.findMany({
+      where: { userId: Number(req.id) },
       include: {
         products: {
           orderBy: { createdAt: "desc" },
         },
+      },
+    });
+
+    if (!shop) {
+      res
+        .status(404)
+        .json({ success: false, message: "Shop not found", shop: [] });
+      return;
+    }
+
+    res.status(200).json({ success: true, shop });
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+export const getShopByCity = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        id: Number(req.id),
+      },
+    });
+    const shop = await prisma.shop.findMany({
+      where: {
+        OR: [{ city: user?.city }, { cityName: user?.city }],
       },
     });
 
@@ -104,12 +120,11 @@ export const updateShop = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { storeName, city, address, deliveryTime, productCategory } =
+    const { storeName, city, address, deliveryTime, productCategory,storeId } =
       req.body;
     const file = req.file;
-
-    const shop = await prisma.shop.findFirst({
-      where: { userId: Number(req.id) },
+    const shop = await prisma.shop.findUnique({
+      where: { id: Number(storeId) },
     });
     if (!shop) {
       res.status(404).json({ success: false, message: "Shop not found" });
@@ -124,7 +139,7 @@ export const updateShop = async (
     const defaultCityName = city.trim();
     const processedCityName = city.toLowerCase().trim().replace(/\s+/g, "");
     const defaultAddress = address.trim();
-    const defaultDeliveryTime = deliveryTime.trim();
+    const defaultDeliveryTime = Number(deliveryTime.trim());
 
     let bannerUrl = shop.storeBanner;
     if (file) {
@@ -152,13 +167,11 @@ export const updateShop = async (
       include: { productCategories: true },
     });
 
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "Shop updated successfully",
-        shop: updatedShop,
-      });
+    res.status(200).json({
+      success: true,
+      message: "Shop updated successfully",
+      shop: updatedShop,
+    });
   } catch (error) {
     res
       .status(500)
@@ -215,13 +228,11 @@ export const updateOrderStatus = async (
       data: { status },
     });
 
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "Order status updated",
-        status: updatedOrder.status,
-      });
+    res.status(200).json({
+      success: true,
+      message: "Order status updated",
+      status: updatedOrder.status,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal Server Error" });
@@ -273,8 +284,30 @@ export const searchProduct = async (
         productCategories: true,
       },
     });
+    const products = await prisma.product.findMany({
+      where: {
+        shop: {
+          city: user.city, // only products from shops in user's city
+        },
+        OR: [
+          { title: { contains: searchQuery } },
+          { name: { contains: searchQuery } },
+          { description: { contains: searchQuery } },
+          { netQty: { contains: searchQuery } },
+        ],
+      },
+      include: {
+        shop: {
+          select: {
+            id: true,
+            storeName: true,
+            city: true,
+          },
+        },
+      },
+    });
 
-    res.status(200).json({ success: true, data: shops });
+    res.status(200).json({ success: true, shops, products });
   } catch (error: any) {
     console.error(error);
     res.status(500).json({ message: error.message });

@@ -1,41 +1,43 @@
-import { Link, useNavigate } from "react-router-dom";
-import FilterPage from "../components/FilterPage";
-import { useEffect } from "react";
-import { Button } from "../components/ui/button";
+import { useNavigate, useParams } from "react-router-dom";
+import FilterPage from "./FilterPage";
+import { Input } from "./ui/input";
+import { useEffect, useState } from "react";
+import { Button } from "./ui/button";
 import { Ghost } from "lucide-react";
-import { Skeleton } from "../components/ui/skeleton";
+import { Skeleton } from "./ui/skeleton";
 import { useShopStore } from "@/zustand/useShopStore";
-import ShopCard from "../components/ShopCard";
+import { Shop } from "@/types/shopTypes";
+import debounce from "lodash/debounce";
+import ShopCard from "./ShopCard";
 
-const AdminStore = () => {
-  //   const params = useParams();
-  //   const [searchQuery, setSearchQuery] = useState<string>(params.text || "");
-  //   const searchedShop = useShopStore((state) => state.searchedShop);
-  //   const searchShop = useShopStore((state) => state.searchShop);
-  const { loading, shop, getShop } = useShopStore();
+const Nearby = () => {
+  const params = useParams();
   const navigate = useNavigate();
-  useEffect(() => {
-    // searchShop(params.text!, searchQuery);
-     getShop();
-  }, []);
-  console.log(shop)
-  //   // 🔹 Function to trigger search
-  //   const handleSearch = () => {
-  //     if (searchQuery.trim() !== "") {
-  //       debounce(() => searchShop(params.text!, searchQuery), 1500);
-  //     }
-  //   };
-  const viewOnClick = (id: string) => {
-    navigate(`/admin/store/${id}`);
-  };
+  const [searchQuery, setSearchQuery] = useState<string>(params.text || "");
+  const searchedShop = useShopStore((state) => state.searchedShop);
+  const loading = useShopStore((state) => state.loading);
+  const searchShop = useShopStore((state) => state.searchShop);
 
+  useEffect(() => {
+    searchShop(params.text!, searchQuery);
+  }, [params.text!, searchQuery]);
+
+  // 🔹 Function to trigger search
+  const handleSearch = () => {
+    if (searchQuery.trim() !== "") {
+      debounce(() => searchShop(params.text!, searchQuery), 1500);
+    }
+  };
+  const viewOnClick = (id: string) => {
+    navigate(`/shop/${id}`);
+  };
   return (
     <div className="max-w-7xl mx-auto my-10 px-4">
       <div className="flex flex-col md:flex-row justify-between gap-10">
         <FilterPage />
         <div className="flex-1">
           {/* Search Input Field */}
-          {/* <div className="flex items-center gap-2 mb-6">
+          <div className="flex items-center gap-2 mb-6">
             <Input
               type="text"
               value={searchQuery}
@@ -44,30 +46,28 @@ const AdminStore = () => {
               placeholder="Search for nearby shops"
               className="flex-1 border border-gray-300 px-4 py-2 rounded-lg"
             />
-            </div> */}
-          <Link to={"new"}>
             <Button
-              //   onClick={handleSearch}
+              onClick={handleSearch}
               className="bg-brandOrange text-white hover:bg-opacity-90 px-6 py-2 rounded-lg"
             >
-              Add Store
+              Search
             </Button>
-          </Link>
+          </div>
 
           <div>
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-2 my-3">
               <h1 className="text-lg font-medium">
-                {shop.length} Search Shops(s) found
+                {searchedShop.length} Search Shops(s) found
               </h1>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
               {loading ? (
                 <SkeletonCard />
-              ) : !loading && shop && shop.length == 0 ? (
-                <NoResultFound searchQuery={""} />
+              ) : !loading && searchedShop.length == 0 ? (
+                <NoResultFound searchQuery={searchQuery} />
               ) : (
-                shop?.map((shop) => (
+                searchedShop?.map((shop: Shop) => (
                   <ShopCard shop={shop} viewOnClick={viewOnClick} />
                 ))
               )}
@@ -79,7 +79,7 @@ const AdminStore = () => {
   );
 };
 
-export default AdminStore;
+export default Nearby;
 
 const SkeletonCard = () => {
   return (
