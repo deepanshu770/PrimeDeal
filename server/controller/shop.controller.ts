@@ -1,344 +1,287 @@
 import { Request, Response } from "express";
-import { prisma } from "../db/db"; // your Prisma client import
+import { prisma } from "../db/db";
 import uploadImageOnCloudinary from "../utils/imageUpload";
+import { asyncHandler, AppError } from "../utils/asyncHandler";
 
-
-// ------------------ CREATE SHOP ------------------
-export const createShop = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  try {
-    const { storeName, city, address, deliveryTime, productCategory } =
+/* ---------------------------------------------------
+   CREATE SHOP
+--------------------------------------------------- */
+export const createShop = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const { storeName, city, address, deliveryTime, latitude, longitude } =
       req.body;
     const file = req.file;
 
-    if (!file) {
-      res.status(400).json({
-        success: false,
-        message: "Please upload a store banner image",
-      });
-      return;
-    }
+    if (!file) throw new AppError("Please upload a store banner image", 400);
+    if (!storeName || !city || !address || !deliveryTime)
+      throw new AppError("All fields are required", 400);
 
-    const defaultName = storeName.trim();
-    const processedStoreName = storeName
-      .toLowerCase()
-      .trim()
-      .replace(/\s+/g, "");
-    const defaultCityName = city.trim();
-    const processedCityName = city.toLowerCase().trim().replace(/\s+/g, "");
-    const defaultAddress = address.trim();
-    const defaultDeliveryTime = Number(deliveryTime.trim());
+    const userId = Number(req.id);
+    const processedStoreName = storeName.trim();
+    const processedCity = city.trim().toLowerCase();
+    const numericDeliveryTime = Number(deliveryTime);
 
     const storeBanner = await uploadImageOnCloudinary(
       file as Express.Multer.File
     );
 
-    const categories = JSON.parse(productCategory || "[]");
-
     await prisma.shop.create({
       data: {
-        userId: Number(req.id),
+        userId,
         storeName: processedStoreName,
-        name: defaultName,
-        city: processedCityName,
-        cityName: defaultCityName,
-        address: defaultAddress,
-        deliveryTime: defaultDeliveryTime,
+        city: processedCity,
+        address: address.trim(),
+        deliveryTime: numericDeliveryTime,
         storeBanner,
-        productCategories: {
-          create: categories.map((cat: string) => ({ name: cat })),
-        },
+        latitude: Number(latitude),
+        longitude: Number(longitude),
       },
     });
 
-    res.status(201).json({ success: true, message: "Shop added successfully" });
-  } catch (error) {
-    console.error("Error creating shop:", error);
-    res.status(500).json({ message: "Internal Server Error" });
+    res
+      .status(201)
+      .json({ success: true, message: "Shop created successfully" });
   }
-};
+);
 
-// ------------------ GET SHOP ------------------
-export const getShop = async (req: Request, res: Response): Promise<void> => {
-  try {
-    console.log(req.id);
-    const shop = await prisma.shop.findMany({
-      where: { userId: Number(req.id) },
+/* ---------------------------------------------------
+   GET ALL SHOPS OF USER
+--------------------------------------------------- */
+export const getShop = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const userId = Number(req.id);
+
+    const shops = await prisma.shop.findMany({
+      where: { userId },
       include: {
-        products: {
-          orderBy: { createdAt: "desc" },
+        inventory: {
+          include: { product: true },
         },
       },
     });
 
-    if (!shop) {
-      res
-        .status(404)
-        .json({ success: false, message: "Shop not found", shop: [] });
-      return;
-    }
+    if (shops.length === 0) throw new AppError("No shops found", 404);
 
-    res.status(200).json({ success: true, shop });
-  } catch (error) {
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(200).json({ success: true, shops });
   }
-};
-export const getShopByCity = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  try {
+);
+
+/* ---------------------------------------------------
+   GET SHOPS IN USER'S CITY
+--------------------------------------------------- */
+export const getShopByCity = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const userId = Number(req.id);
+
     const user = await prisma.user.findUnique({
-      where: {
-        id: Number(req.id),
-      },
-    });
-    const shop = await prisma.shop.findMany({
-      where: {
-        OR: [{ city: user?.city }, { cityName: user?.city }],
-      },
-    });
-
-    if (!shop) {
-      res
-        .status(404)
-        .json({ success: false, message: "Shop not found", shop: [] });
-      return;
-    }
-
-    res.status(200).json({ success: true, shop });
-  } catch (error) {
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-};
-
-// ------------------ UPDATE SHOP ------------------
-export const updateShop = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  try {
-    const { storeName, city, address, deliveryTime, productCategory,storeId } =
-      req.body;
-    const file = req.file;
-    const shop = await prisma.shop.findUnique({
-      where: { id: Number(storeId) },
-    });
-    if (!shop) {
-      res.status(404).json({ success: false, message: "Shop not found" });
-      return;
-    }
-
-    const defaultName = storeName.trim();
-    const processedStoreName = storeName
-      .toLowerCase()
-      .trim()
-      .replace(/\s+/g, "");
-    const defaultCityName = city.trim();
-    const processedCityName = city.toLowerCase().trim().replace(/\s+/g, "");
-    const defaultAddress = address.trim();
-    const defaultDeliveryTime = Number(deliveryTime.trim());
-
-    let bannerUrl = shop.storeBanner;
-    if (file) {
-      bannerUrl = await uploadImageOnCloudinary(file as Express.Multer.File);
-    }
-
-    const categories = JSON.parse(productCategory || "[]");
-
-    // ✅ Update shop and categories (clear old ones first)
-    const updatedShop = await prisma.shop.update({
-      where: { id: shop.id },
-      data: {
-        storeName: processedStoreName,
-        name: defaultName,
-        city: processedCityName,
-        cityName: defaultCityName,
-        address: defaultAddress,
-        deliveryTime: defaultDeliveryTime,
-        storeBanner: bannerUrl,
-        productCategories: {
-          deleteMany: {}, // clear old categories
-          create: categories.map((cat: string) => ({ name: cat })),
+      where: { id: userId },
+      include: {
+        addresses: {
+          where: { isDefault: true },
+          take: 1,
         },
       },
-      include: { productCategories: true },
+    });
+
+    if (!user) throw new AppError("User not found", 404);
+
+    const defaultAddress = user.addresses[0];
+    if (!defaultAddress)
+      throw new AppError(
+        "Default address not found. Please set one before browsing local shops.",
+        400
+      );
+
+    const shops = await prisma.shop.findMany({
+      where: {
+        city: defaultAddress.city.toLowerCase(),
+      },
+      include: {
+        inventory: {
+          include: {
+            product: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
 
     res.status(200).json({
       success: true,
-      message: "Shop updated successfully",
-      shop: updatedShop,
+      city: defaultAddress.city,
+      shops,
     });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Please make sure all fields are filled correctly" });
   }
-};
+);
 
-// ------------------ GET SHOP ORDERS ------------------
-export const getShopOrder = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  try {
+/* ---------------------------------------------------
+   UPDATE SHOP DETAILS
+--------------------------------------------------- */
+export const updateShop = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const { storeName, city, address, deliveryTime, shopId } = req.body;
+    const file = req.file;
+
     const shop = await prisma.shop.findUnique({
-      where: { id: Number(req.id) },
+      where: { id: Number(shopId) },
     });
-    if (!shop) {
-      res.status(404).json({ success: false, message: "Shop not found" });
-      return;
-    }
+    if (!shop) throw new AppError("Shop not found", 404);
 
-    const shopOrder = await prisma.order.findMany({
-      where: { shopId: shop.id },
-      include: { shop: true, user: true },
+    let storeBanner = shop.storeBanner;
+    if (file)
+      storeBanner = await uploadImageOnCloudinary(file as Express.Multer.File);
+
+    const updatedShop = await prisma.shop.update({
+      where: { id: shop.id },
+      data: {
+        storeName: storeName.trim(),
+        city: city.trim().toLowerCase(),
+        address: address.trim(),
+        deliveryTime: Number(deliveryTime),
+        storeBanner,
+      },
+    });
+
+    res
+      .status(200)
+      .json({
+        success: true,
+        message: "Shop updated successfully",
+        shop: updatedShop,
+      });
+  }
+);
+
+/* ---------------------------------------------------
+   GET SHOP ORDERS
+--------------------------------------------------- */
+export const getShopOrder = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const shopId = Number(req.params.shopId);
+
+    const shop = await prisma.shop.findUnique({ where: { id: shopId } });
+    if (!shop) throw new AppError("Shop not found", 404);
+
+    const orders = await prisma.order.findMany({
+      where: { shopId },
+      include: {
+        user: true,
+        address: true,
+        items: {
+          include: { product: true },
+        },
+      },
       orderBy: { createdAt: "desc" },
     });
 
-    res.status(200).json({ success: true, shopOrder });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(200).json({ success: true, orders });
   }
-};
+);
 
-// ------------------ UPDATE ORDER STATUS ------------------
-export const updateOrderStatus = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  try {
+/* ---------------------------------------------------
+   UPDATE ORDER STATUS
+--------------------------------------------------- */
+export const updateOrderStatus = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
     const { orderId } = req.params;
-    const { status } = req.body;
+    const { orderStatus } = req.body;
 
     const order = await prisma.order.findUnique({
       where: { id: Number(orderId) },
     });
-    if (!order) {
-      res.status(404).json({ success: false, message: "Order not found" });
-      return;
-    }
+    if (!order) throw new AppError("Order not found", 404);
 
     const updatedOrder = await prisma.order.update({
       where: { id: Number(orderId) },
-      data: { status },
+      data: { orderStatus },
+    });
+
+    res
+      .status(200)
+      .json({ success: true, message: "Order status updated", updatedOrder });
+  }
+);
+
+/* ---------------------------------------------------
+   SEARCH PRODUCT (by name/description/category)
+--------------------------------------------------- */
+export const searchProduct = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const query = (req.query.q as string)?.trim() || "";
+    const userId = Number(req.id);
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        addresses: {
+          where: { isDefault: true },
+          take: 1,
+        },
+      },
+    });
+
+    if (!user) throw new AppError("User not found", 404);
+
+    const defaultAddress = user.addresses[0];
+    if (!defaultAddress)
+      throw new AppError(
+        "Default address not found. Please set one before searching products.",
+        400
+      );
+
+    const products = await prisma.product.findMany({
+      where: {
+        OR: [
+          { name: { contains: query } },
+          { description: { contains: query } },
+          { brand: { contains: query } },
+          { netQty: { contains: query } },
+        ],
+        inShops: {
+          some: {
+            shop: {
+              city: { equals: defaultAddress.city },
+            },
+          },
+        },
+      },
+      include: {
+        inShops: {
+          include: {
+            shop: true,
+          },
+        },
+      },
     });
 
     res.status(200).json({
       success: true,
-      message: "Order status updated",
-      status: updatedOrder.status,
+      city: defaultAddress.city,
+      products,
     });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal Server Error" });
   }
-};
+);
 
-// ------------------ SEARCH PRODUCTS ------------------
-export const searchProduct = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  try {
-    const searchText = (req.params.searchText || "").trim();
-    const searchQuery = (req.query.searchQuery as string) || "";
-
-    const user = await prisma.user.findUnique({
-      where: { id: Number(req.id) },
-    });
-    if (!user) {
-      res.status(404).json({ message: "User not found" });
-      return;
-    }
-
-    const userCity = user.city;
-
-    const shops = await prisma.shop.findMany({
-      where: {
-        city: userCity,
-        OR: [
-          { name: { contains: searchText } },
-          { storeName: { contains: searchText } },
-          { productCategories: { some: { name: { contains: searchText } } } },
-          { name: { contains: searchQuery } },
-          { storeName: { contains: searchQuery } },
-          { productCategories: { some: { name: { contains: searchQuery } } } },
-        ],
-      },
-      include: {
-        products: {
-          where: {
-            OR: [
-              { title: { contains: searchText } },
-              { name: { contains: searchText } },
-              { title: { contains: searchQuery } },
-              { name: { contains: searchQuery } },
-            ],
-          },
-        },
-        productCategories: true,
-      },
-    });
-    const products = await prisma.product.findMany({
-      where: {
-        shop: {
-          city: user.city, // only products from shops in user's city
-        },
-        OR: [
-          { title: { contains: searchQuery } },
-          { name: { contains: searchQuery } },
-          { description: { contains: searchQuery } },
-          { netQty: { contains: searchQuery } },
-        ],
-      },
-      include: {
-        shop: {
-          select: {
-            id: true,
-            storeName: true,
-            city: true,
-          },
-        },
-      },
-    });
-
-    res.status(200).json({ success: true, shops, products });
-  } catch (error: any) {
-    console.error(error);
-    res.status(500).json({ message: error.message });
-  }
-};
-
-// ------------------ GET SINGLE SHOP ------------------
-export const getSingleShop = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  try {
-    const shopId = req.params.id;
+/* ---------------------------------------------------
+   GET SINGLE SHOP DETAILS
+--------------------------------------------------- */
+export const getSingleShop = asyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const shopId = Number(req.params.id);
 
     const shop = await prisma.shop.findUnique({
-      where: { id: Number(shopId) },
+      where: { id: shopId },
       include: {
-        products: {
-          orderBy: { createdAt: "desc" },
+        inventory: {
+          include: { product: true },
         },
       },
     });
 
-    if (!shop) {
-      res.status(404).json({ success: false, message: "Shop not found" });
-      return;
-    }
+    if (!shop) throw new AppError("Shop not found", 404);
 
     res.status(200).json({ success: true, shop });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal Server Error" });
   }
-};
+);

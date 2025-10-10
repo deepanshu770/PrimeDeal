@@ -7,7 +7,7 @@ import cors from "cors";
 import userRoute from "./routes/user.route";
 import shopRoute from "./routes/shop.route";
 import productRoute from "./routes/product.route";
-import orderRoute from "./routes/order.route";
+import addressRoute from "./routes/address.route";
 import path from "path";
 import { errorHandler } from "./middlewares/errorHandler";
 
@@ -35,6 +35,7 @@ app.options("*", cors());
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/shop", shopRoute);
 app.use("/api/v1/product", productRoute);
+app.use("/api/v1/address", addressRoute);
 // app.use("/api/v1/order", orderRoute);
 
 app.use(express.static(path.join(DIRNAME, "/client/dist")));

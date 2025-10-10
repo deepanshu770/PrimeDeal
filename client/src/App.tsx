@@ -1,8 +1,9 @@
 import "./App.css";
 import {
-  createBrowserRouter,
+  BrowserRouter,
   Navigate,
-  RouterProvider,
+  Route,
+  Routes,
 } from "react-router-dom";
 import Signup from "./auth/Signup";
 import ForgotPassword from "./auth/ForgotPassword";
@@ -27,12 +28,13 @@ import { useThemeStore } from "./zustand/useThemeStore";
 import Nearby from "./components/Nearby";
 import AdminStoreDetail from "./admin/StoreDetail";
 import SetupAddress from "./components/SetupAddress";
+import LandingPage from "./components/LandingPage";
 
 const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, user } = useUserStore();
   console.log(isAuthenticated, user);
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace={true} />;
+    return <Navigate to="/home" replace={true} />;
   }
 
   if (user?.admin) {
@@ -42,8 +44,8 @@ const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => {
 };
 
 const AuthenticatedUser = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated, user } = useUserStore();
-  console.log(isAuthenticated, user);
+  const { isAuthenticated } = useUserStore();
+
   if (isAuthenticated) {
     return <Navigate to="/" replace={true} />;
   }
@@ -52,7 +54,6 @@ const AuthenticatedUser = ({ children }: { children: React.ReactNode }) => {
 
 const AdminRoutes = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, user } = useUserStore();
-  console.log(isAuthenticated, user);
   if (!isAuthenticated) {
     return <Navigate to="/login" replace={true} />;
   }
@@ -62,129 +63,6 @@ const AdminRoutes = ({ children }: { children: React.ReactNode }) => {
   return children;
 };
 
-const appRouter = createBrowserRouter([
-  {
-    path: "/",
-    element: <MainLayout />, // ✅ Navbar always stays
-    children: [
-      {
-        path: "/profile",
-        element: (
-          <ProtectedRoutes>
-            <Profile />,
-          </ProtectedRoutes>
-        ), // ✅ Profile inside MainLayout (Navbar stays)
-      },
-    ],
-  },
-
-  // ✅ Normal User Routes
-  {
-    path: "/",
-    element: (
-      <ProtectedRoutes>
-        <MainLayout />
-      </ProtectedRoutes>
-    ),
-    children: [
-      {
-        index: true,
-        element: <HeroSection />,
-      },
-      {
-        path: "/search/:text",
-        element: <SearchPage />,
-      },
-      {
-        path: "/shop/:id",
-        element: <ShopDetails />,
-      },
-      {
-        path: "nearby",
-        element: <Nearby />,
-      },
-      {
-        path: "/cart",
-        element: <Cart />,
-      },
-      {
-        path: "/setup-address",
-        element: <SetupAddress />,
-      },
-      {
-        path: "/order/status",
-        element: <OrderPage />,
-      },
-    ],
-  },
-
-  // ✅ Admin Routes
-  {
-    path: "/admin",
-    element: (
-      <AdminRoutes>
-        <MainLayout />
-      </AdminRoutes>
-    ),
-    children: [
-      {
-        path: "/admin/store",
-        element: <Store />,
-      },
-      {
-        path: "/admin/store/:id",
-        element: <AdminStoreDetail />,
-      },
-      {
-        path: "/admin/products",
-        element: <AddProducts />,
-      },
-      {
-        path: "/admin/storeOrders",
-        element: <StoreOrders />,
-      },
-    ],
-  },
-
-  // ✅ Authentication Routes
-  {
-    path: "/login",
-    element: (
-      <AuthenticatedUser>
-        <Login />
-      </AuthenticatedUser>
-    ),
-  },
-  {
-    path: "/signup",
-    element: (
-      <AuthenticatedUser>
-        <Signup />
-      </AuthenticatedUser>
-    ),
-  },
-  {
-    path: "/forgotpassword",
-    element: (
-      <AuthenticatedUser>
-        <ForgotPassword />
-      </AuthenticatedUser>
-    ),
-  },
-  {
-    path: "/resetpassword",
-    element: <ResetPassword />,
-  },
-  {
-    path: "/verifyemail",
-    element: <VerifyEmail />,
-  },
-
-  {
-    path: "*",
-    element: <NotFound />,
-  },
-]);
 function App() {
   const initializeTheme = useThemeStore((state: any) => state.initializeTheme);
   const { checkAuthentication, isCheckingAuth } = useUserStore();
@@ -198,7 +76,101 @@ function App() {
   if (isCheckingAuth) return <Loading />;
   return (
     <main>
-      <RouterProvider router={appRouter} />
+      <BrowserRouter>
+        <Routes>
+          {/*  Normal Layout Routes (Navbar stays) */}
+          <Route path="/" element={<MainLayout />}>
+            {/* Protected Routes under Main Layout */}
+            <Route
+              path="profile"
+              element={
+                <ProtectedRoutes>
+                  <Profile />
+                </ProtectedRoutes>
+              }
+            />
+          </Route>
+
+          {/* ✅ Normal User Routes */}
+          <Route
+            path="/"
+            element={
+              <ProtectedRoutes>
+                <MainLayout />
+              </ProtectedRoutes>
+            }
+          >
+            <Route index element={<HeroSection />} />
+            <Route path="search/:text" element={<SearchPage />} />
+            <Route path="shop/:id" element={<ShopDetails />} />
+            <Route path="nearby" element={<Nearby />} />
+            <Route path="cart" element={<Cart />} />
+            <Route path="order/status" element={<OrderPage />} />
+          </Route>
+
+          {/* Admin Routes */}
+          <Route
+            path="/admin"
+            element={
+              <AdminRoutes>
+                <MainLayout />
+              </AdminRoutes>
+            }
+          >
+            <Route path="store" element={<Store />} />
+            <Route path="store/:id" element={<AdminStoreDetail />} />
+            <Route path="store/product/:id" element={<AddProducts />} />
+            <Route path="storeOrders" element={<StoreOrders />} />
+          </Route>
+
+          {/*  Authentication Routes */}
+          <Route
+            path="/home"
+            element={
+              <AuthenticatedUser>
+                <LandingPage />
+              </AuthenticatedUser>
+            }
+          />
+          <Route
+            path="/login"
+            element={
+              <AuthenticatedUser>
+                <Login />
+              </AuthenticatedUser>
+            }
+          />
+          <Route
+            path="/signup"
+            element={
+              <AuthenticatedUser>
+                <Signup />
+              </AuthenticatedUser>
+            }
+          />
+          <Route
+            path="/setup-address"
+            element={
+              <AuthenticatedUser>
+                <SetupAddress />
+              </AuthenticatedUser>
+            }
+          />
+          <Route
+            path="/forgotpassword"
+            element={
+              <AuthenticatedUser>
+                <ForgotPassword />
+              </AuthenticatedUser>
+            }
+          />
+          <Route path="/resetpassword" element={<ResetPassword />} />
+          <Route path="/verifyemail" element={<VerifyEmail />} />
+
+          {/* 404 Not Found */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
     </main>
   );
 }

@@ -4,12 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { MapPin, Loader2 } from "lucide-react";
 import { useUserStore } from "@/zustand/useUserStore";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
+
 
 const SetupAddress = () => {
-  const navigate = useNavigate();
-  const { user } = useUserStore();
+  const {loading, setupAddress } = useUserStore();
 
   const [address, setAddress] = useState({
     addressLine1: "",
@@ -22,7 +20,6 @@ const SetupAddress = () => {
     longitude: null as number | null,
   });
 
-  const [loading, setLoading] = useState(false);
   const [locating, setLocating] = useState(false);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -73,18 +70,11 @@ const SetupAddress = () => {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    try {
-      setLoading(true);
-      await axios.post(
-        "/api/v1/address",
-        { ...address, userId: user?.id },
-      );
-      navigate("/");
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+   try {
+    await setupAddress(address);
+   } catch (error) {
+    console.log(error)
+   }
   };
 
   return (

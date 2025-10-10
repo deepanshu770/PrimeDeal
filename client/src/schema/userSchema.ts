@@ -10,6 +10,7 @@ export const userSignupSchema = z.object({
     .min(10, "Enter a valid contact number with exactly 10 digits")
     .max(10, "Enter a valid contact number with exactly 10 digits")
     .regex(/^\d{10}$/, " / Invalid"),
+    admin:z.boolean(),
 });
 
 export type SignupInputState = z.infer<typeof userSignupSchema>;
@@ -29,12 +30,10 @@ export type LoginInputState = z.infer<typeof userLoginSchema>;
 export const userProfileSchema = z.object({
     fullname: z.string().trim().min(3, "Full name is too short").max(50, "Full name is too long").regex(/^[A-Za-z\s]+$/, " / Full name must contain only letters and spaces"),
     email: z.string().email("Invalid email address"),
-    address: z.string().trim().min(10, "Address must be at least 10 characters").max(200, "Address must be at most 200 characters"),
     contact: z.string().trim()
     .min(10, "Enter a valid contact number with exactly 10 digits")
     .max(10, "Enter a valid contact number with exactly 10 digits")
     .regex(/^\d{10}$/, " / Invalid"),
-    city: z.string().trim().min(3, "City must be at least 3 characters").max(50, "City must be at most 50 characters"),
     profilePicture:z.string().optional()
 });
 

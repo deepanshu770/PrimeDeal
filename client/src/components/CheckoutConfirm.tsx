@@ -14,7 +14,7 @@ import { Loader2 } from "lucide-react";
 const CheckoutConfirm = ({ open, setOpen }: { open: boolean, setOpen: Dispatch<SetStateAction<boolean>> }) => {
     const { user } = useUserStore();
     const { singleShop } = useShopStore();
-    const {  loading } = useOrderstore();
+    const {  loading,createCheckoutSession } = useOrderstore();
     {/* User Data State */ }
     const [UserData] = useState({
         fullname: user?.fullname || "",
@@ -48,8 +48,8 @@ const CheckoutConfirm = ({ open, setOpen }: { open: boolean, setOpen: Dispatch<S
                 shopId: singleShop?.id as string,
                 totalAmount,
             };
-            alert("Checkout Not Implemented Yet")
-            // await createCheckoutSession(checkoutData);
+           
+            await createCheckoutSession(checkoutData);
         } catch (error) {
             console.log(error);
         }

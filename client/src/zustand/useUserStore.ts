@@ -10,30 +10,37 @@ import { useCartstore } from "./useCartstore";
 import { useShopStore } from "./useShopStore";
 import API from "@/config/api";
 
-
 type User = {
   fullname: string;
   email: string;
   contact: string;
-  address: string;
-  city: string;
   profilePicture: string;
   admin: boolean;
   isverified: boolean;
 };
-
+type Address = {
+  addressLine1: string;
+  addressLine2: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+  latitude?: number;
+  longitude?: number;
+  isDefault?: boolean;
+};
 type UserState = {
   user: User | null;
   isAuthenticated: boolean;
   isCheckingAuth: boolean;
   loading: boolean;
 
-  signup: (input: SignupInputState) => Promise<void>;
+  signup: (input: SignupInputState) => Promise<boolean>;
   login: (input: LoginInputState) => Promise<void>;
   checkAuthentication: () => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (input: ProfileInputState) => Promise<void>;
-  toggleAdmin: () => Promise<void>;
+  setupAddress: (address:Address) => Promise<void>;
 };
 
 export const useUserStore = create<UserState>()(
@@ -55,28 +62,27 @@ export const useUserStore = create<UserState>()(
           });
           if (response.data.success) {
             toast.success(response.data.message);
-            set({ loading: false,user:response.data.user,isAuthenticated:true});
+            set({
+              loading: false,
+              user: response.data.user,
+            });
           } else {
-            set({ loading: false})
+            set({ loading: false });
           }
+          return response.data.success;
         } catch (error: any) {
           console.error("Signup error:", error);
           toast.error(error.response.data.message);
           set({ loading: false });
+          return false;
         }
       },
 
       //login api implementation
       login: async (input: LoginInputState) => {
-        
         try {
           set({ loading: true });
-          const response = await API.post(`/user/login`, input, {
-            headers: {
-              "Content-Type": "application/json",
-            },
-            timeout:10000,
-          });
+          const response = await API.post(`/user/login`, input);
           if (response.data.success) {
             toast.success(response.data.message);
             set({
@@ -96,7 +102,6 @@ export const useUserStore = create<UserState>()(
 
       //checkAuthentication api implementation
       checkAuthentication: async () => {
-            
         try {
           set({ isCheckingAuth: true });
           const response = await API.get(`/user/checkauth`);
@@ -127,53 +132,36 @@ export const useUserStore = create<UserState>()(
           set({ loading: false });
         }
       },
+      
+      setupAddress: async (address:Address) => {
+        try {
+          set({ loading: true });
+          address.isDefault =true;
+          const response = await API.post(`/address`, address);
+          if (response.data.success) {
+            set({ loading: false, isAuthenticated: true });
+          } else {
+            set({ loading: false });
+          }
+        } catch (error) {
+          set({ loading: false });
+        }
+      },
 
       //update user profile api implementation
       updateProfile: async (input: ProfileInputState) => {
         try {
-          const response = await API.put(
-            `/user/profile/update`,
-            input,
-            {
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
+          const response = await API.put(`/user/profile/update`, input, {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
           if (response.data.success) {
             toast.success(response.data.message);
             set({ user: response.data.user, isAuthenticated: true });
           }
         } catch (error: any) {
           toast.error(error.response.data.message);
-        }
-      },
-
-      toggleAdmin: async () => {
-        try {
-          const response = await API.patch(
-            `/user/profile/toggle-admin`,
-            {},
-            {
-              headers: { "Content-Type": "application/json" },
-            }
-          );
-
-          if (response.data.success) {
-            toast.success(response.data.message);
-            set((state) => ({
-              ...state,
-              // ✅ Ensure we're spreading the entire state
-              user: state.user
-                ? { ...state.user, admin: !state.user.admin } // ✅ Ensure user object is fully updated
-                : null, // ✅ Handle case where user might be null
-            })); // ✅ Toggle admin status in state
-          }
-        } catch (error: any) {
-          toast.error(
-            error.response?.data?.message || "Failed to toggle admin status."
-          );
-          // ✅ Reset loading state on error
         }
       },
     }),

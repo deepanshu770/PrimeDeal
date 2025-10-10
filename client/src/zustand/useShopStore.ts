@@ -1,5 +1,5 @@
 import { orderItem } from "@/types/orderType";
-import { ProductItem, ShopState } from "@/types/shopTypes";
+import { Shop, ShopInventory } from "@/types/types";
 import axios from "axios";
 import { toast } from "sonner";
 import { create } from "zustand";
@@ -8,7 +8,25 @@ import { createJSONStorage, persist } from "zustand/middleware";
 axios.defaults.withCredentials = true;
 
 const API_END_POINT = "http://localhost:3000/api/v1/shop";
-
+export type ShopState = {
+    loading: boolean;
+    shop: Shop[];
+    searchedShop:  Shop[] ;
+    searchedProduct:  ShopInventory[];
+    singleShop: Shop | null;
+    shopOrders : orderItem[];
+    
+    createShop: (formData: FormData) => Promise<void>;
+    getShop: () => Promise<void>;
+    updateShop: (formData: FormData, existingBanner?: string) => Promise<void>;
+    searchShop: (searchText: string, searchQuery: string, /*selectedProducts: any */) => Promise<void>;
+    addProductToShop: (product: ShopInventory) => void;
+    updateProductInShop: (updatedProduct: ShopInventory) => void;
+    getSingleShop: (shopId:string) => Promise<void>;
+    getShopOrders : () => Promise<void>;
+    updateShopOrders: (orderId:string,orderStatus:string) => Promise<void>;
+    clearShop: () => void;
+}
 export const useShopStore = create<ShopState>()(
   persist(
     (set, get) => ({
@@ -44,7 +62,7 @@ export const useShopStore = create<ShopState>()(
           set({ loading: true });
           const response = await axios.get(`${API_END_POINT}`);
           if (response.data.success) {
-            set({ loading: false, shop: response.data.shop });
+            set({ loading: false, shop: response.data.shops });
           }
         } catch (error: any) {
           if (error.response.status === 404) {
@@ -104,7 +122,7 @@ export const useShopStore = create<ShopState>()(
         }
       },
 
-      addProductToShop: (product: ProductItem) => {
+      addProductToShop: (product: ShopInventory) => {
         set((state) => {
           const newShop = state.shop.map((shop) => {
             if (shop.id == product.id)

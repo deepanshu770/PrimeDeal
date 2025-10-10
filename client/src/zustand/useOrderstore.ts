@@ -1,7 +1,7 @@
 import { CheckoutSessionRequest, OrderState } from "@/types/orderType";
 import axios from "axios";
 import {create} from "zustand";
-import { persist } from "zustand/middleware";
+import { createJSONStorage, persist } from "zustand/middleware";
 import { useCartstore } from "./useCartstore";
 
 const API_END_POINT:string = "http://localhost:3000/api/v1/order";
@@ -38,5 +38,5 @@ export const useOrderstore = create<OrderState>()(persist((set)=>({
 
 }),{
     name:"order-store",
-    // storage:createJSONStorage(()=>localStorage)
+    storage:createJSONStorage(()=>localStorage)
 }))
