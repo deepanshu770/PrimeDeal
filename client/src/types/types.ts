@@ -1,35 +1,69 @@
+// -------------------------------------------------------------
+// 🌍 ENUMS (matching your Prisma schema)
+// -------------------------------------------------------------
 
 export enum OrderStatus {
-  PENDING = "pending",
-  CONFIRMED = "confirmed",
-  PREPARING = "preparing",
-  OUT_FOR_DELIVERY = "out_for_delivery",
-  DELIVERED = "delivered",
-  CANCELLED = "cancelled",
-  FAILED = "failed",
+  pending = "pending",
+  confirmed = "confirmed",
+  preparing = "preparing",
+  out_for_delivery = "out_for_delivery",
+  delivered = "delivered",
+  cancelled = "cancelled",
+  failed = "failed",
 }
 
 export enum DeliveryStatus {
-  PENDING_ASSIGNMENT = "pending_assignment",
-  ASSIGNED = "assigned",
-  PICKED_UP = "picked_up",
-  DELIVERED = "delivered",
-  FAILED = "failed",
+  pending_assignment = "pending_assignment",
+  assigned = "assigned",
+  picked_up = "picked_up",
+  delivered = "delivered",
+  failed = "failed",
 }
 
 export enum PaymentStatus {
-  PENDING = "pending",
-  COMPLETED = "completed",
-  FAILED = "failed",
-  REFUNDED = "refunded",
+  pending = "pending",
+  completed = "completed",
+  failed = "failed",
+  refunded = "refunded",
 }
 
-export enum PaymentMethod {
-  CREDIT_CARD = "credit_card",
-  DEBIT_CARD = "debit_card",
-  UPI = "upi",
-  COD = "cod",
-  WALLET = "wallet",
+export enum Unit {
+  g = "g",
+  kg = "kg",
+  mg = "mg",
+  lb = "lb",
+  oz = "oz",
+  ml = "ml",
+  l = "l",
+  cl = "cl",
+  gal = "gal",
+  pcs = "pcs",
+  pack = "pack",
+  box = "box",
+  bottle = "bottle",
+  can = "can",
+  jar = "jar",
+  bag = "bag",
+  dozen = "dozen",
+  pair = "pair",
+  tray = "tray",
+}
+
+// -------------------------------------------------------------
+// 👤 USER & ADDRESS MODELS
+// -------------------------------------------------------------
+
+export interface Address {
+  id: number;
+  addressLine1: string;
+  addressLine2?: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+  latitude?: number;
+  longitude?: number;
+  isDefault: boolean;
 }
 
 export interface User {
@@ -37,39 +71,38 @@ export interface User {
   fullname: string;
   email: string;
   phoneNumber: string;
-  passwordHash: string;
-  profilePicture?: string | null;
+  profilePicture?: string;
   admin: boolean;
   createdAt: string;
   updatedAt: string;
   addresses?: Address[];
-  shops?: Shop[];
-  orders?: Order[];
 }
 
-export interface Address {
+// -------------------------------------------------------------
+// 🏬 SHOP & INVENTORY MODELS
+// -------------------------------------------------------------
+
+export interface Shop {
   id: number;
   userId: number;
-  addressLine1: string;
-  addressLine2?: string | null;
+  storeName: string;
+  description?: string;
+  storeBanner?: string;
   city: string;
-  state: string;
-  postalCode: string;
-  country: string;
-  latitude?: number | null;
-  longitude?: number | null;
-  isDefault: boolean;
-  user?: User;
-  orders?: Order[];
+  address: string;
+  latitude: number;
+  longitude: number;
+  deliveryTime: number;
+  createdAt: string;
+  updatedAt: string;
+  owner?: User;
+  inventory?: ShopInventory[];
 }
-
-// ---------- SHOP & PRODUCT MODELS ----------
 
 export interface Category {
   id: number;
   name: string;
-  description?: string | null;
-  products?: Product[];
+  description?: string;
 }
 
 export interface Product {
@@ -77,31 +110,14 @@ export interface Product {
   categoryId: number;
   name: string;
   description: string;
-  brand?: string | null;
+  brand?: string;
   image: string;
-  netQty: string;
+  netQty: string; // e.g., "500g", "1L"
   outOfStock: boolean;
   createdAt: string;
   updatedAt: string;
   category?: Category;
   inShops?: ShopInventory[];
-  orderItems?: OrderItem[];
-}
-
-export interface Shop {
-  id: number;
-  userId: number;
-  storeName: string;
-  description?: string | null;
-  storeBanner?: string | null;
-  city: string;
-  address: string;
-  latitude: number;
-  longitude: number;
-  deliveryTime: number;
-  owner?: User;
-  inventory?: ShopInventory[];
-  orders?: Order[];
 }
 
 export interface ShopInventory {
@@ -110,12 +126,25 @@ export interface ShopInventory {
   productId: number;
   price: number;
   quantity: number;
+  netQty: number;
+  unit: Unit;
   isAvailable: boolean;
   shop?: Shop;
   product?: Product;
 }
 
-// ---------- ORDER & PAYMENT MODELS ----------
+// -------------------------------------------------------------
+// 📦 ORDER MODELS
+// -------------------------------------------------------------
+
+export interface OrderItem {
+  id: number;
+  orderId: number;
+  productId: number;
+  quantity: number;
+  pricePerUnit: number;
+  product?: Product;
+}
 
 export interface Order {
   id: number;
@@ -131,31 +160,22 @@ export interface Order {
   shop?: Shop;
   address?: Address;
   items?: OrderItem[];
-  delivery?: Delivery | null;
-  payment?: Payment | null;
+  delivery?: Delivery;
+  payment?: Payment;
 }
 
-export interface OrderItem {
-  id: number;
-  orderId: number;
-  productId: number;
-  quantity: number;
-  pricePerUnit: number;
-  order?: Order;
-  product?: Product;
-}
-
-// ---------- DELIVERY MODELS ----------
+// -------------------------------------------------------------
+// 🚚 DELIVERY MODELS
+// -------------------------------------------------------------
 
 export interface DeliveryAgent {
   id: number;
   firstName: string;
   lastName: string;
   phoneNumber: string;
-  passwordHash: string;
-  vehicleNumber?: string | null;
-  currentLatitude?: number | null;
-  currentLongitude?: number | null;
+  vehicleNumber?: string;
+  currentLatitude?: number;
+  currentLongitude?: number;
   isAvailable: boolean;
   createdAt: string;
   deliveries?: Delivery[];
@@ -164,41 +184,65 @@ export interface DeliveryAgent {
 export interface Delivery {
   id: number;
   orderId: number;
-  agentId?: number | null;
+  agentId?: number;
   deliveryStatus: DeliveryStatus;
-  assignedAt?: string | null;
-  pickedUpAt?: string | null;
-  deliveredAt?: string | null;
+  assignedAt?: string;
+  pickedUpAt?: string;
+  deliveredAt?: string;
   order?: Order;
-  agent?: DeliveryAgent | null;
-  distanceKm?: number | null;
-  deliveryFee?: number | null;
+  agent?: DeliveryAgent;
 }
 
-// ---------- PAYMENT MODEL ----------
+// -------------------------------------------------------------
+// 💳 PAYMENT MODELS
+// -------------------------------------------------------------
 
 export interface Payment {
   id: number;
   orderId: number;
-  paymentMethod: PaymentMethod;
-  transactionId?: string | null;
+  paymentMethod: string;
+  transactionId?: string;
   amount: number;
   paymentStatus: PaymentStatus;
   createdAt: string;
   order?: Order;
 }
 
-// ---------- OPTIONAL: REVIEW MODEL (Future) ----------
+// -------------------------------------------------------------
+// 🧠 HELPER TYPES FOR FRONTEND UI
+// -------------------------------------------------------------
 
-export interface Review {
+// 🛒 Used for displaying available products in catalog or search
+export interface AvailableProduct {
   id: number;
-  userId: number;
-  shopId?: number | null;
-  productId?: number | null;
-  rating: number;
-  comment?: string | null;
-  createdAt: string;
-  user?: User;
-  shop?: Shop | null;
-  product?: Product | null;
+  name: string;
+  brand?: string;
+  image: string;
+  description: string;
+  category?: string;
+  netQty: string;
+  availableIn: {
+    shopId: number;
+    shopName: string;
+    city: string;
+    price: number;
+    quantity: number;
+    netQty: number;
+    unit: Unit;
+    deliveryTime: number;
+  }[];
+}
+
+// 📊 Generic API Response Wrapper
+export interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  count?: number;
+  data?: T;
+}
+
+
+export interface NearbyShop extends Shop {
+  distance: number; // distance in km
+  totalProducts: number;
 }

@@ -8,27 +8,41 @@ import { asyncHandler, AppError } from "../utils/asyncHandler";
 --------------------------------------------------- */
 export const createShop = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const { storeName, city, address, deliveryTime, latitude, longitude } =
-      req.body;
+    const {
+      storeName,
+      city,
+      address,
+      deliveryTime,
+      latitude,
+      longitude,
+      description,
+    } = req.body;
     const file = req.file;
+    const userId = Number(req.id);
 
+    // 🧠 Validation
     if (!file) throw new AppError("Please upload a store banner image", 400);
     if (!storeName || !city || !address || !deliveryTime)
-      throw new AppError("All fields are required", 400);
+      throw new AppError("All required fields must be provided", 400);
 
-    const userId = Number(req.id);
-    const processedStoreName = storeName.trim();
+    // 🧹 Data normalization
     const processedCity = city.trim().toLowerCase();
+    const processedStoreName = storeName.trim();
     const numericDeliveryTime = Number(deliveryTime);
 
-    const storeBanner = await uploadImageOnCloudinary(
-      file as Express.Multer.File
-    );
+    if (isNaN(numericDeliveryTime)) {
+      throw new AppError("Delivery time must be a number", 400);
+    }
 
-    await prisma.shop.create({
+    // 🖼️ Upload image
+    const storeBanner = await uploadImageOnCloudinary(file as Express.Multer.File);
+
+    // 💾 Create shop in DB
+    const createdShop = await prisma.shop.create({
       data: {
         userId,
         storeName: processedStoreName,
+        description: description?.trim() || "",
         city: processedCity,
         address: address.trim(),
         deliveryTime: numericDeliveryTime,
@@ -38,180 +52,228 @@ export const createShop = asyncHandler(
       },
     });
 
-    res
-      .status(201)
-      .json({ success: true, message: "Shop created successfully" });
+    res.status(201).json({
+      success: true,
+      message: "Shop created successfully",
+      shop: createdShop,
+    });
   }
 );
 
 /* ---------------------------------------------------
-   GET ALL SHOPS OF USER
+   GET ALL SHOPS OWNED BY USER
 --------------------------------------------------- */
-export const getShop = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
-    const userId = Number(req.id);
+export const getShop = asyncHandler(async (req: Request, res: Response) => {
+  const userId = Number(req.id);
 
-    const shops = await prisma.shop.findMany({
-      where: { userId },
-      include: {
-        inventory: {
-          include: { product: true },
-        },
+  const shops = await prisma.shop.findMany({
+    where: { userId },
+    include: {
+      inventory: {
+        include: { product: true },
       },
-    });
+    },
+    orderBy: { createdAt: "desc" },
+  });
 
-    if (shops.length === 0) throw new AppError("No shops found", 404);
-
-    res.status(200).json({ success: true, shops });
+  if (shops.length === 0) {
+    throw new AppError("No shops found for this user", 404);
   }
-);
+
+  res.status(200).json({ success: true, count: shops.length, shops });
+});
 
 /* ---------------------------------------------------
-   GET SHOPS IN USER'S CITY
+   GET ALL SHOPS IN USER'S CITY
 --------------------------------------------------- */
-export const getShopByCity = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
-    const userId = Number(req.id);
+export const getShopByCity = asyncHandler(async (req: Request, res: Response) => {
+  const userId = Number(req.id);
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      include: {
-        addresses: {
-          where: { isDefault: true },
-          take: 1,
-        },
-      },
-    });
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: {
+      addresses: { where: { isDefault: true }, take: 1 },
+    },
+  });
 
-    if (!user) throw new AppError("User not found", 404);
+  if (!user) throw new AppError("User not found", 404);
+  const defaultAddress = user.addresses[0];
 
-    const defaultAddress = user.addresses[0];
-    if (!defaultAddress)
-      throw new AppError(
-        "Default address not found. Please set one before browsing local shops.",
-        400
-      );
+  if (!defaultAddress)
+    throw new AppError("Please set a default address to find nearby shops", 400);
 
-    const shops = await prisma.shop.findMany({
-      where: {
-        city: defaultAddress.city.toLowerCase(),
-      },
-      include: {
-        inventory: {
-          include: {
-            product: true,
+  const city = defaultAddress.city.trim().toLowerCase();
+
+  const shops = await prisma.shop.findMany({
+    where: { city },
+    include: {
+      inventory: {
+        include: {
+          product: {
+            include: { category: true },
           },
         },
       },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+    },
+    orderBy: { createdAt: "desc" },
+  });
 
-    res.status(200).json({
-      success: true,
-      city: defaultAddress.city,
-      shops,
-    });
-  }
-);
+  res.status(200).json({
+    success: true,
+    message: `Found ${shops.length} shop(s) in ${city}`,
+    city,
+    count: shops.length,
+    shops,
+  });
+});
 
 /* ---------------------------------------------------
    UPDATE SHOP DETAILS
 --------------------------------------------------- */
-export const updateShop = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
-    const { storeName, city, address, deliveryTime, shopId } = req.body;
-    const file = req.file;
+export const updateShop = asyncHandler(async (req: Request, res: Response) => {
+  const {
+    storeName,
+    description,
+    address,
+    city,
+    latitude,
+    longitude,
+    deliveryTime,
+    shopId,
+  } = req.body;
+  const file = req.file;
 
-    const shop = await prisma.shop.findUnique({
-      where: { id: Number(shopId) },
-    });
-    if (!shop) throw new AppError("Shop not found", 404);
+  const existingShop = await prisma.shop.findUnique({
+    where: { id: Number(shopId) },
+  });
 
-    let storeBanner = shop.storeBanner;
-    if (file)
-      storeBanner = await uploadImageOnCloudinary(file as Express.Multer.File);
+  if (!existingShop) throw new AppError("Shop not found", 404);
 
-    const updatedShop = await prisma.shop.update({
-      where: { id: shop.id },
-      data: {
-        storeName: storeName.trim(),
-        city: city.trim().toLowerCase(),
-        address: address.trim(),
-        deliveryTime: Number(deliveryTime),
-        storeBanner,
-      },
-    });
-
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "Shop updated successfully",
-        shop: updatedShop,
-      });
+  let storeBanner = existingShop.storeBanner;
+  if (file) {
+    storeBanner = await uploadImageOnCloudinary(file as Express.Multer.File);
   }
-);
+
+  const updatedShop = await prisma.shop.update({
+    where: { id: existingShop.id },
+    data: {
+      storeName: storeName?.trim() || existingShop.storeName,
+      description: description?.trim() || existingShop.description,
+      address: address?.trim() || existingShop.address,
+      city: city?.trim().toLowerCase() || existingShop.city,
+      latitude: latitude ? Number(latitude) : existingShop.latitude,
+      longitude: longitude ? Number(longitude) : existingShop.longitude,
+      deliveryTime: deliveryTime ? Number(deliveryTime) : existingShop.deliveryTime,
+      storeBanner,
+    },
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Shop updated successfully",
+    shop: updatedShop,
+  });
+});
 
 /* ---------------------------------------------------
    GET SHOP ORDERS
 --------------------------------------------------- */
-export const getShopOrder = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
-    const shopId = Number(req.params.shopId);
+export const getShopOrder = asyncHandler(async (req: Request, res: Response) => {
+  const shopId = Number(req.params.shopId);
 
-    const shop = await prisma.shop.findUnique({ where: { id: shopId } });
-    if (!shop) throw new AppError("Shop not found", 404);
+  const shop = await prisma.shop.findUnique({ where: { id: shopId } });
+  if (!shop) throw new AppError("Shop not found", 404);
 
-    const orders = await prisma.order.findMany({
-      where: { shopId },
-      include: {
-        user: true,
-        address: true,
-        items: {
-          include: { product: true },
-        },
-      },
-      orderBy: { createdAt: "desc" },
-    });
+  const orders = await prisma.order.findMany({
+    where: { shopId },
+    include: {
+      user: true,
+      address: true,
+      items: { include: { product: true } },
+      delivery: true,
+      payment: true,
+    },
+    orderBy: { createdAt: "desc" },
+  });
 
-    res.status(200).json({ success: true, orders });
-  }
-);
+  res.status(200).json({
+    success: true,
+    count: orders.length,
+    orders,
+  });
+});
 
 /* ---------------------------------------------------
    UPDATE ORDER STATUS
 --------------------------------------------------- */
-export const updateOrderStatus = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
-    const { orderId } = req.params;
-    const { orderStatus } = req.body;
+export const updateOrderStatus = asyncHandler(async (req: Request, res: Response) => {
+  const { orderId } = req.params;
+  const { orderStatus } = req.body;
 
-    const order = await prisma.order.findUnique({
-      where: { id: Number(orderId) },
-    });
-    if (!order) throw new AppError("Order not found", 404);
-
-    const updatedOrder = await prisma.order.update({
-      where: { id: Number(orderId) },
-      data: { orderStatus },
-    });
-
-    res
-      .status(200)
-      .json({ success: true, message: "Order status updated", updatedOrder });
+  const validStatuses = [
+    "pending",
+    "confirmed",
+    "preparing",
+    "out_for_delivery",
+    "delivered",
+    "cancelled",
+    "failed",
+  ];
+  if (!validStatuses.includes(orderStatus)) {
+    throw new AppError("Invalid order status value", 400);
   }
-);
+
+  const order = await prisma.order.findUnique({ where: { id: Number(orderId) } });
+  if (!order) throw new AppError("Order not found", 404);
+
+  const updatedOrder = await prisma.order.update({
+    where: { id: Number(orderId) },
+    data: { orderStatus },
+  });
+
+  res.status(200).json({
+    success: true,
+    message: `Order status updated to ${orderStatus}`,
+    order: updatedOrder,
+  });
+});
 
 /* ---------------------------------------------------
-   SEARCH PRODUCT (by name/description/category)
+   GET SINGLE SHOP DETAILS
 --------------------------------------------------- */
-export const searchProduct = asyncHandler(
+export const getSingleShop = asyncHandler(async (req: Request, res: Response) => {
+  const shopId = Number(req.params.id);
+  console.log("Getting Shop ID : ",shopId);
+  const shop = await prisma.shop.findUnique({
+    where: { id: shopId },
+    include: {
+      owner: {
+        select: { fullname: true, email: true, phoneNumber: true },
+      },
+      inventory: {
+        include: {
+          product: { include: { category: true } },
+        },
+      },
+    },
+  });
+
+  if (!shop) throw new AppError("Shop not found", 404);
+
+  res.status(200).json({
+    success: true,
+    shop,
+  });
+});
+
+/* ---------------------------------------------------
+   GET NEARBY SHOPS WITHIN 7 KM OF USER
+--------------------------------------------------- */
+export const getNearbyShops = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-    const query = (req.query.q as string)?.trim() || "";
     const userId = Number(req.id);
 
+    // ✅ Fetch user and their default address
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: {
@@ -227,61 +289,81 @@ export const searchProduct = asyncHandler(
     const defaultAddress = user.addresses[0];
     if (!defaultAddress)
       throw new AppError(
-        "Default address not found. Please set one before searching products.",
+        "Default address not found. Please set one before searching nearby shops.",
         400
       );
 
-    const products = await prisma.product.findMany({
-      where: {
-        OR: [
-          { name: { contains: query } },
-          { description: { contains: query } },
-          { brand: { contains: query } },
-          { netQty: { contains: query } },
-        ],
-        inShops: {
-          some: {
-            shop: {
-              city: { equals: defaultAddress.city },
+    if (!defaultAddress.latitude || !defaultAddress.longitude)
+      throw new AppError("Default address does not have coordinates set.", 400);
+
+    const userLat = defaultAddress.latitude;
+    const userLon = defaultAddress.longitude;
+
+    // ✅ Fetch all shops (could later optimize with raw query)
+    const shops = await prisma.shop.findMany({
+      include: {
+        owner: {
+          select: {
+            fullname: true,
+            email: true,
+          },
+        },
+        inventory: {
+          include: {
+            product: {
+              include: { category: true },
             },
           },
         },
       },
-      include: {
-        inShops: {
-          include: {
-            shop: true,
-          },
-        },
-      },
     });
+
+    // ✅ Calculate distance using Haversine formula
+    const EARTH_RADIUS_KM = 6371;
+    const toRad = (value: number) => (value * Math.PI) / 180;
+
+    const nearbyShops = shops
+      .map((shop) => {
+        const dLat = toRad(shop.latitude - userLat);
+        const dLon = toRad(shop.longitude - userLon);
+
+        const a =
+          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.cos(toRad(userLat)) *
+            Math.cos(toRad(shop.latitude)) *
+            Math.sin(dLon / 2) *
+            Math.sin(dLon / 2);
+
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const distance = EARTH_RADIUS_KM * c;
+
+        return { ...shop, distance:distance };
+      })
+      .filter((s) => s.distance <= 7) // ✅ within 7 km
+      .sort((a, b) => a.distance - b.distance); // ✅ sort nearest first
 
     res.status(200).json({
       success: true,
-      city: defaultAddress.city,
-      products,
-    });
-  }
-);
-
-/* ---------------------------------------------------
-   GET SINGLE SHOP DETAILS
---------------------------------------------------- */
-export const getSingleShop = asyncHandler(
-  async (req: Request, res: Response): Promise<void> => {
-    const shopId = Number(req.params.id);
-
-    const shop = await prisma.shop.findUnique({
-      where: { id: shopId },
-      include: {
-        inventory: {
-          include: { product: true },
-        },
+      message: `Found ${nearbyShops.length} shop(s) within 7 km of your location.`,
+      userLocation: {
+        latitude: userLat,
+        longitude: userLon,
       },
+      count: nearbyShops.length,
+      shops: nearbyShops.map((shop) => ({
+        id: shop.id,
+        storeName: shop.storeName,
+        city: shop.city,
+        address: shop.address,
+        deliveryTime: shop.deliveryTime,
+        storeBanner: shop.storeBanner,
+        latitude: shop.latitude,
+        longitude: shop.longitude,
+        distance: shop.distance.toFixed(2), // in km
+        owner: shop.owner,
+        totalProducts: shop.inventory.length,
+      })),
     });
-
-    if (!shop) throw new AppError("Shop not found", 404);
-
-    res.status(200).json({ success: true, shop });
   }
 );
+

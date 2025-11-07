@@ -104,14 +104,15 @@ model Category {
 
 // Manages product price and stock for each specific shop
 model ShopInventory {
-  id          Int     @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   shopId      Int
   productId   Int
   price       Float
   quantity    Int
-  isAvailable Boolean @default(true) // Replaces outOfStock
+  netQty      Float    // e.g., 500, 1.5, etc.
+  unit        Unit     // 👈 enum type now
+  isAvailable Boolean  @default(true)
 
-  // Relations
   shop    Shop    @relation(fields: [shopId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
@@ -222,3 +223,27 @@ enum PaymentStatus {
   refunded
 }
 
+enum Unit {
+  g        // gram
+  kg       // kilogram
+  mg       // milligram
+  lb       // pound
+  oz       // ounce
+
+  ml       // millilitre
+  l        // litre
+  cl       // centilitre
+  gal      // gallon
+
+  pcs      // pieces (default for countable items)
+  pack     // packs
+  box      // boxes
+  bottle   // bottles
+  can      // cans
+  jar      // jars
+  bag      // bags
+
+  dozen    // 12 units
+  pair     // 2 units
+  tray     // group of items like eggs
+}

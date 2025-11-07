@@ -1,5 +1,5 @@
 import { orderItem } from "@/types/orderType";
-import { Shop, ShopInventory } from "@/types/types";
+import { Shop, ShopInventory, NearbyShop } from "@/types/types";
 import axios from "axios";
 import { toast } from "sonner";
 import { create } from "zustand";
@@ -7,212 +7,229 @@ import { createJSONStorage, persist } from "zustand/middleware";
 
 axios.defaults.withCredentials = true;
 
-const API_END_POINT = "http://localhost:3000/api/v1/shop";
+const SHOP_API = "http://localhost:3000/api/v1/shop";
+const PRODUCT_API = "http://localhost:3000/api/v1/product";
+
+// 🧩 Centralized API helper (for DRY code)
+const api = axios.create({
+  baseURL: "http://localhost:3000/api/v1",
+  withCredentials: true,
+  timeout: 8000,
+});
+
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    const message =
+      err.response?.data?.message || "Network error. Please try again.";
+    toast.error(message);
+    return Promise.reject(err);
+  }
+);
+
+// 🧠 Types
 export type ShopState = {
-    loading: boolean;
-    shop: Shop[];
-    searchedShop:  Shop[] ;
-    searchedProduct:  ShopInventory[];
-    singleShop: Shop | null;
-    shopOrders : orderItem[];
-    
-    createShop: (formData: FormData) => Promise<void>;
-    getShop: () => Promise<void>;
-    updateShop: (formData: FormData, existingBanner?: string) => Promise<void>;
-    searchShop: (searchText: string, searchQuery: string, /*selectedProducts: any */) => Promise<void>;
-    addProductToShop: (product: ShopInventory) => void;
-    updateProductInShop: (updatedProduct: ShopInventory) => void;
-    getSingleShop: (shopId:string) => Promise<void>;
-    getShopOrders : () => Promise<void>;
-    updateShopOrders: (orderId:string,orderStatus:string) => Promise<void>;
-    clearShop: () => void;
-}
+  loading: boolean;
+  shop: Shop[];
+  nearbyShops: NearbyShop[];
+  searchedShop: Shop[];
+  searchedProduct: ShopInventory[];
+  singleShop: Shop | null;
+  shopOrders: orderItem[];
+
+  // --- Actions ---
+  createShop: (formData: FormData) => Promise<void>;
+  getShop: () => Promise<void>;
+  updateShop: (formData: FormData, existingBanner?: string) => Promise<void>;
+  searchShop: (query: string) => Promise<void>;
+  getSingleShop: (shopId: string) => Promise<void>;
+  getShopOrders: () => Promise<void>;
+  updateShopOrders: (orderId: string, orderStatus: string) => Promise<void>;
+  getNearbyShops: (radiusKm?: number) => Promise<void>;
+  addProductToShop: (product: ShopInventory) => void;
+  updateProductInShop: (updatedProduct: ShopInventory) => void;
+  clearShop: () => void;
+};
+
+// 🧰 Helper: Set loading with toast feedback
+const withLoading = async <T>(
+  set: any,
+  fn: () => Promise<T>,
+  options?: { startMsg?: string; successMsg?: string; errorMsg?: string }
+) => {
+  try {
+    set({ loading: true });
+    if (options?.startMsg) toast.info(options.startMsg);
+    const result = await fn();
+    if (options?.successMsg) toast.success(options.successMsg);
+    return result;
+  } catch (error: any) {
+    toast.error(options?.errorMsg || error.response?.data?.message || "Error occurred");
+    throw error;
+  } finally {
+    set({ loading: false });
+  }
+};
+
+// 🏬 Zustand Store
 export const useShopStore = create<ShopState>()(
   persist(
     (set, get) => ({
       loading: false,
       shop: [],
-      products: null,
+      nearbyShops: [],
       searchedShop: [],
       searchedProduct: [],
       singleShop: null,
       shopOrders: [],
 
-      //create shop api implementation
-      createShop: async (formData: FormData) => {
-        try {
-          set({ loading: true });
-          const response = await axios.post(`${API_END_POINT}`, formData, {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
+      /** ---------------- 🏬 CREATE SHOP ---------------- */
+      createShop: async (formData) => {
+        await withLoading(set, async () => {
+          const { data } = await api.post(`/shop`, formData, {
+            headers: { "Content-Type": "multipart/form-data" },
           });
-          if (response.data.success) {
-            toast.success(response.data.message);
-            set({ loading: false });
-          }
-        } catch (error: any) {
-          toast.error(error.response.data.message);
-          set({ loading: false });
-        }
+          set((s: ShopState) => ({ shop: [...s.shop, data.shop] }));
+        }, { successMsg: "Shop created successfully" });
       },
-      //get shop api implementation
+
+      /** ---------------- 🏪 GET ALL SHOPS ---------------- */
       getShop: async () => {
-        try {
-          set({ loading: true });
-          const response = await axios.get(`${API_END_POINT}`);
-          if (response.data.success) {
-            set({ loading: false, shop: response.data.shops });
-          }
-        } catch (error: any) {
-          if (error.response.status === 404) {
-            set({ shop: [] });
-          }
-          set({ loading: false });
-        }
+        await withLoading(set, async () => {
+          const { data } = await api.get(`/shop`);
+          if (data.success) set({ shop: data.shops });
+        }, { errorMsg: "Failed to load shops" });
       },
 
-      //update shop api implementation
-      updateShop: async (formData: FormData, existingBanner?: string) => {
-        try {
-          set({ loading: true });
-
-          if (!formData.has("storeBanner") && existingBanner) {
+      /** ---------------- ✏️ UPDATE SHOP ---------------- */
+      updateShop: async (formData, existingBanner) => {
+        await withLoading(set, async () => {
+          if (!formData.has("storeBanner") && existingBanner)
             formData.append("storeBanner", existingBanner);
-          }
-          const response = await axios.put(`${API_END_POINT}/`, formData, {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
+
+          const { data } = await api.put(`/shop`, formData, {
+            headers: { "Content-Type": "multipart/form-data" },
           });
-          if (response.data.success) {
-            toast.success(response.data.message);
-            set({ loading: false });
-          }
-        } catch (error: any) {
-          toast.error(error.response.data.message);
-          set({ loading: false });
-        }
+
+          set((s: ShopState) => ({
+            shop: s.shop.map((sh) =>
+              sh.id === data.shop.id ? data.shop : sh
+            ),
+          }));
+        }, { successMsg: "Shop updated successfully" });
       },
 
-      //search shop api implementation
-      searchShop: async (
-        searchText: string,
-        searchQuery: string /*selectedProducts: any */
-      ) => {
-        try {
-          set({ loading: true });
-          const params = new URLSearchParams();
-          params.set("searchQuery", searchQuery);
-          // params.set("selectedProducts", selectedProducts);
-
-          const response = await axios.get(
-            `${API_END_POINT}/search/${searchText}?${params.toString()}`
-          );
-
-          if (response.data.success) {
+      /** ---------------- 🔍 SEARCH PRODUCTS ---------------- */
+      searchShop: async (query) => {
+        await withLoading(set, async () => {
+          const { data } = await api.get(`/product/search?q=${encodeURIComponent(query)}`);
+          if (data.success) {
             set({
-              loading: false,
-              searchedShop: response.data.shops,
-              searchedProduct: response.data.products,
+              searchedProduct: data.products,
+              searchedShop: data.shops || [],
             });
+          } else {
+            set({ searchedProduct: [], searchedShop: [] });
           }
-        } catch (error) {
-          set({ loading: false });
-        }
-      },
-
-      addProductToShop: (product: ShopInventory) => {
-        set((state) => {
-          const newShop = state.shop.map((shop) => {
-            if (shop.id == product.id)
-              return { ...shop, products: [...shop.products, product] };
-            return shop;
-          });
-          return { shop: [...state.shop,newShop] };
         });
       },
 
-      updateProductInShop: (updatedProduct: ProductItem) => {
-        set((state) => {
-          const newShop = state.shop.map((shop) => {
-            if (shop.id == updatedProduct.id) {
-              const newProducts = shop.products.map((product) => {
-                if (product.id === updatedProduct.id) {
-                  return updatedProduct;
-                }
-                return product;
-              });
-              return { ...shop, products: newProducts };
-            }
-            return shop;
-          });
-          return { shop: [...state.shop,newShop] };
+      /** ---------------- 🧭 GET NEARBY SHOPS ---------------- */
+      getNearbyShops: async (radiusKm = 7) => {
+        await withLoading(set, async () => {
+          const { data } = await api.get(`/shop/nearby?radius=${radiusKm}`);
+          if (data.success) {
+            set({ nearbyShops: data.shops });
+          } else {
+            set({ nearbyShops: [] });
+          }
+        }, {
+          errorMsg: "Failed to fetch nearby shops",
         });
       },
 
-      getSingleShop: async (shopId: string) => {
-        try {
-          set({ loading: true });
-          const response = await axios.get(`${API_END_POINT}/${shopId}`);
-          if (response.data.success) {
-            set({ loading: false, singleShop: response.data.shop });
-          }
-        } catch (error) {
-          set({ loading: false });
-        }
+      /** ---------------- 🏪 GET SINGLE SHOP ---------------- */
+      getSingleShop: async (shopId) => {
+        await withLoading(set, async () => {
+          const { data } = await api.get(`/shop/${shopId}`);
+          if (data.success) set({ singleShop: data.shop });
+        }, { errorMsg: "Failed to load shop details" });
       },
 
+      /** ---------------- 🧾 GET SHOP ORDERS ---------------- */
       getShopOrders: async () => {
-        try {
-          set({ loading: true });
-          const response = await axios.get(`${API_END_POINT}/order`);
-          if (response.data.success) {
-            set({ loading: false, shopOrders: response.data.shopOrder });
-          }
-        } catch (error) {
-          console.log(error);
-        } finally {
-          set({ loading: false });
-        }
+        await withLoading(set, async () => {
+          const { data } = await api.get(`/shop/order`);
+          if (data.success) set({ shopOrders: data.shopOrder });
+        });
       },
-      updateShopOrders: async (orderId: string, orderStatus: string) => {
-        try {
-          const response = await axios.put(
-            `${API_END_POINT}/order/${orderId}/status`,
+
+      /** ---------------- 🔄 UPDATE ORDER STATUS ---------------- */
+      updateShopOrders: async (orderId, orderStatus) => {
+        await withLoading(set, async () => {
+          const { data } = await api.put(
+            `/shop/order/${orderId}/status`,
             { status: orderStatus },
             { headers: { "Content-Type": "application/json" } }
           );
-          if (response.data.success) {
-            try {
-              const updatedOrders = get().shopOrders.map((order: orderItem) =>
-                order.id === orderId
-                  ? { ...order, status: response.data.status }
-                  : order
-              );
-
-              set({ shopOrders: updatedOrders });
-            } catch (error) {
-              console.error(" Zustand state update failed:", error);
-            }
-            setTimeout(() => {
-              toast.success(response.data.message);
-            }, 100);
+          if (data.success) {
+            set({
+              shopOrders: get().shopOrders.map((o) =>
+                o.id === orderId ? { ...o, status: orderStatus } : o
+              ),
+            });
           }
-        } catch (error: any) {
-          console.error("❌ API CALL FAILED:", error);
-          toast.error(error.response?.data?.message || "Something went wrong");
-        }
+        }, { successMsg: "Order status updated" });
       },
 
+      /** ---------------- ➕ ADD PRODUCT TO SHOP ---------------- */
+      addProductToShop: (product) => {
+        set((state) => ({
+          shop: state.shop.map((shop) =>
+            shop.id === product.shopId
+              ? { ...shop, products: [...(shop.products || []), product] }
+              : shop
+          ),
+        }));
+      },
+
+      /** ---------------- ♻️ UPDATE PRODUCT ---------------- */
+      updateProductInShop: (updatedProduct) => {
+        set((state) => ({
+          shop: state.shop.map((shop) =>
+            shop.id === updatedProduct.shopId
+              ? {
+                  ...shop,
+                  products: shop.products?.map((p) =>
+                    p.id === updatedProduct.id ? updatedProduct : p
+                  ),
+                }
+              : shop
+          ),
+        }));
+      },
+
+      /** ---------------- 🧹 CLEAR ALL ---------------- */
       clearShop: () => {
-        localStorage.removeItem("cart-name");
-        set({ shop: [], singleShop: null });
+        localStorage.removeItem("store-name");
+        set({
+          shop: [],
+          nearbyShops: [],
+          searchedShop: [],
+          searchedProduct: [],
+          singleShop: null,
+          shopOrders: [],
+        });
       },
     }),
     {
       name: "store-name",
       storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        shop: state.shop,
+        nearbyShops: state.nearbyShops,
+        searchedShop: state.searchedShop,
+      }),
     }
   )
 );

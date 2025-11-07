@@ -6,9 +6,9 @@ import {
   ProfileInputState,
 } from "@/schema/userSchema";
 import { toast } from "sonner";
-import { useCartstore } from "./useCartstore";
 import { useShopStore } from "./useShopStore";
 import API from "@/config/api";
+import { useCartStore } from "./useCartStore";
 
 type User = {
   fullname: string;
@@ -91,6 +91,7 @@ export const useUserStore = create<UserState>()(
               isAuthenticated: true,
             });
           } else {
+            toast.error(response.data.message);
             set({ loading: false });
           }
         } catch (error: any) {
@@ -124,8 +125,10 @@ export const useUserStore = create<UserState>()(
           const response = await API.post(`/user/logout`);
           if (response.data.success) {
             toast.success(response.data.message);
-            useCartstore.getState().clearCart();
+            useCartStore.getState().clearCart();
             useShopStore.getState().clearShop();
+          }else{
+            toast.error(response.data.message);
           }
           set({ loading: false, user: null, isAuthenticated: false });
         } catch (error) {
@@ -141,6 +144,7 @@ export const useUserStore = create<UserState>()(
           if (response.data.success) {
             set({ loading: false, isAuthenticated: true });
           } else {
+            toast.error(response.data.message);
             set({ loading: false });
           }
         } catch (error) {

@@ -10,7 +10,7 @@ const HeroSection = () => {
     const navigate = useNavigate();
     const handleSearch = () => {
         if (searchText.trim() !== "") {
-            navigate(`/search/${searchText}`);
+            navigate(`/search?q=${searchText}`);
         }
     };
     return (

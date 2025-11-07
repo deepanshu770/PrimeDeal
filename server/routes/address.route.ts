@@ -1,7 +1,6 @@
 import express from 'express';
-import upload from '../middlewares/multer';
 import { isAuthenticated } from '../middlewares/isAuthenticated';
-import { addProduct, editProduct, removeProduct } from '../controller/products.controller';
+// import { addProduct, editProduct } from '../controller/products.controller';
 import { addAddress, deleteAddress, listAddresses, setDefaultAddress, updateAddress } from '../controller/address.controller';
 
 const router = express.Router();

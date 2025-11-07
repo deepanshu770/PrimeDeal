@@ -7,11 +7,15 @@
     "build": "npm install && npm install --prefix client && npm run build --prefix client",
     "start": "nodemon server/index.ts"
   },
+  "prisma": {
+  "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
+},
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@faker-js/faker": "^10.1.0",
     "@prisma/client": "^6.16.1",
     "bcryptjs": "^3.0.2",
     "cloudinary": "^2.5.1",
@@ -24,7 +28,6 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.10.1",
     "multer": "^1.4.5-lts.1"
-   
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.8",

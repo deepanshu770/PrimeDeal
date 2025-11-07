@@ -1,0 +1,596 @@
+{
+    "type": "MySQLNotebook",
+    "version": "1.0",
+    "caption": "DB Notebook",
+    "content": "\\about\nuse primedeal;\nshow TABLES\nuse primedeal;\nSELECT * from user\n",
+    "options": {
+        "tabSize": 4,
+        "indentSize": 4,
+        "insertSpaces": true,
+        "defaultEOL": "LF",
+        "trimAutoWhitespace": true
+    },
+    "viewState": {
+        "cursorState": [
+            {
+                "inSelectionMode": false,
+                "selectionStart": {
+                    "lineNumber": 6,
+                    "column": 1
+                },
+                "position": {
+                    "lineNumber": 6,
+                    "column": 1
+                }
+            }
+        ],
+        "viewState": {
+            "scrollLeft": 0,
+            "firstPosition": {
+                "lineNumber": 4,
+                "column": 1
+            },
+            "firstPositionDeltaTop": 106
+        },
+        "contributionsState": {
+            "editor.contrib.folding": {},
+            "editor.contrib.wordHighlighter": false
+        }
+    },
+    "contexts": [
+        {
+            "state": {
+                "start": 1,
+                "end": 1,
+                "language": "mysql",
+                "result": {
+                    "type": "text",
+                    "text": [
+                        {
+                            "type": 2,
+                            "content": "Welcome to the MySQL Shell - DB Notebook.\n\nPress Ctrl+Enter to execute the code block.\n\nExecute \\sql to switch to SQL, \\js to JavaScript and \\ts to TypeScript mode.\nExecute \\help or \\? for help;",
+                            "language": "ansi"
+                        }
+                    ]
+                },
+                "currentHeight": 28,
+                "currentSet": 1,
+                "statements": [
+                    {
+                        "delimiter": ";",
+                        "span": {
+                            "start": 0,
+                            "length": 6
+                        },
+                        "contentStart": 0,
+                        "state": 0
+                    }
+                ]
+            },
+            "data": []
+        },
+        {
+            "state": {
+                "start": 2,
+                "end": 3,
+                "language": "mysql",
+                "result": {
+                    "type": "resultIds",
+                    "list": [
+                        "ee288799-544c-4f88-b26c-3f8e56b868a5"
+                    ]
+                },
+                "currentHeight": 352,
+                "currentSet": 1,
+                "statements": [
+                    {
+                        "delimiter": ";",
+                        "span": {
+                            "start": 0,
+                            "length": 14
+                        },
+                        "contentStart": 0,
+                        "state": 0
+                    },
+                    {
+                        "delimiter": ";",
+                        "span": {
+                            "start": 14,
+                            "length": 12
+                        },
+                        "contentStart": 15,
+                        "state": 3
+                    }
+                ]
+            },
+            "data": [
+                {
+                    "tabId": "63007747-ff85-4bbd-874a-927922632eb7",
+                    "resultId": "ee288799-544c-4f88-b26c-3f8e56b868a5",
+                    "rows": [
+                        {
+                            "0": "_prisma_migrations"
+                        },
+                        {
+                            "0": "address"
+                        },
+                        {
+                            "0": "category"
+                        },
+                        {
+                            "0": "delivery"
+                        },
+                        {
+                            "0": "deliveryagent"
+                        },
+                        {
+                            "0": "order"
+                        },
+                        {
+                            "0": "orderitem"
+                        },
+                        {
+                            "0": "payment"
+                        },
+                        {
+                            "0": "product"
+                        },
+                        {
+                            "0": "shop"
+                        },
+                        {
+                            "0": "shopinventory"
+                        },
+                        {
+                            "0": "user"
+                        }
+                    ],
+                    "columns": [
+                        {
+                            "title": "Tables_in_primedeal",
+                            "field": "0",
+                            "dataType": {
+                                "type": 17,
+                                "characterMaximumLength": 65535,
+                                "flags": [
+                                    "BINARY",
+                                    "ASCII",
+                                    "UNICODE"
+                                ],
+                                "needsQuotes": true,
+                                "parameterFormatType": "OneOrZero"
+                            },
+                            "inPK": false,
+                            "nullable": false,
+                            "autoIncrement": false
+                        }
+                    ],
+                    "executionInfo": {
+                        "text": "OK, 12 records retrieved in 2.394ms"
+                    },
+                    "totalRowCount": 12,
+                    "hasMoreRows": false,
+                    "currentPage": 0,
+                    "index": 1,
+                    "sql": "\nshow TABLES",
+                    "updatable": false
+                }
+            ]
+        },
+        {
+            "state": {
+                "start": 4,
+                "end": 5,
+                "language": "mysql",
+                "result": {
+                    "type": "resultIds",
+                    "list": [
+                        "633fb89c-e06f-4ff6-a0e7-41d6bff898e6",
+                        "14ebbe49-095b-4bd2-b70a-452847bb75b1"
+                    ]
+                },
+                "currentHeight": 352,
+                "currentSet": 1,
+                "statements": [
+                    {
+                        "delimiter": ";",
+                        "span": {
+                            "start": 0,
+                            "length": 14
+                        },
+                        "contentStart": 0,
+                        "state": 0
+                    },
+                    {
+                        "delimiter": ";",
+                        "span": {
+                            "start": 14,
+                            "length": 19
+                        },
+                        "contentStart": 15,
+                        "state": 3
+                    }
+                ]
+            },
+            "data": [
+                {
+                    "tabId": "63007747-ff85-4bbd-874a-927922632eb7",
+                    "resultId": "633fb89c-e06f-4ff6-a0e7-41d6bff898e6",
+                    "rows": [
+                        {
+                            "0": 1,
+                            "1": "Ravi Sharma",
+                            "2": "admin1@primedeal.in",
+                            "3": "9876543210",
+                            "4": "hashed_admin_password",
+                            "5": null,
+                            "6": 1,
+                            "7": "2025-11-06 18:35:43.056000",
+                            "8": "2025-11-06 18:35:43.056000"
+                        },
+                        {
+                            "0": 2,
+                            "1": "Priya Mehta",
+                            "2": "admin2@primedeal.in",
+                            "3": "9998887776",
+                            "4": "hashed_admin_password",
+                            "5": null,
+                            "6": 1,
+                            "7": "2025-11-06 18:35:43.056000",
+                            "8": "2025-11-06 18:35:43.056000"
+                        },
+                        {
+                            "0": 3,
+                            "1": "Arjun Patel",
+                            "2": "admin3@primedeal.in",
+                            "3": "9822334455",
+                            "4": "hashed_admin_password",
+                            "5": null,
+                            "6": 1,
+                            "7": "2025-11-06 18:35:43.056000",
+                            "8": "2025-11-06 18:41:05.743000"
+                        },
+                        {
+                            "0": 4,
+                            "1": "Anasooya Tagore",
+                            "2": "Chandraayan_Khan@hotmail.com",
+                            "3": "+918428129606",
+                            "4": "hashed_user_password",
+                            "5": null,
+                            "6": 0,
+                            "7": "2025-11-06 18:35:43.086000",
+                            "8": "2025-11-06 18:35:43.086000"
+                        },
+                        {
+                            "0": 5,
+                            "1": "Rahul Agarwal",
+                            "2": "Gayatri.Bhattacharya@gmail.com",
+                            "3": "+91802-741-3162",
+                            "4": "hashed_user_password",
+                            "5": null,
+                            "6": 0,
+                            "7": "2025-11-06 18:35:43.099000",
+                            "8": "2025-11-06 18:35:43.099000"
+                        },
+                        {
+                            "0": 6,
+                            "1": "Dr. Rajinder Jha",
+                            "2": "Chandramohan_Dwivedi80@gmail.com",
+                            "3": "+91691-394-1655",
+                            "4": "hashed_user_password",
+                            "5": null,
+                            "6": 0,
+                            "7": "2025-11-06 18:35:43.103000",
+                            "8": "2025-11-06 18:43:01.167000"
+                        },
+                        {
+                            "0": 7,
+                            "1": "Charumati Mehrotra",
+                            "2": "Aaditya0@yahoo.co.in",
+                            "3": "+91851-855-5711",
+                            "4": "hashed_user_password",
+                            "5": null,
+                            "6": 0,
+                            "7": "2025-11-06 18:35:43.106000",
+                            "8": "2025-11-06 18:35:43.106000"
+                        },
+                        {
+                            "0": 8,
+                            "1": "Dr. Ganak Gupta",
+                            "2": "Mandakini65@yahoo.co.in",
+                            "3": "+917822989606",
+                            "4": "hashed_user_password",
+                            "5": null,
+                            "6": 0,
+                            "7": "2025-11-06 18:35:43.110000",
+                            "8": "2025-11-06 18:35:43.110000"
+                        },
+                        {
+                            "0": 9,
+                            "1": "Asha Pilla",
+                            "2": "Jagdish.Bandopadhyay@gmail.com",
+                            "3": "+91792-555-7151",
+                            "4": "hashed_user_password",
+                            "5": null,
+                            "6": 0,
+                            "7": "2025-11-06 18:35:43.112000",
+                            "8": "2025-11-06 18:35:43.112000"
+                        },
+                        {
+                            "0": 10,
+                            "1": "Budhil Sharma",
+                            "2": "Trilochana84@gmail.com",
+                            "3": "+916943673936",
+                            "4": "hashed_user_password",
+                            "5": null,
+                            "6": 0,
+                            "7": "2025-11-06 18:35:43.115000",
+                            "8": "2025-11-06 18:35:43.115000"
+                        },
+                        {
+                            "0": 11,
+                            "1": "Anuraag Shukla",
+                            "2": "Aayushman.Dwivedi@gmail.com",
+                            "3": "+91-781-1608636",
+                            "4": "hashed_user_password",
+                            "5": null,
+                            "6": 0,
+                            "7": "2025-11-06 18:35:43.118000",
+                            "8": "2025-11-06 18:35:43.118000"
+                        },
+                        {
+                            "0": 12,
+                            "1": "Baidehi Nambeesan",
+                            "2": "Deven_Abbott35@hotmail.com",
+                            "3": "+91742-091-1763",
+                            "4": "hashed_user_password",
+                            "5": null,
+                            "6": 0,
+                            "7": "2025-11-06 18:35:43.121000",
+                            "8": "2025-11-06 18:35:43.121000"
+                        },
+                        {
+                            "0": 13,
+                            "1": "Pushti Ahuja Jr.",
+                            "2": "Chandini_Dutta@gmail.com",
+                            "3": "+919991445721",
+                            "4": "hashed_user_password",
+                            "5": null,
+                            "6": 0,
+                            "7": "2025-11-06 18:35:43.124000",
+                            "8": "2025-11-06 18:35:43.124000"
+                        },
+                        {
+                            "0": 14,
+                            "1": "Deepanshu",
+                            "2": "deepanshusaini@gmail.com",
+                            "3": "9466717460",
+                            "4": "$2b$10$ccBgwIQ/gBAoS/NYBLf7SujUiJdAIfxwngAp4Hyz7qivj8fXui6eO",
+                            "5": null,
+                            "6": 0,
+                            "7": "2025-11-07 10:35:24.916000",
+                            "8": "2025-11-07 18:10:43.712000"
+                        }
+                    ],
+                    "columns": [
+                        {
+                            "title": "id",
+                            "field": "0",
+                            "dataType": {
+                                "type": 4,
+                                "flags": [
+                                    "SIGNED",
+                                    "ZEROFILL"
+                                ],
+                                "numericPrecision": 10,
+                                "parameterFormatType": "OneOrZero",
+                                "synonyms": [
+                                    "INTEGER",
+                                    "INT4"
+                                ]
+                            },
+                            "inPK": true,
+                            "nullable": false,
+                            "autoIncrement": true
+                        },
+                        {
+                            "title": "fullname",
+                            "field": "1",
+                            "dataType": {
+                                "type": 17,
+                                "characterMaximumLength": 65535,
+                                "flags": [
+                                    "BINARY",
+                                    "ASCII",
+                                    "UNICODE"
+                                ],
+                                "needsQuotes": true,
+                                "parameterFormatType": "OneOrZero"
+                            },
+                            "inPK": false,
+                            "nullable": false,
+                            "autoIncrement": false
+                        },
+                        {
+                            "title": "email",
+                            "field": "2",
+                            "dataType": {
+                                "type": 17,
+                                "characterMaximumLength": 65535,
+                                "flags": [
+                                    "BINARY",
+                                    "ASCII",
+                                    "UNICODE"
+                                ],
+                                "needsQuotes": true,
+                                "parameterFormatType": "OneOrZero"
+                            },
+                            "inPK": false,
+                            "nullable": false,
+                            "autoIncrement": false
+                        },
+                        {
+                            "title": "phoneNumber",
+                            "field": "3",
+                            "dataType": {
+                                "type": 17,
+                                "characterMaximumLength": 65535,
+                                "flags": [
+                                    "BINARY",
+                                    "ASCII",
+                                    "UNICODE"
+                                ],
+                                "needsQuotes": true,
+                                "parameterFormatType": "OneOrZero"
+                            },
+                            "inPK": false,
+                            "nullable": false,
+                            "autoIncrement": false
+                        },
+                        {
+                            "title": "passwordHash",
+                            "field": "4",
+                            "dataType": {
+                                "type": 17,
+                                "characterMaximumLength": 65535,
+                                "flags": [
+                                    "BINARY",
+                                    "ASCII",
+                                    "UNICODE"
+                                ],
+                                "needsQuotes": true,
+                                "parameterFormatType": "OneOrZero"
+                            },
+                            "inPK": false,
+                            "nullable": false,
+                            "autoIncrement": false
+                        },
+                        {
+                            "title": "profilePicture",
+                            "field": "5",
+                            "dataType": {
+                                "type": 17,
+                                "characterMaximumLength": 65535,
+                                "flags": [
+                                    "BINARY",
+                                    "ASCII",
+                                    "UNICODE"
+                                ],
+                                "needsQuotes": true,
+                                "parameterFormatType": "OneOrZero"
+                            },
+                            "inPK": false,
+                            "nullable": true,
+                            "autoIncrement": false,
+                            "default": null
+                        },
+                        {
+                            "title": "admin",
+                            "field": "6",
+                            "dataType": {
+                                "type": 42,
+                                "flags": [
+                                    "SIGNED",
+                                    "ZEROFILL"
+                                ],
+                                "numericPrecision": 10,
+                                "parameterFormatType": "OneOrZero",
+                                "synonyms": [
+                                    "INTEGER",
+                                    "INT4"
+                                ]
+                            },
+                            "inPK": false,
+                            "nullable": false,
+                            "autoIncrement": false,
+                            "default": "0"
+                        },
+                        {
+                            "title": "createdAt",
+                            "field": "7",
+                            "dataType": {
+                                "type": 26,
+                                "dateTimePrecision": 8,
+                                "needsQuotes": true,
+                                "parameterFormatType": "OneOrZero"
+                            },
+                            "inPK": false,
+                            "nullable": false,
+                            "autoIncrement": false,
+                            "default": "CURRENT_TIMESTAMP(3)"
+                        },
+                        {
+                            "title": "updatedAt",
+                            "field": "8",
+                            "dataType": {
+                                "type": 26,
+                                "dateTimePrecision": 8,
+                                "needsQuotes": true,
+                                "parameterFormatType": "OneOrZero"
+                            },
+                            "inPK": false,
+                            "nullable": false,
+                            "autoIncrement": false
+                        }
+                    ],
+                    "executionInfo": {
+                        "text": "OK, 14 records retrieved in 2.094ms"
+                    },
+                    "totalRowCount": 14,
+                    "hasMoreRows": false,
+                    "currentPage": 0,
+                    "index": 1,
+                    "sql": "\nSELECT * from user",
+                    "updatable": true,
+                    "fullTableName": "user"
+                },
+                {
+                    "tabId": "63007747-ff85-4bbd-874a-927922632eb7",
+                    "resultId": "14ebbe49-095b-4bd2-b70a-452847bb75b1",
+                    "rows": [],
+                    "columns": [
+                        {
+                            "title": "*",
+                            "field": "0",
+                            "dataType": {
+                                "type": 0
+                            },
+                            "inPK": false,
+                            "nullable": false,
+                            "autoIncrement": false
+                        }
+                    ],
+                    "executionInfo": {
+                        "text": "OK, 0 records retrieved in 2.185ms"
+                    },
+                    "totalRowCount": 0,
+                    "hasMoreRows": false,
+                    "currentPage": 0,
+                    "index": 0,
+                    "sql": "use primedeal",
+                    "updatable": false
+                }
+            ]
+        },
+        {
+            "state": {
+                "start": 6,
+                "end": 6,
+                "language": "mysql",
+                "currentSet": 1,
+                "statements": [
+                    {
+                        "delimiter": ";",
+                        "span": {
+                            "start": 0,
+                            "length": 0
+                        },
+                        "contentStart": 0,
+                        "state": 0
+                    }
+                ]
+            },
+            "data": []
+        }
+    ]
+}

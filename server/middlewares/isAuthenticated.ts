@@ -31,7 +31,7 @@ export const isAuthenticated = async (req: Request, res: Response, next: NextFun
         next();
     } catch (error) {
         console.log("Middleware Error : ", error)
-        res.status(500).json({ message: "Unauthorized" });
+        res.status(401).json({ success:false,message: "Unauthorized" });
         return;
     }
 }

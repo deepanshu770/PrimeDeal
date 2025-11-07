@@ -1,0 +1,51 @@
+{
+    "success": true,
+    "shop": {
+        "id": 6,
+        "userId": 3,
+        "storeName": "QuickKart New Market",
+        "description": "Your trusted local grocery store in Bhopal",
+        "storeBanner": "https://placehold.co/600x200?text=QuickKart%20New%20Market",
+        "city": "Bhopal",
+        "address": "32649 Abani Glens",
+        "latitude": 23.26017372357992,
+        "longitude": 77.43034258469095,
+        "deliveryTime": 35,
+        "createdAt": "2025-11-06T18:35:43.146Z",
+        "updatedAt": "2025-11-06T18:35:43.146Z",
+        "owner": {
+            "fullname": "Arjun Patel",
+            "email": "admin3@primedeal.in",
+            "phoneNumber": "9822334455"
+        },
+        "inventory": [
+            {
+                "id": 115,
+                "shopId": 6,
+                "productId": 1,
+                "price": 325.756948890587,
+                "quantity": 78,
+                "netQty": 0.7836688649467651,
+                "unit": "pcs",
+                "isAvailable": true,
+                "product": {
+                    "id": 1,
+                    "categoryId": 2,
+                    "name": "Dove Shampoo 699ml",
+                    "description": "Moisturizing shampoo",
+                    "brand": "Dove",
+                    "image": "https://m.media-amazon.com/images/I/61EhA0CfpDL._SL1500_.jpg",
+                    "netQty": "250g",
+                    "outOfStock": false,
+                    "createdAt": "2025-11-06T18:35:43.181Z",
+                    "updatedAt": "2025-11-06T18:35:43.181Z",
+                    "category": {
+                        "id": 2,
+                        "name": "Snacks & Beverages",
+                        "description": "Chips, biscuits, drinks"
+                    }
+                }
+            }
+        ]
+    }
+}

@@ -2,7 +2,7 @@ import { CheckoutSessionRequest, OrderState } from "@/types/orderType";
 import axios from "axios";
 import {create} from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { useCartstore } from "./useCartstore";
+import { useCartStore } from "./useCartStore";
 
 const API_END_POINT:string = "http://localhost:3000/api/v1/order";
 axios.defaults.withCredentials = true;
@@ -29,7 +29,7 @@ export const useOrderstore = create<OrderState>()(persist((set)=>({
             const response = await axios.get(`${API_END_POINT}/`);
             set({loading:false,orders:response.data.orders});
             if (response.data.clearCart) {
-                useCartstore.getState().clearCart();
+                useCartStore.getState().clearCart();
             }
         } catch (error) {
             set({loading:false});

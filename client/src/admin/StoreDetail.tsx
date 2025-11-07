@@ -1,297 +1,311 @@
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { Loader2, MapPin, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { StoreInfoSchema } from "@/schema/storeSchema";
-import { Shop } from "@/types/types";
 import { useShopStore } from "@/zustand/useShopStore";
-import { Loader2, MapPin } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "sonner";
+import { GoogleMap, Marker, useLoadScript } from "@react-google-maps/api";
+import type { Shop } from "@/types/types";
 
-type InputType = Omit<Shop,'id'|'userId'>
+type InputType = Omit<Shop, "id" | "userId">;
+
+const mapContainerStyle = {
+  width: "100%",
+  height: "350px",
+  borderRadius: "1rem",
+};
+
+const defaultCenter = { lat: 23.2599, lng: 77.4126 }; // default: Bhopal
+
 const AdminStoreDetail = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const addingStore = id === "new";
+  const { loading, createShop, updateShop } = useShopStore();
+
+  const [preview, setPreview] = useState<string | null>(null);
+  const [locating, setLocating] = useState(false);
+
   const [input, setInput] = useState<InputType>({
     storeName: "",
     description: "",
     address: "",
     city: "",
-    latitude: 0,
-    longitude: 0,
+    latitude: defaultCenter.lat,
+    longitude: defaultCenter.lng,
     deliveryTime: 0,
-    storeBanner: undefined,
+    storeBanner: "",
   });
 
-  const params = useParams();
-  const navigate = useNavigate();
-  const addingStore = params.id === "new";
-  const [errors, setErrors] = useState<Partial<StoreInfoSchema>>({});
-  const [locating, setLocating] = useState(false);
+  // ✅ Load Google Maps script
+  const { isLoaded, loadError } = useLoadScript({
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY!,
+  });
 
-  const { loading, singleShop, createShop, updateShop, getSingleShop } =
-    useShopStore();
+  // ✅ Prefill when editing
+  useEffect(() => {
+    if (!addingStore && id) {
+      const shop = useShopStore.getState().shop.find((s) => s.id == Number(id));
+      if (shop) {
+        setInput({
+          storeName: shop.storeName,
+          description: shop.description,
+          address: shop.address,
+          city: shop.city,
+          latitude: shop.latitude,
+          longitude: shop.longitude,
+          deliveryTime: shop.deliveryTime,
+          storeBanner: shop.storeBanner,
+        });
+        setPreview(shop.storeBanner);
+      } else toast.error("Something went wrong!");
+    }
+  }, [addingStore, id]);
 
-  // 🔹 Handle Input Changes
-  const changeEventHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type } = e.target;
-    setInput({
-      ...input,
-      [name]:
-        type === "number" ? Number(value) : (value as string | number | undefined),
-    });
+  // ✅ Handle input change
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, files } = e.target;
+    if (type === "file" && files?.[0]) {
+      const file = files[0];
+      setInput((prev) => ({ ...prev, storeBanner: file }));
+      setPreview(URL.createObjectURL(file));
+    } else {
+      setInput((prev) => ({
+        ...prev,
+        [name]: type === "number" ? Number(value) : value,
+      }));
+    }
   };
 
-  // 🔹 Handle Geolocation
-  const fetchCurrentLocation = () => {
+  // ✅ Get current location
+  const handleCurrentLocation = () => {
     if (!navigator.geolocation) {
-      alert("Geolocation is not supported by your browser.");
+      toast.error("Geolocation is not supported by this browser.");
       return;
     }
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
         setInput((prev) => ({
           ...prev,
           latitude,
           longitude,
         }));
+        toast.success("Location detected successfully!");
         setLocating(false);
       },
-      (error) => {
-        console.error(error);
-        alert("Unable to fetch location. Please allow location access.");
+      (err) => {
+        toast.error("Failed to get location: " + err.message);
         setLocating(false);
-      }
+      },
+      { enableHighAccuracy: true }
     );
   };
 
-  // 🔹 Submit Handler
-  const submitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
-  console.log('first')
+  // ✅ Validation
+  const validate = () => {
+    if (
+      !input.storeName.trim() ||
+      !input.description.trim() ||
+      !input.address.trim() ||
+      !input.city.trim() ||
+      !input.latitude ||
+      !input.longitude ||
+      !input.storeBanner
+    ) {
+      toast.error("Please fill all fields and add a banner.");
+      return false;
+    }
+    return true;
+  };
+
+  // ✅ Submit handler
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validate()) return;
+
+    const formData = new FormData();
+    Object.entries(input).forEach(([key, value]) => {
+      if (value !== undefined && value !== null)
+        formData.append(key, String(value));
+    });
+    if (input.storeBanner instanceof File)
+      formData.set("storeBanner", input.storeBanner);
+
     try {
-      const formData = new FormData();
-      formData.append("storeName", input.storeName);
-      formData.append("description", input.description || "");
-      formData.append("address", input.address);
-      formData.append("city", input.city);
-      formData.append("latitude", input.latitude.toString());
-      formData.append("longitude", input.longitude.toString());
-      formData.append("deliveryTime", input.deliveryTime.toString());
-
-      if (input.storeBanner instanceof File) {
-        formData.append("storeBanner", input.storeBanner);
-      }
-
-      if (!addingStore && singleShop) {
-        formData.append("storeId", singleShop.id.toString());
-        await updateShop(formData, singleShop.storeBanner);
-      } else {
+      if (addingStore) {
         await createShop(formData);
+      } else if (id && !isNaN(Number(id))) {
+        formData.append("shopId", id.toString());
+        await updateShop(formData, input.storeBanner || "");
       }
-
+      toast.success("Store saved successfully!");
       navigate(-1);
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
+      toast.error("Something went wrong.");
     }
   };
 
-  // 🔹 Fetch shop if editing
-  useEffect(() => {
-    const fetchShop = async () => {
-      await getSingleShop(params.id!);
-      if (singleShop) {
-        setInput({
-          storeName: singleShop.storeName || "",
-          description: singleShop.description || "",
-          address: singleShop.address || "",
-          city: singleShop.city || "",
-          latitude: singleShop.latitude || 0,
-          longitude: singleShop.longitude || 0,
-          deliveryTime: singleShop.deliveryTime || 0,
-          storeBanner:
-            typeof singleShop.storeBanner === "string"
-              ? undefined
-              : singleShop.storeBanner,
-        });
-      }
-    };
-    if (!addingStore) {
-      fetchShop();
-    } else {
-      fetchCurrentLocation(); // auto fetch for new stores
-    }
-  }, [addingStore, params.id]);
+  if (loadError) return <div>Error loading map</div>;
+  if (!isLoaded)
+    return (
+      <div className="flex justify-center items-center py-20">
+        <Loader2 className="animate-spin h-8 w-8 text-brandGreen" />
+      </div>
+    );
 
   return (
-    <div className="max-w-4xl mx-auto my-10 p-6 bg-white dark:bg-gray-800 shadow-lg rounded-lg">
-      <h1 className="font-extrabold text-3xl text-textPrimary dark:text-white mb-6 text-center">
-        {addingStore ? "Add New Store" : "Update Store"}
-      </h1>
+    <div className="max-w-3xl mx-auto py-10 px-6">
+      <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-lg p-8">
+        <h1 className="text-3xl font-bold text-center mb-8 text-brandGreen">
+          {addingStore ? "Add New Store" : "Edit Store"}
+        </h1>
 
-      <form
-        onSubmit={submitHandler}
-        className="grid grid-cols-1 md:grid-cols-2 gap-6 text-start"
-      >
-        {/* Store Name */}
-        <div className="flex flex-col">
-          <Label className="mb-2 ml-1">Store Name</Label>
-          <Input
-            type="text"
-            name="storeName"
-            placeholder="Enter store name"
-            value={input.storeName}
-            onChange={changeEventHandler}
-          />
-          {errors.storeName && (
-            <span className="text-xs text-error font-medium">{errors.storeName}</span>
-          )}
-        </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Basic Info */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <Label>Store Name</Label>
+              <Input
+                name="storeName"
+                value={input.storeName}
+                onChange={handleChange}
+                placeholder="Enter store name"
+              />
+            </div>
+            <div>
+              <Label>Description</Label>
+              <Input
+                name="description"
+                value={input.description}
+                onChange={handleChange}
+                placeholder="Enter store description"
+              />
+            </div>
+          </div>
 
-        {/* Description */}
-        <div className="flex flex-col">
-          <Label className="mb-2 ml-1">Description</Label>
-          <Input
-            type="text"
-            name="description"
-            placeholder="Short store description"
-            value={input.description}
-            onChange={changeEventHandler}
-          />
-          {errors.description && (
-            <span className="text-xs text-error font-medium">{errors.description}</span>
-          )}
-        </div>
+          {/* Address */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <Label>Address</Label>
+              <Input
+                name="address"
+                value={input.address}
+                onChange={handleChange}
+                placeholder="Enter store address"
+              />
+            </div>
+            <div>
+              <Label>City</Label>
+              <Input
+                name="city"
+                value={input.city}
+                onChange={handleChange}
+                placeholder="Enter city name"
+              />
+            </div>
+          </div>
 
-        {/* Address */}
-        <div className="flex flex-col">
-          <Label className="mb-2 ml-1">Address</Label>
-          <Input
-            type="text"
-            name="address"
-            placeholder="Enter store address"
-            value={input.address}
-            onChange={changeEventHandler}
-          />
-          {errors.address && (
-            <span className="text-xs text-error font-medium">{errors.address}</span>
-          )}
-        </div>
+          {/* ✅ Google Map Picker */}
+          <div>
+            <div className="flex justify-between items-center mb-2">
+              <Label>Select Store Location</Label>
+              <Button
+                type="button"
+                onClick={handleCurrentLocation}
+                disabled={locating}
+                className="flex items-center gap-2 bg-brandGreen text-white"
+              >
+                {locating ? (
+                  <Loader2 className="animate-spin h-4 w-4" />
+                ) : (
+                  <MapPin className="h-4 w-4" />
+                )}
+                {locating ? "Detecting..." : "Get Current Location"}
+              </Button>
+            </div>
 
-        {/* City */}
-        <div className="flex flex-col">
-          <Label className="mb-2 ml-1">City</Label>
-          <Input
-            type="text"
-            name="city"
-            placeholder="Enter city"
-            value={input.city}
-            onChange={changeEventHandler}
-          />
-          {errors.city && (
-            <span className="text-xs text-error font-medium">{errors.city}</span>
-          )}
-        </div>
-
-        {/* Latitude & Longitude with geolocation button */}
-        <div className="flex flex-col relative">
-          <Label className="mb-2 ml-1">Latitude</Label>
-          <Input
-            type="number"
-            name="latitude"
-            placeholder="Enter latitude"
-            value={input.latitude}
-            onChange={changeEventHandler}
-          />
-          {errors.latitude && (
-            <span className="text-xs text-error font-medium">{errors.latitude}</span>
-          )}
-        </div>
-
-        <div className="flex flex-col relative">
-          <Label className="mb-2 ml-1">Longitude</Label>
-          <div className="flex items-center gap-2">
-            <Input
-              type="number"
-              name="longitude"
-              placeholder="Enter longitude"
-              value={input.longitude}
-              onChange={changeEventHandler}
-            />
-            <Button
-              type="button"
-              size="icon"
-              className="bg-brandGreen hover:bg-brandGreen/80 text-white"
-              onClick={fetchCurrentLocation}
-              disabled={locating}
+            <GoogleMap
+              mapContainerStyle={mapContainerStyle}
+              zoom={14}
+              center={{ lat: input.latitude, lng: input.longitude }}
+              onClick={(e) => {
+                if (e.latLng) {
+                  const lat = e.latLng.lat();
+                  const lng = e.latLng.lng();
+                  setInput((prev) => ({ ...prev, latitude: lat, longitude: lng }));
+                }
+              }}
             >
-              {locating ? (
-                <Loader2 className="animate-spin h-4 w-4" />
+              <Marker
+                position={{ lat: input.latitude, lng: input.longitude }}
+                draggable
+                onDragEnd={(e) => {
+                  if (e.latLng) {
+                    setInput((prev) => ({
+                      ...prev,
+                      latitude: e.latLng.lat(),
+                      longitude: e.latLng.lng(),
+                    }));
+                  }
+                }}
+              />
+            </GoogleMap>
+
+            <p className="text-sm text-gray-500 mt-2">
+              Latitude: {input.latitude.toFixed(6)} | Longitude:{" "}
+              {input.longitude.toFixed(6)}
+            </p>
+          </div>
+
+          {/* Banner Upload */}
+          <div>
+            <Label>Store Banner</Label>
+            <Input
+              name="storeBanner"
+              type="file"
+              accept="image/*"
+              onChange={handleChange}
+            />
+            <div className="flex justify-center mt-4">
+              {preview ? (
+                <img
+                  src={preview}
+                  alt="Preview"
+                  className="w-72 h-44 object-cover rounded-xl shadow-md"
+                />
               ) : (
-                <MapPin className="h-4 w-4" />
+                <div className="w-72 h-44 flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-400">
+                  <ImageIcon className="w-10 h-10 opacity-60" />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Submit */}
+          <div className="flex justify-end pt-4">
+            <Button
+              type="submit"
+              disabled={loading}
+              className="bg-brandGreen text-white flex items-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="animate-spin h-4 w-4" /> Saving...
+                </>
+              ) : addingStore ? (
+                "Add Store"
+              ) : (
+                "Update Store"
               )}
             </Button>
           </div>
-          {errors.longitude && (
-            <span className="text-xs text-error font-medium">{errors.longitude}</span>
-          )}
-        </div>
-
-        {/* Delivery Time */}
-        <div className="flex flex-col">
-          <Label className="mb-2 ml-1">Delivery Time (mins)</Label>
-          <Input
-            type="number"
-            name="deliveryTime"
-            placeholder="Estimated delivery time"
-            value={input.deliveryTime}
-            onChange={changeEventHandler}
-          />
-          {errors.deliveryTime && (
-            <span className="text-xs text-error font-medium">
-              {errors.deliveryTime}
-            </span>
-          )}
-        </div>
-
-        {/* Store Banner */}
-        <div className="flex flex-col">
-          <Label className="mb-2 ml-1">Upload Store Banner</Label>
-          <Input
-            type="file"
-            accept="image/*"
-            name="storeBanner"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              setInput((prev) => ({
-                ...prev,
-                storeBanner: file || prev.storeBanner,
-              }));
-            }}
-          />
-          {errors.storeBanner && (
-            <span className="text-xs text-error font-medium">
-              {errors.storeBanner?.name}
-            </span>
-          )}
-        </div>
-
-        {/* Submit */}
-        <div className="md:col-span-2 flex justify-center mt-4">
-          {loading ? (
-            <Button
-              disabled
-              className="bg-brandGreen text-white w-full max-w-xs flex items-center justify-center gap-2"
-            >
-              <Loader2 className="animate-spin h-4 w-4" /> Please wait...
-            </Button>
-          ) : (
-            <Button type="submit" className="bg-brandGreen hover:bg-brandGreen/80 text-white w-full max-w-xs">
-              {addingStore ? "Add Store" : "Update Store"}
-            </Button>
-          )}
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   );
 };

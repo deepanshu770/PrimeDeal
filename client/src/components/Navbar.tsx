@@ -42,12 +42,13 @@ import {
 } from "./ui/sheet";
 import { Separator } from "./ui/separator";
 import { useUserStore } from "@/zustand/useUserStore";
-import { useCartstore } from "@/zustand/useCartstore";
+
 import { useThemeStore } from "@/zustand/useThemeStore";
+import { useCartStore } from "@/zustand/useCartStore";
 
 const Navbar = () => {
   const { user, loading, logout } = useUserStore();
-  const { cartItems } = useCartstore();
+  const { cartItems } = useCartStore();
   const { setTheme } = useThemeStore();
 
   return (
@@ -114,7 +115,7 @@ const Navbar = () => {
                         Store
                       </MenubarItem>
                     </Link>
-                    <Link to="/admin/products">
+                    <Link to="/admin/product-catalog">
                       <MenubarItem className="px-3 py-2 text-textPrimary dark:text-white hover:bg-brandOrange dark:hover:bg-brandGreen hover:text-white transition">
                         Products
                       </MenubarItem>
@@ -356,3 +357,4 @@ const MobileNavbar = () => {
     </Sheet>
   );
 };
+

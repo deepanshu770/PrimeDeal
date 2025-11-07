@@ -1,74 +1,90 @@
-import { useNavigate, useParams } from "react-router-dom";
-import FilterPage from "./FilterPage";
-import { Input } from "./ui/input";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
-import { Ghost } from "lucide-react";
+import { Input } from "./ui/input";
 import { Skeleton } from "./ui/skeleton";
+import { Ghost } from "lucide-react";
 import { useShopStore } from "@/zustand/useShopStore";
-import { Shop } from "@/types/shopTypes";
 import debounce from "lodash/debounce";
 import ShopCard from "./ShopCard";
+import FilterPage from "./FilterPage";
 
 const Nearby = () => {
-  const params = useParams();
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState<string>(params.text || "");
-  const searchedShop = useShopStore((state) => state.searchedShop);
-  const loading = useShopStore((state) => state.loading);
-  const searchShop = useShopStore((state) => state.searchShop);
+  const [searchQuery, setSearchQuery] = useState("");
 
+  const { nearbyShops, getNearbyShops, loading } = useShopStore();
+
+  // 🧭 Fetch nearby shops on mount
   useEffect(() => {
-    searchShop(params.text!, searchQuery);
-  }, [params.text!, searchQuery]);
+    getNearbyShops(); // Default 7km radius
+  }, []);
 
-  // 🔹 Function to trigger search
-  const handleSearch = () => {
-    if (searchQuery.trim() !== "") {
-      debounce(() => searchShop(params.text!, searchQuery), 1500);
-    }
-  };
-  const viewOnClick = (id: string) => {
-    navigate(`/shop/${id}`);
-  };
+  // 🔍 Debounced input handler
+  const debouncedSetSearchQuery = useMemo(
+    () =>
+      debounce((value: string) => {
+        setSearchQuery(value.trim().toLowerCase());
+      }, 400),
+    []
+  );
+
+  // 🔎 Filtered shops based on search text
+  const filteredShops = useMemo(() => {
+    if (!searchQuery) return nearbyShops;
+    return nearbyShops.filter((shop) =>
+      shop.storeName.toLowerCase().includes(searchQuery)
+    );
+  }, [nearbyShops, searchQuery]);
+
+  // 🧭 Navigate to shop detail
+  const viewOnClick = (id: number) => navigate(`/shop/${id}`);
+
   return (
     <div className="max-w-7xl mx-auto my-10 px-4">
       <div className="flex flex-col md:flex-row justify-between gap-10">
+        {/* Optional filters sidebar */}
         <FilterPage />
+
         <div className="flex-1">
-          {/* Search Input Field */}
+          {/* 🔍 Search Input */}
           <div className="flex items-center gap-2 mb-6">
             <Input
               type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               placeholder="Search for nearby shops"
+              onChange={(e) => debouncedSetSearchQuery(e.target.value)}
               className="flex-1 border border-gray-300 px-4 py-2 rounded-lg"
             />
             <Button
-              onClick={handleSearch}
-              className="bg-brandOrange text-white hover:bg-opacity-90 px-6 py-2 rounded-lg"
+              onClick={() => getNearbyShops()}
+              className="bg-brandOrange text-white hover:bg-hoverOrange px-6 py-2 rounded-lg"
             >
-              Search
+              Refresh
             </Button>
           </div>
 
+          {/* 🏬 Results */}
           <div>
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-2 my-3">
-              <h1 className="text-lg font-medium">
-                {searchedShop.length} Search Shops(s) found
+              <h1 className="text-lg font-medium text-textPrimary dark:text-white">
+                {filteredShops.length} nearby shop
+                {filteredShops.length !== 1 ? "s" : ""} found
               </h1>
             </div>
 
+            {/* 🧱 Shop Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
               {loading ? (
                 <SkeletonCard />
-              ) : !loading && searchedShop.length == 0 ? (
+              ) : filteredShops.length === 0 ? (
                 <NoResultFound searchQuery={searchQuery} />
               ) : (
-                searchedShop?.map((shop: Shop) => (
-                  <ShopCard shop={shop} viewOnClick={viewOnClick} />
+                filteredShops.map((shop) => (
+                  <ShopCard
+                    key={shop.id}
+                    shop={shop}
+                    viewOnClick={viewOnClick}
+                  />
                 ))
               )}
             </div>
@@ -81,56 +97,45 @@ const Nearby = () => {
 
 export default Nearby;
 
+/* -------------------- Skeletons -------------------- */
 const SkeletonCard = () => {
   return (
-    <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden">
-      {/* Image Placeholder */}
-      <Skeleton className="w-full h-48" />
-
-      <div className="p-4">
-        {/* Shop Name Placeholder */}
-        <Skeleton className="h-6 w-3/4 mb-2" />
-
-        <div className="flex justify-between items-center mb-3">
-          {/* Location Placeholder */}
-          <Skeleton className="h-4 w-1/3" />
+    <>
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div
+          key={i}
+          className="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden"
+        >
+          <Skeleton className="w-full h-48" />
+          <div className="p-4 space-y-2">
+            <Skeleton className="h-6 w-3/4" />
+            <Skeleton className="h-4 w-1/3" />
+            <Skeleton className="h-6 w-1/2" />
+          </div>
         </div>
-
-        {/* Categories Placeholder */}
-        <div className="flex gap-2">
-          <Skeleton className="h-6 w-16 rounded-md" />
-          <Skeleton className="h-6 w-16 rounded-md" />
-          <Skeleton className="h-6 w-16 rounded-md" />
-        </div>
-      </div>
-
-      {/* Button Placeholder */}
-      <div className="p-4 flex justify-center">
-        <Skeleton className="w-full max-w-xs h-10 rounded-lg" />
-      </div>
-    </div>
+      ))}
+    </>
   );
 };
 
+/* -------------------- No Results -------------------- */
 const NoResultFound = ({ searchQuery }: { searchQuery: string }) => {
   return (
     <div className="col-span-full flex flex-col items-center justify-center min-h-[50vh] text-center">
-      {/* Fun Ghost Icon */}
       <Ghost className="w-20 h-20 text-gray-400 dark:text-gray-500 animate-float mb-4" />
-
-      {/* Text */}
       <div>
-        <h1 className="text-2xl font-semibold text-gray-500 dark:text-gray-400">
-          Whoops! No results found
+        <h1 className="text-2xl font-semibold text-gray-600 dark:text-gray-300">
+          No shops found nearby
         </h1>
-        <p className="mt-2 text-gray-500 dark:text-gray-400">
-          Looks like "
-          <span className="font-medium text-gray-700 dark:text-gray-300">
-            {searchQuery}
-          </span>
-          " has vanished! <br />
-          Try searching for something else.
-        </p>
+        {searchQuery && (
+          <p className="mt-2 text-gray-500 dark:text-gray-400">
+            No results for “
+            <span className="font-semibold text-gray-700 dark:text-gray-300">
+              {searchQuery}
+            </span>
+            ”. Try another name.
+          </p>
+        )}
       </div>
     </div>
   );

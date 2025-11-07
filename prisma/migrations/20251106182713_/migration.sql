@@ -82,6 +82,8 @@ CREATE TABLE `ShopInventory` (
     `productId` INTEGER NOT NULL,
     `price` DOUBLE NOT NULL,
     `quantity` INTEGER NOT NULL,
+    `netQty` DOUBLE NOT NULL,
+    `unit` ENUM('g', 'kg', 'mg', 'lb', 'oz', 'ml', 'l', 'cl', 'gal', 'pcs', 'pack', 'box', 'bottle', 'can', 'jar', 'bag', 'dozen', 'pair', 'tray') NOT NULL,
     `isAvailable` BOOLEAN NOT NULL DEFAULT true,
 
     UNIQUE INDEX `ShopInventory_shopId_productId_key`(`shopId`, `productId`),

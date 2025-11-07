@@ -29,6 +29,7 @@ import Nearby from "./components/Nearby";
 import AdminStoreDetail from "./admin/StoreDetail";
 import SetupAddress from "./components/SetupAddress";
 import LandingPage from "./components/LandingPage";
+import ProductCatalog from "./admin/ProductCatalog";
 
 const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, user } = useUserStore();
@@ -101,7 +102,7 @@ function App() {
             }
           >
             <Route index element={<HeroSection />} />
-            <Route path="search/:text" element={<SearchPage />} />
+            <Route path="search/" element={<SearchPage />} />
             <Route path="shop/:id" element={<ShopDetails />} />
             <Route path="nearby" element={<Nearby />} />
             <Route path="cart" element={<Cart />} />
@@ -118,6 +119,7 @@ function App() {
             }
           >
             <Route path="store" element={<Store />} />
+            <Route path="product-catalog" element={<ProductCatalog />} />
             <Route path="store/:id" element={<AdminStoreDetail />} />
             <Route path="store/product/:id" element={<AddProducts />} />
             <Route path="storeOrders" element={<StoreOrders />} />

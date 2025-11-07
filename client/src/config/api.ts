@@ -1,54 +1,74 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { API_END_POINT } from "./varibles";
+import { toast } from "sonner";
 
 // Create an Axios instance
 const API = axios.create({
-  baseURL:API_END_POINT, // change this to your base URL
+  baseURL: API_END_POINT, // change this to your base URL
   timeout: 10000, // timeout in milliseconds (e.g., 10000 = 10 seconds)
-  withCredentials:true,
-
-
+  withCredentials: true,
 });
 
-// Add a response interceptor for error handling
+// ✅ Request Interceptor
+API.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) config.headers.Authorization = `Bearer ${token}`;
+    return config;
+  },
+  (error) => {
+    toast.error("Request setup failed!");
+    return Promise.reject(error);
+  }
+);
+
+// ✅ Response Interceptor
 API.interceptors.response.use(
   (response) => response,
-  (error) => {
-    let message = "An unknown error occurred.";
-
-    if (error.code === "ECONNABORTED") {
-      message = "Request timed out. Please try again.";
-    } else if (error.response) {
-      // Server responded with a status outside 2xx
-      switch (error.response.status) {
-        case 400:
-          message = "Bad request. Please check your input.";
-          break;
-        case 401:
-          message = "Unauthorized. Please log in again.";
-          break;
-        case 403:
-          message = "Forbidden. You don’t have permission to access this resource.";
-          break;
-        case 404:
-          message = "Resource not found.";
-          break;
-        case 500:
-          message = "Server error. Please try again later.";
-          break;
-        default:
-          message = `Unexpected error: ${error.response.statusText}`;
-      }
-    } else if (error.request) {
-      // Request was made but no response received
-      message = "No response from server. Please check your network.";
+  async (error: AxiosError) => {
+    if (!error.response) {
+      toast.error("Network error — please check your internet connection.");
+      return Promise.reject(error);
     }
 
-    // Log or display the error
-    console.error(message);
+    const { status, data } = error.response;
 
-    // Optionally reject with a structured error
-    return Promise.reject({ message, ...error });
+    // Common error messages
+    switch (status) {
+      case 400:
+        toast.error(data?.message || "Bad Request — check your input.");
+        break;
+
+      case 401:
+        toast.error("Session expired. Please log in again.");
+        localStorage.clear();
+        break;
+
+      case 403:
+        toast.error("You are not authorized to perform this action.");
+        break;
+
+      case 404:
+        toast.error("Requested resource not found.");
+        break;
+
+      case 408:
+        toast.error("Request timeout. Please try again.");
+        break;
+
+      case 500:
+        toast.error("Internal server error. Please try later.");
+        break;
+
+      case 503:
+        toast.error("Server unavailable. Please try again soon.");
+        break;
+
+      default:
+        toast.error(data?.message || "An unexpected error occurred.");
+    }
+
+    return Promise.reject(error);
   }
 );
 

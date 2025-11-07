@@ -39,9 +39,9 @@ app.use("/api/v1/address", addressRoute);
 // app.use("/api/v1/order", orderRoute);
 
 app.use(express.static(path.join(DIRNAME, "/client/dist")));
-app.use("*", (_, res) => {
-  res.sendFile(path.resolve(DIRNAME, "client", "dist", "index.html"));
-});
+// app.use("*", (_, res) => {
+//   res.sendFile(path.resolve(DIRNAME, "client", "dist", "index.html"));
+// });
 
 app.use(errorHandler as any);
 
