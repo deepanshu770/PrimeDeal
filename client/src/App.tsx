@@ -30,6 +30,7 @@ import AdminStoreDetail from "./admin/StoreDetail";
 import SetupAddress from "./components/SetupAddress";
 import LandingPage from "./components/LandingPage";
 import ProductCatalog from "./admin/ProductCatalog";
+import OrderDetailPage from "./components/OrdersDetail";
 
 const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, user } = useUserStore();
@@ -106,7 +107,8 @@ function App() {
             <Route path="shop/:id" element={<ShopDetails />} />
             <Route path="nearby" element={<Nearby />} />
             <Route path="cart" element={<Cart />} />
-            <Route path="order/status" element={<OrderPage />} />
+            <Route path="order" element={<OrderPage />} />
+            <Route path="order/:id" element={<OrderDetailPage />} />
           </Route>
 
           {/* Admin Routes */}

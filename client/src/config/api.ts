@@ -24,7 +24,10 @@ API.interceptors.request.use(
 
 // ✅ Response Interceptor
 API.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    const  { data} = response;
+    console.log(data)
+    return response;  },
   async (error: AxiosError) => {
     if (!error.response) {
       toast.error("Network error — please check your internet connection.");
@@ -33,7 +36,6 @@ API.interceptors.response.use(
 
     const { status, data } = error.response;
 
-    // Common error messages
     switch (status) {
       case 400:
         toast.error(data?.message || "Bad Request — check your input.");

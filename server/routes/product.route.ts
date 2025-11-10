@@ -1,7 +1,7 @@
 import express from 'express';
 import upload from '../middlewares/multer';
 import { isAuthenticated } from '../middlewares/isAuthenticated';
-import { addProduct, editProduct, getAllProducts, getAllProductsInShop, searchProduct } from '../controller/products.controller';
+import { addProduct, editProduct, getAllCategories, getAllProducts, getAllProductsInShop, searchProduct } from '../controller/products.controller';
 
 const router = express.Router();
 
@@ -10,6 +10,5 @@ router.route("/:id").put(isAuthenticated, upload.single("image"), editProduct);
 router.get("/shop/:shopId",isAuthenticated, getAllProductsInShop);
 router.get("/catalog", getAllProducts); 
 router.route("/search").get(isAuthenticated,searchProduct);
-
-
+router.get("/category", getAllCategories);
 export default router;

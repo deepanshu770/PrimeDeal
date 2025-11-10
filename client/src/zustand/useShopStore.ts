@@ -1,31 +1,10 @@
+import API from "@/config/api";
 import { orderItem } from "@/types/orderType";
-import { Shop, ShopInventory, NearbyShop } from "@/types/types";
-import axios from "axios";
+
 import { toast } from "sonner";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-
-axios.defaults.withCredentials = true;
-
-const SHOP_API = "http://localhost:3000/api/v1/shop";
-const PRODUCT_API = "http://localhost:3000/api/v1/product";
-
-// 🧩 Centralized API helper (for DRY code)
-const api = axios.create({
-  baseURL: "http://localhost:3000/api/v1",
-  withCredentials: true,
-  timeout: 8000,
-});
-
-api.interceptors.response.use(
-  (res) => res,
-  (err) => {
-    const message =
-      err.response?.data?.message || "Network error. Please try again.";
-    toast.error(message);
-    return Promise.reject(err);
-  }
-);
+import { NearbyShop, Shop, ShopInventory } from "../../../types/types";
 
 // 🧠 Types
 export type ShopState = {
@@ -86,7 +65,7 @@ export const useShopStore = create<ShopState>()(
       /** ---------------- 🏬 CREATE SHOP ---------------- */
       createShop: async (formData) => {
         await withLoading(set, async () => {
-          const { data } = await api.post(`/shop`, formData, {
+          const { data } = await API.post(`/shop`, formData, {
             headers: { "Content-Type": "multipart/form-data" },
           });
           set((s: ShopState) => ({ shop: [...s.shop, data.shop] }));
@@ -96,7 +75,7 @@ export const useShopStore = create<ShopState>()(
       /** ---------------- 🏪 GET ALL SHOPS ---------------- */
       getShop: async () => {
         await withLoading(set, async () => {
-          const { data } = await api.get(`/shop`);
+          const { data } = await API.get(`/shop`);
           if (data.success) set({ shop: data.shops });
         }, { errorMsg: "Failed to load shops" });
       },
@@ -107,7 +86,7 @@ export const useShopStore = create<ShopState>()(
           if (!formData.has("storeBanner") && existingBanner)
             formData.append("storeBanner", existingBanner);
 
-          const { data } = await api.put(`/shop`, formData, {
+          const { data } = await API.put(`/shop`, formData, {
             headers: { "Content-Type": "multipart/form-data" },
           });
 
@@ -122,7 +101,7 @@ export const useShopStore = create<ShopState>()(
       /** ---------------- 🔍 SEARCH PRODUCTS ---------------- */
       searchShop: async (query) => {
         await withLoading(set, async () => {
-          const { data } = await api.get(`/product/search?q=${encodeURIComponent(query)}`);
+          const { data } = await API.get(`/product/search?q=${encodeURIComponent(query)}`);
           if (data.success) {
             set({
               searchedProduct: data.products,
@@ -137,7 +116,7 @@ export const useShopStore = create<ShopState>()(
       /** ---------------- 🧭 GET NEARBY SHOPS ---------------- */
       getNearbyShops: async (radiusKm = 7) => {
         await withLoading(set, async () => {
-          const { data } = await api.get(`/shop/nearby?radius=${radiusKm}`);
+          const { data } = await API.get(`/shop/nearby?radius=${radiusKm}`);
           if (data.success) {
             set({ nearbyShops: data.shops });
           } else {
@@ -151,7 +130,7 @@ export const useShopStore = create<ShopState>()(
       /** ---------------- 🏪 GET SINGLE SHOP ---------------- */
       getSingleShop: async (shopId) => {
         await withLoading(set, async () => {
-          const { data } = await api.get(`/shop/${shopId}`);
+          const { data } = await API.get(`/shop/${shopId}`);
           if (data.success) set({ singleShop: data.shop });
         }, { errorMsg: "Failed to load shop details" });
       },
@@ -159,7 +138,7 @@ export const useShopStore = create<ShopState>()(
       /** ---------------- 🧾 GET SHOP ORDERS ---------------- */
       getShopOrders: async () => {
         await withLoading(set, async () => {
-          const { data } = await api.get(`/shop/order`);
+          const { data } = await API.get(`/shop/order`);
           if (data.success) set({ shopOrders: data.shopOrder });
         });
       },
@@ -167,7 +146,7 @@ export const useShopStore = create<ShopState>()(
       /** ---------------- 🔄 UPDATE ORDER STATUS ---------------- */
       updateShopOrders: async (orderId, orderStatus) => {
         await withLoading(set, async () => {
-          const { data } = await api.put(
+          const { data } = await API.put(
             `/shop/order/${orderId}/status`,
             { status: orderStatus },
             { headers: { "Content-Type": "application/json" } }

@@ -30,7 +30,7 @@ export type LoginInputState = z.infer<typeof userLoginSchema>;
 export const userProfileSchema = z.object({
     fullname: z.string().trim().min(3, "Full name is too short").max(50, "Full name is too long").regex(/^[A-Za-z\s]+$/, " / Full name must contain only letters and spaces"),
     email: z.string().email("Invalid email address"),
-    contact: z.string().trim()
+    phoneNumber: z.string().trim()
     .min(10, "Enter a valid contact number with exactly 10 digits")
     .max(10, "Enter a valid contact number with exactly 10 digits")
     .regex(/^\d{10}$/, " / Invalid"),

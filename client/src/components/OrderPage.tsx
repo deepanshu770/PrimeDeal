@@ -1,21 +1,19 @@
 import { useEffect } from "react";
-import { useOrderstore } from "@/zustand/useOrderstore";
-import { IndianRupee, Loader2, MapPin, PackageX } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-
+import { Loader2, Store, CalendarDays, IndianRupee, PackageX } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useOrderStore } from "@/zustand/useOrderStore";
 
 const OrderPage = () => {
-  const { orders, getOrders, loading } = useOrderstore();
+  const { orders, getUserOrders, loading } = useOrderStore();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    getOrders();
-    useOrderstore.persist.clearStorage();
+    getUserOrders();
   }, []);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-background">
         <Loader2 className="w-10 h-10 text-brandGreen animate-spin" />
       </div>
     );
@@ -24,9 +22,13 @@ const OrderPage = () => {
   if (orders.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen text-center">
-        <PackageX className="w-16 h-16 text-gray-400" />
-        <h1 className="font-bold text-2xl text-gray-600 mt-4 dark:text-white">No Orders Yet!</h1>
-        <p className="text-gray-500 text-sm mt-2 dark:text-gray-400">Start shopping now and fill up your basket! 🛒</p>
+        <PackageX className="w-16 h-16 text-gray-400 dark:text-gray-500" />
+        <h1 className="font-bold text-2xl text-gray-700 mt-4 dark:text-white">
+          No Orders Yet!
+        </h1>
+        <p className="text-gray-500 text-sm mt-2 dark:text-gray-400">
+          You haven’t placed any orders yet. Start shopping now! 🛒
+        </p>
       </div>
     );
   }
@@ -34,100 +36,81 @@ const OrderPage = () => {
   return (
     <div className="max-w-5xl mx-auto my-10 px-4">
       <h1 className="text-3xl font-extrabold text-textPrimary text-center mb-8 dark:text-white">
-        Your Orders
+        My Orders
       </h1>
 
-      <div className="space-y-8">
-        {orders.map((order) => (
-          <div
-            key={order.id}
-            className="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-6 sm:p-8 border border-gray-200 dark:border-gray-700"
-          >
-            {/* Order Header */}
-            <div className="flex justify-between items-center mb-3">
-              <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                Order ID: <span className="text-textPrimary dark:text-gray-400">{order.id}</span>
-              </h2>
-              <span
-                className={`px-3 py-1 text-sm font-medium rounded-full ${order.status === "confirmed"
-                    ? "bg-[#3A6351] text-white" // Deep Purple
-                    : order.status === "outfordelivery"
-                      ? "bg-[#1E88E5] text-white" // Bright Blue
-                      : order.status === "preparing"
-                        ? "bg-[#D97706] text-white" // Warm Gold
-                        : order.status === "delivered"
-                          ? "bg-[#2E7D32] text-white" // Rich Green
-                          : "bg-gray-400 text-white"
-                  }`}
-              >
-                {order.status.toUpperCase()}
-              </span>
-            </div>
+      <div className="bg-white dark:bg-gray-900 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+        {/* Header Row */}
+        <div className="hidden md:grid grid-cols-5 gap-4 px-6 py-3 bg-gray-100 dark:bg-gray-800 text-sm font-semibold text-gray-700 dark:text-gray-300">
+          <span>Order ID</span>
+          <span>Shop</span>
+          <span>Date</span>
+          <span>Total</span>
+          <span>Status</span>
+        </div>
 
-            {/* Delivery Details */}
-            <div className="mb-4 flex items-start gap-3 text-gray-700 dark:text-gray-300">
-              <MapPin className="h-5 w-5 text-brandGreen mt-0.5" />
-              <div className="text-sm max-w-s break-words">
-                <p className="font-medium flex justify-start">{order.deliveryDetails.name}</p>
-                <p className="flex justify-start">{order.deliveryDetails.address},{" "}
-                  {order.deliveryDetails.city}</p>
+        {/* Orders */}
+        <div className="divide-y divide-gray-200 dark:divide-gray-700">
+          {orders.map((order) => (
+            <div
+              key={order.id}
+              onClick={() => navigate(`/order/${order.id}`)}
+              className="grid md:grid-cols-5 grid-cols-2 md:gap-4 gap-y-2 items-center px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+            >
+              <div className="font-semibold text-gray-800 dark:text-gray-200">
+                #{order.id}
               </div>
-            </div>
-
-            <Separator className="my-4" />
-
-            {/* Order Items */}
-            <div className="space-y-4">
-              {order.cartItems.map((item) => (
-                <div key={item.productId} className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-14 h-14 rounded-lg object-cover"
-                    />
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                      {item.name} - {item.netQty} (x{item.quantity})
-                    </h3>
-                  </div>
-                  <div className="flex items-center space-x-1 text-gray-800 dark:text-gray-200">
-                    <IndianRupee className="h-4 w-4" />
-                    <span className="text-sm font-semibold">
-                      {(Number(item.price) * Number(item.quantity)).toFixed(2)}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <Separator className="my-4" />
-
-            {/* Order Total & Actions */}
-            <div className="flex justify-between items-center">
-              <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300">
-                Total Amount:
-              </h2>
-              <div className="flex items-center space-x-1 text-gray-800 dark:text-gray-200">
-                <IndianRupee className="h-5 w-5" />
-                <span className="text-lg font-semibold">
-                  {order.totalAmount ? order.totalAmount.toFixed(2) : "N/A"}
+              <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                <Store className="w-4 h-4 text-brandGreen" />
+                <span className="truncate">{order.shop?.storeName ?? "Shop"}</span>
+              </div>
+              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                <CalendarDays className="w-4 h-4" />
+                <span className="text-sm">
+                  {new Date(order.createdAt).toLocaleDateString("en-IN", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  })}
                 </span>
               </div>
-            </div>
-
-            {order.status === "outfordelivery" && (
-              <div className="mt-6 flex justify-end">
-                <Button className="bg-[#1E88E5] text-white px-6 py-2 rounded-md hover:bg-opacity-80 active:bg-opacity-70">
-                  Track Order
-                </Button>
+              <div className="flex items-center gap-1 text-gray-800 dark:text-gray-200 font-semibold">
+                <IndianRupee className="w-4 h-4" />
+                {order.totalAmount.toFixed(2)}
               </div>
-            )}
-          </div>
-        ))}
+              <div className="flex justify-start md:justify-center">
+                <OrderStatusBadge status={order.orderStatus} />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
 };
 
-
 export default OrderPage;
+
+/* 🟢 Reusable Order Status Badge */
+const OrderStatusBadge = ({ status }: { status: string }) => {
+  const colorMap: Record<string, string> = {
+    pending: "bg-yellow-500/90",
+    confirmed: "bg-blue-500/90",
+    preparing: "bg-orange-500/90",
+    out_for_delivery: "bg-teal-600/90",
+    delivered: "bg-green-600/90",
+    cancelled: "bg-red-500/90",
+    failed: "bg-gray-500/90",
+  };
+
+  const label = status.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
+  return (
+    <span
+      className={`px-3 py-1 text-xs font-medium text-white rounded-full capitalize ${
+        colorMap[status] || "bg-gray-400"
+      }`}
+    >
+      {label}
+    </span>
+  );
+};

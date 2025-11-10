@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useMemo } from "react";
+import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -12,124 +12,270 @@ import { Separator } from "./ui/separator";
 import { useNavigate } from "react-router-dom";
 import { useUserStore } from "@/zustand/useUserStore";
 import { useCartStore } from "@/zustand/useCartStore";
-import { Loader2, Store } from "lucide-react";
+import { Loader2, Store, MapPin, Plus } from "lucide-react";
 import { toast } from "sonner";
-import { useOrderstore } from "@/zustand/useOrderstore";
+import { useOrderStore } from "@/zustand/useOrderStore";
+import { useAddressStore } from "@/zustand/useAddressStore";
+import { cn } from "@/lib/utils";
 
 type CheckoutConfirmProps = {
   open: boolean;
   setOpen: Dispatch<SetStateAction<boolean>>;
-  shopId?: number;
 };
 
-const CheckoutConfirm = ({ open, setOpen, shopId }: CheckoutConfirmProps) => {
+const CheckoutConfirm = ({ open, setOpen }: CheckoutConfirmProps) => {
   const navigate = useNavigate();
   const { user } = useUserStore();
-  const { cartItems, getShopCart, clearShopCart } = useCartStore();
-  const { loading } = useOrderstore();
+  const { cartItems, clearShopCart } = useCartStore();
+  const { loading, createOrder } = useOrderStore();
+  const {
+    addresses,
+    getAddresses,
+    loading: addressLoading,
+    selectedAddress,
+    setSelectedAddress,
+  } = useAddressStore();
 
-  const defaultAddress =
-    user?.addresses?.find((a) => a.isDefault) ?? user?.addresses?.[0];
+  const [addingNew, setAddingNew] = useState(false);
+  const [newAddress, setNewAddress] = useState({
+    addressLine1: "",
+    city: "",
+    state: "",
+    postalCode: "",
+    country: "India",
+  });
 
-  const shopCart = shopId ? getShopCart(shopId) : cartItems;
+  // 🧠 Load user addresses
+  useEffect(() => {
+    getAddresses();
+  }, [getAddresses]);
 
+  // 💰 Calculate totals
   const totalAmount = useMemo(
-    () => shopCart.reduce((acc, item) => acc + item.price * item.quantity, 0),
-    [shopCart]
+    () => cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0),
+    [cartItems]
   );
 
+  // 🏬 Group products by shop
   const groupedByShop = useMemo(() => {
-    const groups: Record<number, typeof shopCart> = {};
-    shopCart.forEach((item) => {
+    const groups: Record<number, typeof cartItems> = {};
+    cartItems.forEach((item) => {
       if (!groups[item.shopId]) groups[item.shopId] = [];
       groups[item.shopId].push(item);
     });
     return groups;
-  }, [shopCart]);
+  }, [cartItems]);
 
-  const deliveryDetails = useMemo(
-    () => ({
-      name: user?.fullname ?? "",
-      contact: user?.phoneNumber ?? "",
-      address: defaultAddress?.addressLine1 ?? "",
-      city: defaultAddress?.city ?? "",
-      email: user?.email ?? "",
-    }),
-    [user, defaultAddress]
-  );
-
+  /* ===========================================================
+     🧾 Checkout Handler
+  ============================================================ */
   const checkoutHandler = async () => {
     if (!user) {
       toast.error("Please sign in to continue checkout.");
       navigate("/login");
       return;
     }
-    if (shopCart.length === 0) {
+
+    if (!selectedAddress) {
+      toast.error("Please select a delivery address.");
+      return;
+    }
+
+    if (cartItems.length === 0) {
       toast.error("Your cart is empty.");
       return;
     }
 
     try {
       for (const [sid, items] of Object.entries(groupedByShop)) {
-        const shopIdNum = Number(sid);
         const payload = {
-          shopId: shopIdNum,
-          totalAmount: items.reduce(
-            (acc, item) => acc + item.price * item.quantity,
-            0
-          ),
+          shopId: Number(sid),
+          addressId: selectedAddress.id,
           cartItems: items.map((i) => ({
             productId: i.id,
             quantity: i.quantity,
+            shopId:i.shopId
           })),
-          deliveryDetails,
         };
 
-        // await createCheckoutSession(payload);
-        clearShopCart(shopIdNum);
+        await createOrder(payload);
+        clearShopCart(Number(sid));
       }
+
       setOpen(false);
-      toast.success("✅ Checkout initiated! Redirecting to payment...");
+      toast.success("✅ Order placed successfully!");
     } catch (error) {
       console.error("Checkout Error:", error);
-      toast.error("Something went wrong while creating checkout session.");
+      toast.error("Something went wrong while creating your order.");
+    }
+  };
+
+  /* ===========================================================
+     🧱 Add New Address Inline
+  ============================================================ */
+  const handleAddNewAddress = async () => {
+    if (!newAddress.addressLine1 || !newAddress.city || !newAddress.postalCode) {
+      toast.error("Please fill in all required fields.");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:3000/api/v1/address", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newAddress),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        toast.success("Address added successfully!");
+        await getAddresses();
+        setAddingNew(false);
+        setNewAddress({
+          addressLine1: "",
+          city: "",
+          state: "",
+          postalCode: "",
+          country: "India",
+        });
+      } else {
+        toast.error(data.message || "Failed to add address");
+      }
+    } catch (err) {
+      toast.error("Failed to add address");
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent
-        className="p-0 max-w-2xl rounded-2xl overflow-hidden shadow-2xl"
-      >
-        {/* Scrollable Content */}
+      <DialogContent className="p-0 max-w-2xl rounded-2xl overflow-hidden shadow-2xl">
         <div className="max-h-[80vh] overflow-y-auto p-6 space-y-5">
           <DialogTitle className="text-2xl font-bold text-center text-gray-800 dark:text-gray-100">
             Review Your Order
           </DialogTitle>
           <DialogDescription className="text-center text-sm text-gray-500 dark:text-gray-400">
-            Confirm your delivery details and order summary before payment.
+            Confirm your delivery address and order details before placing your order.
           </DialogDescription>
 
           {/* 🧍 User Info */}
-          <div className="grid grid-cols-2 gap-4 bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-            <UserField label="Full Name" value={deliveryDetails.name} />
-            <UserField label="Contact" value={`+91 ${deliveryDetails.contact}`} />
-            <UserField label="Address" value={deliveryDetails.address} />
-            <UserField label="City" value={deliveryDetails.city} />
+          <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+            <UserField label="Full Name" value={user?.fullname ?? ""} />
+            <UserField label="Contact" value={`+91 ${user?.phoneNumber ?? ""}`} />
           </div>
 
-          <div className="flex justify-end -mt-2">
-            <button
-              onClick={() => navigate("/profile", { state: { from: "/cart" } })}
-              className="text-sm font-semibold text-brandGreen hover:text-brandGreen/80 transition"
-            >
-              Edit Details
-            </button>
+          {/* 🏠 Address Selector */}
+          <div className="space-y-2">
+            <h3 className="font-semibold text-lg text-gray-800 dark:text-gray-100">
+              Select Delivery Address
+            </h3>
+
+            {addressLoading ? (
+              <p className="text-gray-500 text-sm">Loading addresses...</p>
+            ) : addresses.length === 0 ? (
+              <div className="text-sm text-gray-500">
+                No saved addresses.{" "}
+                <button
+                  onClick={() => setAddingNew(true)}
+                  className="text-brandGreen font-semibold underline hover:text-brandGreen/80"
+                >
+                  Add one now.
+                </button>
+              </div>
+            ) : (
+              <div className="grid gap-3">
+                {addresses.map((addr) => (
+                  <button
+                    key={addr.id}
+                    onClick={() => setSelectedAddress(addr)}
+                    className={cn(
+                      "flex items-start gap-3 p-3 border rounded-lg transition-all text-left",
+                      "hover:border-brandGreen/60 dark:hover:border-brandGreen/70",
+                      selectedAddress?.id === addr.id
+                        ? "border-brandGreen bg-brandGreen/5"
+                        : "border-gray-200 dark:border-gray-700"
+                    )}
+                  >
+                    <MapPin className="w-5 h-5 text-brandGreen mt-1" />
+                    <div>
+                      <h4 className="font-semibold text-gray-800 dark:text-white">
+                        {addr.city}, {addr.state}
+                      </h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {addr.addressLine1}
+                        {addr.addressLine2 ? `, ${addr.addressLine2}` : ""}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {addr.postalCode}, {addr.country}
+                      </p>
+                    </div>
+                  </button>
+                ))}
+
+                <button
+                  onClick={() => setAddingNew(!addingNew)}
+                  className="flex items-center justify-center w-full py-2 mt-1 border border-dashed rounded-lg border-gray-300 text-brandGreen hover:border-brandGreen/70 transition"
+                >
+                  <Plus className="w-4 h-4 mr-1" /> Add New Address
+                </button>
+              </div>
+            )}
           </div>
+
+          {/* ➕ New Address Form */}
+          {addingNew && (
+            <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 space-y-2">
+              <h4 className="font-semibold text-gray-800 dark:text-gray-100">
+                Add New Address
+              </h4>
+              <input
+                type="text"
+                placeholder="Address Line 1"
+                className="w-full border rounded-md px-3 py-2 text-sm"
+                value={newAddress.addressLine1}
+                onChange={(e) =>
+                  setNewAddress({ ...newAddress, addressLine1: e.target.value })
+                }
+              />
+              <input
+                type="text"
+                placeholder="City"
+                className="w-full border rounded-md px-3 py-2 text-sm"
+                value={newAddress.city}
+                onChange={(e) =>
+                  setNewAddress({ ...newAddress, city: e.target.value })
+                }
+              />
+              <input
+                type="text"
+                placeholder="State"
+                className="w-full border rounded-md px-3 py-2 text-sm"
+                value={newAddress.state}
+                onChange={(e) =>
+                  setNewAddress({ ...newAddress, state: e.target.value })
+                }
+              />
+              <input
+                type="text"
+                placeholder="Postal Code"
+                className="w-full border rounded-md px-3 py-2 text-sm"
+                value={newAddress.postalCode}
+                onChange={(e) =>
+                  setNewAddress({ ...newAddress, postalCode: e.target.value })
+                }
+              />
+              <Button
+                onClick={handleAddNewAddress}
+                className="w-full bg-brandGreen text-white hover:bg-brandGreen/80"
+              >
+                Save Address
+              </Button>
+            </div>
+          )}
 
           <Separator />
 
-          {/* 🏬 Shop Breakdown */}
+          {/* 🏬 Shop Summary */}
           <div className="space-y-5">
             {Object.entries(groupedByShop).map(([sid, items]) => {
               const subtotal = items.reduce(
@@ -147,8 +293,6 @@ const CheckoutConfirm = ({ open, setOpen, shopId }: CheckoutConfirmProps) => {
                       {items[0]?.shopName ?? "Shop"}
                     </h3>
                   </div>
-
-                  {/* Scrollable product list for each shop */}
                   <div className="max-h-40 overflow-y-auto pr-2 space-y-1">
                     {items.map((item) => (
                       <div
@@ -163,7 +307,6 @@ const CheckoutConfirm = ({ open, setOpen, shopId }: CheckoutConfirmProps) => {
                       </div>
                     ))}
                   </div>
-
                   <div className="flex justify-between font-medium mt-2 border-t border-gray-200 dark:border-gray-700 pt-2">
                     <span>Shop Total:</span>
                     <span className="text-brandGreen font-semibold">
@@ -175,7 +318,6 @@ const CheckoutConfirm = ({ open, setOpen, shopId }: CheckoutConfirmProps) => {
             })}
           </div>
 
-          {/* 💰 Grand Total */}
           <div className="flex justify-between items-center border-t pt-4 mt-2 font-bold text-lg">
             <span>Total Amount:</span>
             <span className="text-brandGreen">₹{totalAmount.toFixed(2)}</span>
@@ -196,7 +338,7 @@ const CheckoutConfirm = ({ open, setOpen, shopId }: CheckoutConfirmProps) => {
               onClick={checkoutHandler}
               className="bg-brandGreen text-white hover:bg-brandGreen/80"
             >
-              Proceed to Payment
+              Place Order
             </Button>
           )}
         </DialogFooter>
@@ -207,12 +349,12 @@ const CheckoutConfirm = ({ open, setOpen, shopId }: CheckoutConfirmProps) => {
 
 export default CheckoutConfirm;
 
-/* -------------------- Reusable User Info Component -------------------- */
+/* -------------------- User Info Field -------------------- */
 const UserField = ({ label, value }: { label: string; value: string }) => (
-  <div>
-    <Label className="block text-sm font-semibold text-gray-700 dark:text-white">
+  <div className="flex justify-between mb-1">
+    <Label className="text-sm font-semibold text-gray-700 dark:text-white">
       {label}
     </Label>
-    <p className="text-gray-700 dark:text-gray-400 truncate">{value}</p>
+    <p className="text-sm text-gray-700 dark:text-gray-300 truncate">{value}</p>
   </div>
 );

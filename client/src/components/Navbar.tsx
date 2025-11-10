@@ -85,7 +85,7 @@ const Navbar = () => {
                   Nearby
                 </Link>
                 <Link
-                  to="/order/status"
+                  to="/order"
                   className="text-textPrimary hover:text-brandGreen transition dark:text-white"
                 >
                   Orders

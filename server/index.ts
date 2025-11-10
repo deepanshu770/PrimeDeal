@@ -10,6 +10,7 @@ import productRoute from "./routes/product.route";
 import addressRoute from "./routes/address.route";
 import path from "path";
 import { errorHandler } from "./middlewares/errorHandler";
+import orderRoute from "./routes/order.route";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -36,7 +37,7 @@ app.use("/api/v1/user", userRoute);
 app.use("/api/v1/shop", shopRoute);
 app.use("/api/v1/product", productRoute);
 app.use("/api/v1/address", addressRoute);
-// app.use("/api/v1/order", orderRoute);
+app.use("/api/v1/order", orderRoute);
 
 app.use(express.static(path.join(DIRNAME, "/client/dist")));
 // app.use("*", (_, res) => {

@@ -10,10 +10,11 @@ import { useShopStore } from "./useShopStore";
 import API from "@/config/api";
 import { useCartStore } from "./useCartStore";
 
+
 type User = {
   fullname: string;
   email: string;
-  contact: string;
+  phoneNumber: string;
   profilePicture: string;
   admin: boolean;
   isverified: boolean;

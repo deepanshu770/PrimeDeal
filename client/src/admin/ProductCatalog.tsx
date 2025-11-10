@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,207 +8,173 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Loader2, Plus, Search } from "lucide-react";
+import { Loader2, Search } from "lucide-react";
+import { toast } from "sonner";
 import { useShopStore } from "@/zustand/useShopStore";
+import { useProductStore } from "@/zustand/useProductStore";
+import axios from "axios";
 
 export default function ProductCatalog() {
-  // ✅ Dummy product catalog
-  const initialCatalog = [
-    {
-      id: 1,
-      name: "Amul Butter",
-      brand: "Amul",
-      netQty: "500g",
-      category: "Dairy & Bakery",
-      description: "Delicious and creamy butter for everyday use.",
-      image: "https://placehold.co/300x300?text=Amul+Butter",
-    },
-    {
-      id: 2,
-      name: "Dove Shampoo",
-      brand: "Dove",
-      netQty: "180ml",
-      category: "Personal Care",
-      description: "Nourishing shampoo for soft and shiny hair.",
-      image: "https://placehold.co/300x300?text=Dove+Shampoo",
-    },
-    {
-      id: 3,
-      name: "Lays Chips - Classic Salted",
-      brand: "Lays",
-      netQty: "50g",
-      category: "Snacks & Packaged Foods",
-      description: "Crispy potato chips with a perfect salty flavor.",
-      image: "https://placehold.co/300x300?text=Lays+Chips",
-    },
-  ];
+  const { shop: shopList } = useShopStore();
+  const { products, loading, fetchAllProducts, createProduct } = useProductStore();
 
-  // ✅ Categories
-  const categories = [
-    "Groceries",
-    "Dairy & Bakery",
-    "Snacks & Packaged Foods",
-    "Beverages",
-    "Personal Care",
-    "Household Essentials",
-  ];
-
-  // Zustand store for shops
-  const shopList = useShopStore((state) => state.shop);
-
-  // 🧠 States
-  const [catalog, setCatalog] = useState(initialCatalog);
   const [search, setSearch] = useState("");
-  const [filtered, setFiltered] = useState(initialCatalog);
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
+
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [selectedShop, setSelectedShop] = useState<number | null>(null);
   const [price, setPrice] = useState("");
   const [quantity, setQuantity] = useState("");
-  const [loading, setLoading] = useState(false);
   const [openAddToShop, setOpenAddToShop] = useState(false);
-  const [openNewProduct, setOpenNewProduct] = useState(false);
 
-  // New Product Form
-  const [newProduct, setNewProduct] = useState({
-    name: "",
-    brand: "",
-    netQty: "",
-    category: "",
-    description: "",
-    image: "",
-  });
+  // ✅ Fetch categories once
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await axios.get("http://localhost:3000/api/v1/product/category");
+        if (res.data.success) setCategories(res.data.categories);
+      } catch {
+        toast.error("Failed to load categories");
+      }
+    };
+    fetchCategories();
+  }, []);
 
-  // 🔍 Search Logic
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    const result = catalog.filter(
-      (p) =>
-        p.name.toLowerCase().includes(search.toLowerCase()) ||
-        p.brand.toLowerCase().includes(search.toLowerCase())
-    );
-    setFiltered(result);
-  };
+  // ✅ Fetch all products (filter by search + category)
+  useEffect(() => {
+    fetchAllProducts(search, selectedCategory ?? undefined);
+  }, [search, selectedCategory]);
 
-  // ➕ Simulate Add Product to Shop
-  const handleAdd = () => {
-    if (!selectedShop) {
-      alert("⚠️ Please select a shop first.");
+  // 🛒 Add product to shop
+  const handleAdd = async () => {
+    if (!selectedShop || !price || !quantity) {
+      toast.error("Please fill all fields");
       return;
     }
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      alert(
-        `✅ "${selectedProduct.name}" added to "${
-          shopList.find((s) => s.id === selectedShop)?.storeName
-        }"!\nPrice: ₹${price}\nQuantity: ${quantity}`
-      );
+
+    const formData = new FormData();
+    formData.append("productId", selectedProduct.id);
+    formData.append("price", price);
+    formData.append("quantity", quantity);
+
+    try {
+      await createProduct(formData, selectedShop);
+      toast.success(`Added to ${shopList.find(s => s.id === selectedShop)?.storeName}`);
       setOpenAddToShop(false);
       setPrice("");
       setQuantity("");
       setSelectedShop(null);
-    }, 1000);
-  };
-
-  // 🆕 Add New Product
-  const handleCreateProduct = () => {
-    const { name, category, netQty } = newProduct;
-    if (!name || !category || !netQty) {
-      alert("⚠️ Please fill required fields (Name, Category, Net Qty).");
-      return;
+    } catch {
+      toast.error("Failed to add product");
     }
-
-    const newItem = {
-      ...newProduct,
-      id: catalog.length + 1,
-      image:
-        newProduct.image || "https://placehold.co/300x300?text=New+Product",
-    };
-
-    setCatalog([...catalog, newItem]);
-    setFiltered([...catalog, newItem]);
-    setNewProduct({
-      name: "",
-      brand: "",
-      netQty: "",
-      category: "",
-      description: "",
-      image: "",
-    });
-    setOpenNewProduct(false);
-    alert("✅ New product added to catalog!");
   };
-
+  if (shopList.length === 0) {
+    // 🧩 Show empty-state UI
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[70vh] text-center">
+        <h2 className="text-2xl font-bold text-gray-700">No Shops Found</h2>
+        <p className="text-gray-500 mt-2">
+          Please create a shop before managing products.
+        </p>
+        <Button
+          onClick={() => (window.location.href = "/admin/store/new")}
+          className="mt-4 bg-brandOrange text-white hover:bg-hoverOrange"
+        >
+          + Create Shop
+        </Button>
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen bg-backgroundLight px-6 py-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-8">
-        <h1 className="text-3xl font-bold text-textPrimary">
-          🛍️ Product Catalog
-        </h1>
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8">
+        <h1 className="text-3xl font-bold text-textPrimary">🛍️ Product Catalog</h1>
+      </div>
+
+      {/* Search */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+        <Input
+          placeholder="Search products..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="max-w-md"
+        />
         <Button
-          onClick={() => setOpenNewProduct(true)}
-          className="flex items-center gap-2 bg-brandOrange hover:bg-hoverOrange text-white"
+          onClick={() => fetchAllProducts(search, selectedCategory ?? undefined)}
+          disabled={loading}
+          className="bg-brandGreen text-white"
         >
-          <Plus className="w-4 h-4" /> Add New Product
+          {loading ? (
+            <Loader2 className="animate-spin w-4 h-4 mr-1" />
+          ) : (
+            <Search className="w-4 h-4 mr-1" />
+          )}
+          Search
         </Button>
       </div>
 
-      {/* Search Bar */}
-      <form
-        onSubmit={handleSearch}
-        className="flex flex-col sm:flex-row items-center gap-3 mb-8"
-      >
-        <Input
-          placeholder="Search product name or brand..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="max-w-md border border-border focus:ring-2 focus:ring-brandGreen"
-        />
-        <Button
-          type="submit"
-          className="flex items-center gap-2 bg-brandGreen hover:bg-emerald-700 text-white px-5 py-2 rounded-md"
+      {/* Category Chips */}
+      <div className="flex flex-wrap gap-2 mb-8">
+        <button
+          onClick={() => setSelectedCategory(null)}
+          className={`px-4 py-1.5 rounded-full text-sm font-medium border transition ${
+            selectedCategory === null
+              ? "bg-brandGreen text-white border-brandGreen"
+              : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+          }`}
         >
-          <Search className="w-4 h-4" /> Search
-        </Button>
-      </form>
+          All
+        </button>
+
+        {categories.map((cat) => (
+          <button
+            key={cat.id}
+            onClick={() =>
+              setSelectedCategory(selectedCategory === cat.id ? null : cat.id)
+            }
+            className={`px-4 py-1.5 rounded-full text-sm font-medium border transition ${
+              selectedCategory === cat.id
+                ? "bg-brandGreen text-white border-brandGreen"
+                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+            }`}
+          >
+            {cat.name}
+          </button>
+        ))}
+      </div>
 
       {/* Product Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filtered.length === 0 ? (
-          <p className="text-textSecondary">No products found.</p>
+        {loading ? (
+          <p>Loading...</p>
+        ) : products.length === 0 ? (
+          <p className="text-gray-500">No products found.</p>
         ) : (
-          filtered.map((p) => (
+          products.map((p) => (
             <Card
               key={p.id}
-              className="rounded-2xl shadow-sm border border-border hover:shadow-lg transition bg-white"
+              className="rounded-xl shadow-sm hover:shadow-lg transition"
             >
               <CardContent className="p-4 space-y-3">
-                <div className="aspect-square overflow-hidden rounded-xl">
-                  <img
-                    src={p.image}
-                    alt={p.name}
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
+                <img
+                  src={p.image || "https://placehold.co/300x300?text=Product"}
+                  alt={p.name}
+                  className="w-full h-52 rounded-lg object-cover hover:scale-105 transition"
+                />
                 <div>
-                  <h3 className="font-semibold text-textPrimary">{p.name}</h3>
-                  <p className="text-sm text-textSecondary">{p.brand}</p>
+                  <h3 className="font-semibold text-gray-800">{p.name}</h3>
+                  <p className="text-sm text-gray-500">{p.brand}</p>
                   <p className="text-xs text-gray-400">{p.netQty}</p>
+                  <p className="text-xs text-gray-500">{p.category?.name}</p>
                 </div>
                 <Button
                   onClick={() => {
                     setSelectedProduct(p);
                     setOpenAddToShop(true);
                   }}
-                  className="w-full bg-brandOrange hover:bg-hoverOrange text-white font-medium rounded-md py-2"
+                  className="w-full bg-brandOrange text-white"
                 >
                   + Add to Shop
                 </Button>
@@ -222,146 +188,44 @@ export default function ProductCatalog() {
       <Dialog open={openAddToShop} onOpenChange={setOpenAddToShop}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-lg font-semibold text-textPrimary">
+            <DialogTitle className="text-lg font-semibold text-gray-800">
               Add “{selectedProduct?.name}” to Shop
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 mt-2">
-            <div>
-              <label className="text-sm font-medium text-textSecondary">
-                Select Shop
-              </label>
-              <Select
-                onValueChange={(value) => setSelectedShop(Number(value))}
-                value={selectedShop ? String(selectedShop) : ""}
-              >
-                <SelectTrigger className="w-full border border-border bg-white text-textPrimary mt-1">
-                  <SelectValue placeholder="Select a shop..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {shopList.map((shop) => (
-                    <SelectItem key={shop.id} value={String(shop.id)}>
-                      {shop.storeName} - {shop.city}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="space-y-4">
+            <select
+              value={selectedShop ?? ""}
+              onChange={(e) => setSelectedShop(Number(e.target.value))}
+              className="w-full border rounded-md p-2"
+            >
+              <option value="">Select a shop...</option>
+              {shopList.map((shop) => (
+                <option key={shop.id} value={shop.id}>
+                  {shop.storeName} - {shop.city}
+                </option>
+              ))}
+            </select>
 
-            <div>
-              <label className="text-sm font-medium text-textSecondary">
-                Price (₹)
-              </label>
-              <Input
-                type="number"
-                placeholder="Enter price"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-textSecondary">
-                Quantity
-              </label>
-              <Input
-                type="number"
-                placeholder="Enter quantity"
-                value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
-              />
-            </div>
+            <Input
+              placeholder="Price (₹)"
+              type="number"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+            />
+            <Input
+              placeholder="Quantity"
+              type="number"
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+            />
 
             <Button
-              disabled={loading}
               onClick={handleAdd}
-              className="w-full bg-brandGreen hover:bg-emerald-700 text-white"
+              disabled={loading}
+              className="w-full bg-brandGreen text-white"
             >
-              {loading ? (
-                <div className="flex items-center justify-center gap-2">
-                  <Loader2 className="animate-spin h-4 w-4" /> Adding...
-                </div>
-              ) : (
-                "Add Product"
-              )}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Add New Product Modal */}
-      <Dialog open={openNewProduct} onOpenChange={setOpenNewProduct}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-semibold text-textPrimary">
-              Add New Product
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 mt-2">
-            <div className="grid grid-cols-2 gap-3">
-              <Input
-                placeholder="Product Name"
-                value={newProduct.name}
-                onChange={(e) =>
-                  setNewProduct({ ...newProduct, name: e.target.value })
-                }
-              />
-              <Input
-                placeholder="Brand"
-                value={newProduct.brand}
-                onChange={(e) =>
-                  setNewProduct({ ...newProduct, brand: e.target.value })
-                }
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <Input
-                placeholder="Net Qty (e.g. 500g)"
-                value={newProduct.netQty}
-                onChange={(e) =>
-                  setNewProduct({ ...newProduct, netQty: e.target.value })
-                }
-              />
-              <Select
-                onValueChange={(value) =>
-                  setNewProduct({ ...newProduct, category: value })
-                }
-                value={newProduct.category}
-              >
-                <SelectTrigger className="w-full border border-border bg-white text-textPrimary mt-1">
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((c) => (
-                    <SelectItem key={c} value={c}>
-                      {c}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <Input
-              placeholder="Image URL (optional)"
-              value={newProduct.image}
-              onChange={(e) =>
-                setNewProduct({ ...newProduct, image: e.target.value })
-              }
-            />
-            <Input
-              placeholder="Description (optional)"
-              value={newProduct.description}
-              onChange={(e) =>
-                setNewProduct({ ...newProduct, description: e.target.value })
-              }
-            />
-
-            <Button
-              onClick={handleCreateProduct}
-              className="w-full bg-brandGreen hover:bg-emerald-700 text-white"
-            >
-              Save Product
+              {loading && <Loader2 className="animate-spin h-4 w-4 mr-2" />}
+              Add Product
             </Button>
           </div>
         </DialogContent>

@@ -390,3 +390,36 @@ export const searchProduct = asyncHandler(async (req: Request, res: Response) =>
     })),
   });
 });
+
+/**
+ * @desc    Get all product categories
+ * @route   GET /api/v1/category
+ * @access  Public
+ */
+export const getAllCategories = asyncHandler(async (req, res) => {
+  const categories = await prisma.category.findMany({
+    orderBy: { name: "asc" },
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      _count: {
+        select: { products: true },
+      },
+    },
+  });
+
+  if (!categories || categories.length === 0) {
+    return res.status(404).json({
+      success: false,
+      message: "No categories found",
+      categories: [],
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    count: categories.length,
+    categories,
+  });
+});
