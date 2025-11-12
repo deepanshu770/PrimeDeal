@@ -1,9 +1,9 @@
 import API from "@/config/api";
-import { Address } from "@/types/addressType";
 import { toast } from "sonner";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import axios, { AxiosError } from "axios";
+import { Address } from "../../../types/types";
 
 /* ===========================================================
    🧠 Centralized API Error Handler
@@ -37,8 +37,14 @@ type AddressStore = {
   /** Add new address */
   addAddress: (data: Omit<Address, "id">) => Promise<void>;
 
+  /** Update existing address */
+  updateAddress: (id: number, updatedData: Partial<Address>) => Promise<void>;
+
   /** Delete an address */
   deleteAddress: (id: number) => Promise<void>;
+
+  /** Make address default */
+  makeDefaultAddress: (id: number) => Promise<void>;
 
   /** Select an address (for checkout, etc.) */
   setSelectedAddress: (address: Address) => void;
@@ -87,7 +93,7 @@ export const useAddressStore = create<AddressStore>()(
         try {
           const res = await API.post("/address", data);
           if (res.data.success) {
-            toast.success("Address added successfully");
+            toast.success("✅ Address added successfully");
             set((state) => ({
               addresses: [res.data.address, ...state.addresses],
             }));
@@ -99,13 +105,64 @@ export const useAddressStore = create<AddressStore>()(
         }
       },
 
+      /** ✏️ Update existing address */
+      updateAddress: async (id, updatedData) => {
+        set({ loading: true });
+        try {
+          const res = await API.put(`/address/${id}`, updatedData);
+          if (res.data.success) {
+            toast.success("✅ Address updated successfully");
+            set((state) => ({
+              addresses: state.addresses.map((addr) =>
+                addr.id === id ? { ...addr, ...res.data.address } : addr
+              ),
+              selectedAddress:
+                state.selectedAddress?.id === id
+                  ? { ...state.selectedAddress, ...res.data.address }
+                  : state.selectedAddress,
+            }));
+          } else {
+            toast.error(res.data.message || "Failed to update address");
+          }
+        } catch (error) {
+          handleApiError(error, "Failed to update address");
+        } finally {
+          set({ loading: false });
+        }
+      },
+
+      /** ⭐ Make address default */
+      makeDefaultAddress: async (id) => {
+        set({ loading: true });
+        try {
+          const res = await API.post(`/address/set-default/${id}`);
+          if (res.data.success) {
+            toast.success("⭐ Default address updated");
+
+            set((state) => ({
+              addresses: state.addresses.map((addr) => ({
+                ...addr,
+                isDefault: addr.id === id,
+              })),
+              selectedAddress: state.addresses.find((a) => a.id === id) || null,
+            }));
+          } else {
+            toast.error(res.data.message || "Failed to set default address");
+          }
+        } catch (error) {
+          handleApiError(error, "Failed to make address default");
+        } finally {
+          set({ loading: false });
+        }
+      },
+
       /** ❌ Delete address */
       deleteAddress: async (id) => {
         set({ loading: true });
         try {
           const res = await API.delete(`/address/${id}`);
           if (res.data.success) {
-            toast.success("Address removed");
+            toast.success("🗑️ Address removed");
             set((state) => ({
               addresses: state.addresses.filter((addr) => addr.id !== id),
               selectedAddress:
@@ -122,7 +179,7 @@ export const useAddressStore = create<AddressStore>()(
       /** 📍 Select address */
       setSelectedAddress: (address) => {
         set({ selectedAddress: address });
-        toast.success(`Selected address: ${address.city}`);
+        toast.success(`📦 Selected address: ${address.city}`);
       },
 
       /** 🧹 Clear */

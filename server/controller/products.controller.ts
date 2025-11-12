@@ -423,3 +423,94 @@ export const getAllCategories = asyncHandler(async (req, res) => {
     categories,
   });
 });
+
+
+export const addProductToShop = asyncHandler(async (req: Request, res: Response) => {
+  const { productId, shopId, price, quantity, netQtyValue, unit } = req.body;
+  console.log(req.body)
+  // ✅ Validate required fields
+  if (!productId || !shopId || !price || !netQtyValue || !unit) {
+    return res.status(400).json({
+      success: false,
+      message: "Product ID, Shop ID, Price, Net Quantity, and Unit are required",
+    });
+  }
+
+  // ✅ Check product existence
+  const product = await prisma.product.findUnique({
+    where: { id: Number(productId) },
+  });
+  if (!product) {
+    return res.status(404).json({
+      success: false,
+      message: "Product not found",
+    });
+  }
+
+  // ✅ Check shop existence
+  const shop = await prisma.shop.findUnique({
+    where: { id: Number(shopId) },
+  });
+  if (!shop) {
+    return res.status(404).json({
+      success: false,
+      message: "Shop not found",
+    });
+  }
+
+  // ✅ Validate unit type against Prisma Enum
+  if (!Object.values(Unit).includes(unit as Unit)) {
+    return res.status(400).json({
+      success: false,
+      message: `Invalid unit. Must be one of: ${Object.values(Unit).join(", ")}`,
+    });
+  }
+
+  // ✅ Prevent duplicate inventory record
+  const existing = await prisma.shopInventory.findUnique({
+    where: {
+      shopId_productId: {
+        shopId: Number(shopId),
+        productId: Number(productId),
+      },
+    },
+  });
+
+  if (existing) {
+    return res.status(400).json({
+      success: false,
+      message: "Product already exists in this shop’s inventory",
+    });
+  }
+
+  // ✅ Create inventory entry
+  const inventory = await prisma.shopInventory.create({
+    data: {
+      shopId: Number(shopId),
+      productId: Number(productId),
+      price: parseFloat(price),
+      quantity: quantity ? Number(quantity) : 0,
+      netQty: parseFloat(netQtyValue),
+      unit: unit as Unit,
+      isAvailable: true,
+    },
+    include: {
+      product: {
+        select: {
+          id: true,
+          name: true,
+          image: true,
+          description: true,
+          category: { select: { id: true, name: true } },
+        },
+      },
+      shop: { select: { id: true, storeName: true, city: true } },
+    },
+  });
+
+  return res.status(201).json({
+    success: true,
+    message: "✅ Product successfully added to shop inventory",
+    inventory,
+  });
+});

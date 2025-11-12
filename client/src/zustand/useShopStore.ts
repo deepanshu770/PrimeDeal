@@ -1,12 +1,10 @@
 import API from "@/config/api";
 import { orderItem } from "@/types/orderType";
-
 import { toast } from "sonner";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { NearbyShop, Shop, ShopInventory } from "../../../types/types";
 
-// 🧠 Types
 export type ShopState = {
   loading: boolean;
   shop: Shop[];
@@ -30,27 +28,7 @@ export type ShopState = {
   clearShop: () => void;
 };
 
-// 🧰 Helper: Set loading with toast feedback
-const withLoading = async <T>(
-  set: any,
-  fn: () => Promise<T>,
-  options?: { startMsg?: string; successMsg?: string; errorMsg?: string }
-) => {
-  try {
-    set({ loading: true });
-    if (options?.startMsg) toast.info(options.startMsg);
-    const result = await fn();
-    if (options?.successMsg) toast.success(options.successMsg);
-    return result;
-  } catch (error: any) {
-    toast.error(options?.errorMsg || error.response?.data?.message || "Error occurred");
-    throw error;
-  } finally {
-    set({ loading: false });
-  }
-};
-
-// 🏬 Zustand Store
+// 🧩 Zustand Store
 export const useShopStore = create<ShopState>()(
   persist(
     (set, get) => ({
@@ -64,44 +42,77 @@ export const useShopStore = create<ShopState>()(
 
       /** ---------------- 🏬 CREATE SHOP ---------------- */
       createShop: async (formData) => {
-        await withLoading(set, async () => {
+        set({ loading: true });
+        try {
           const { data } = await API.post(`/shop`, formData, {
             headers: { "Content-Type": "multipart/form-data" },
           });
-          set((s: ShopState) => ({ shop: [...s.shop, data.shop] }));
-        }, { successMsg: "Shop created successfully" });
+          if (data.success) {
+            set((s) => ({ shop: [...s.shop, data.shop] }));
+            toast.success("✅ Shop created successfully");
+          } else {
+            toast.error(data.message || "Failed to create shop");
+          }
+        } catch (err: any) {
+          toast.error(err.response?.data?.message || "Error creating shop");
+        } finally {
+          set({ loading: false });
+        }
       },
 
       /** ---------------- 🏪 GET ALL SHOPS ---------------- */
       getShop: async () => {
-        await withLoading(set, async () => {
+        set({ loading: true });
+        try {
           const { data } = await API.get(`/shop`);
-          if (data.success) set({ shop: data.shops });
-        }, { errorMsg: "Failed to load shops" });
+          if (data.success) {
+            set({ shop: data.shops });
+          } else {
+            toast.error("Failed to load shops");
+          }
+        } catch (err: any) {
+          toast.error(err.response?.data?.message || "Error fetching shops");
+        } finally {
+          set({ loading: false });
+        }
       },
 
       /** ---------------- ✏️ UPDATE SHOP ---------------- */
       updateShop: async (formData, existingBanner) => {
-        await withLoading(set, async () => {
-          if (!formData.has("storeBanner") && existingBanner)
+        set({ loading: true });
+        try {
+          if (!formData.has("storeBanner") && existingBanner) {
             formData.append("storeBanner", existingBanner);
+          }
 
           const { data } = await API.put(`/shop`, formData, {
             headers: { "Content-Type": "multipart/form-data" },
           });
 
-          set((s: ShopState) => ({
-            shop: s.shop.map((sh) =>
-              sh.id === data.shop.id ? data.shop : sh
-            ),
-          }));
-        }, { successMsg: "Shop updated successfully" });
+          if (data.success) {
+            set((s) => ({
+              shop: s.shop.map((sh) =>
+                sh.id === data.shop.id ? data.shop : sh
+              ),
+            }));
+            toast.success("✅ Shop updated successfully");
+          } else {
+            toast.error("Failed to update shop");
+          }
+        } catch (err: any) {
+          toast.error(err.response?.data?.message || "Error updating shop");
+        } finally {
+          set({ loading: false });
+        }
       },
 
       /** ---------------- 🔍 SEARCH PRODUCTS ---------------- */
       searchShop: async (query) => {
-        await withLoading(set, async () => {
-          const { data } = await API.get(`/product/search?q=${encodeURIComponent(query)}`);
+        set({ loading: true });
+        try {
+          const { data } = await API.get(
+            `/product/search?q=${encodeURIComponent(query)}`
+          );
           if (data.success) {
             set({
               searchedProduct: data.products,
@@ -110,42 +121,66 @@ export const useShopStore = create<ShopState>()(
           } else {
             set({ searchedProduct: [], searchedShop: [] });
           }
-        });
+        } catch (err: any) {
+          toast.error("Error searching products");
+        } finally {
+          set({ loading: false });
+        }
       },
 
       /** ---------------- 🧭 GET NEARBY SHOPS ---------------- */
       getNearbyShops: async (radiusKm = 7) => {
-        await withLoading(set, async () => {
+        set({ loading: true });
+        try {
           const { data } = await API.get(`/shop/nearby?radius=${radiusKm}`);
           if (data.success) {
             set({ nearbyShops: data.shops });
           } else {
             set({ nearbyShops: [] });
           }
-        }, {
-          errorMsg: "Failed to fetch nearby shops",
-        });
+        } catch (err: any) {
+          toast.error("Failed to fetch nearby shops");
+        } finally {
+          set({ loading: false });
+        }
       },
 
       /** ---------------- 🏪 GET SINGLE SHOP ---------------- */
       getSingleShop: async (shopId) => {
-        await withLoading(set, async () => {
+        set({ loading: true });
+        try {
           const { data } = await API.get(`/shop/${shopId}`);
-          if (data.success) set({ singleShop: data.shop });
-        }, { errorMsg: "Failed to load shop details" });
+          if (data.success) {
+            set({ singleShop: data.shop });
+          } else {
+            toast.error("Shop not found");
+          }
+        } catch (err: any) {
+          toast.error("Error fetching shop details");
+        } finally {
+          set({ loading: false });
+        }
       },
 
       /** ---------------- 🧾 GET SHOP ORDERS ---------------- */
       getShopOrders: async () => {
-        await withLoading(set, async () => {
+        set({ loading: true });
+        try {
           const { data } = await API.get(`/shop/order`);
-          if (data.success) set({ shopOrders: data.shopOrder });
-        });
+          if (data.success) {
+            set({ shopOrders: data.shopOrder });
+          }
+        } catch (err: any) {
+          toast.error("Failed to fetch shop orders");
+        } finally {
+          set({ loading: false });
+        }
       },
 
       /** ---------------- 🔄 UPDATE ORDER STATUS ---------------- */
       updateShopOrders: async (orderId, orderStatus) => {
-        await withLoading(set, async () => {
+        set({ loading: true });
+        try {
           const { data } = await API.put(
             `/shop/order/${orderId}/status`,
             { status: orderStatus },
@@ -157,8 +192,15 @@ export const useShopStore = create<ShopState>()(
                 o.id === orderId ? { ...o, status: orderStatus } : o
               ),
             });
+            toast.success("✅ Order status updated");
+          } else {
+            toast.error("Failed to update order status");
           }
-        }, { successMsg: "Order status updated" });
+        } catch (err: any) {
+          toast.error("Error updating order status");
+        } finally {
+          set({ loading: false });
+        }
       },
 
       /** ---------------- ➕ ADD PRODUCT TO SHOP ---------------- */

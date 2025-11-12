@@ -5,20 +5,21 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import { useShopStore } from "./useShopStore";
 
 const API_BASE = "http://localhost:3000/api/v1/product";
+
 axios.defaults.withCredentials = true;
 
 // ---------- TYPES ----------
 export interface Product {
   id: number;
   name: string;
-  description?: string;
+  description: string;
   netQty: string;
   image: string;
   category?: string;
   price?: number;
   quantity?: number;
   isAvailable?: boolean;
-  createdAt: Date;
+  createdAt?: Date;
 }
 
 export interface ShopInventory {
@@ -28,6 +29,8 @@ export interface ShopInventory {
   price: number;
   quantity: number;
   isAvailable: boolean;
+  netQty?: number;
+  unit?: string;
   product?: Product;
   shop?: {
     id: number;
@@ -37,28 +40,34 @@ export interface ShopInventory {
   };
 }
 
-// ---------- STATE INTERFACE ----------
-interface ProductStoreState {
+type ProductStoreState = {
   loading: boolean;
-  products: Product[]; // Global product catalog
-  shopInventory: ShopInventory[]; // Current shop inventory
+  products: Product[];
+  shopInventory: ShopInventory[];
 
-  fetchAllProducts: (search?: string, categoryId?: number) => Promise<void>;
-  fetchShopInventory: (shopId: number) => Promise<void>;
+  // Actions
+  fetchAllProducts: () => Promise<void>;
+  fetchProductsByShop: (shopId: number) => Promise<void>;
+  addExistingProductToShop: (
+    productId: number,
+    shopId: number,
+    price: number,
+    quantity: number,
+    netQtyValue: number,
+    unit: string
+  ) => Promise<void>;
   createProduct: (formData: FormData, shopId: number) => Promise<void>;
   editProduct: (productId: number, formData: FormData) => Promise<void>;
-  clearProducts: () => void;
-}
-
-// ---------- ERROR HANDLER ----------
-const handleError = (error: any, fallbackMsg: string) => {
-  const message =
-    error?.response?.data?.message || error?.message || fallbackMsg;
-  toast.error(message);
-  console.error("❌ ProductStore Error:", message);
 };
 
-// ---------- STORE IMPLEMENTATION ----------
+// ---------- HELPER ----------
+const handleError = (error: any, fallback: string) => {
+  console.error("❌ Product Store Error:", error);
+  const message = error?.response?.data?.message || error.message || fallback;
+  toast.error(message);
+};
+
+// ---------- STORE ----------
 export const useProductStore = create<ProductStoreState>()(
   persist(
     (set) => ({
@@ -66,51 +75,95 @@ export const useProductStore = create<ProductStoreState>()(
       products: [],
       shopInventory: [],
 
-      /** 🧾 Fetch global product catalog */
-      fetchAllProducts: async (search,categoryId) => {
-  set({ loading: true });
+      /* -------------------- 🧾 Fetch All Global Products -------------------- */
+      fetchAllProducts: async (search?: string, categoryId?: number) => {
+        set({ loading: true });
+        try {
+          const params: Record<string, string | number> = {};
+          if (search) params.search = search.trim();
+          if (categoryId) params.categoryId = categoryId;
 
-  try {
-    const params: Record<string, string | number> = { };
-    if (search) params.search = search;
-    if (categoryId) params.categoryId = categoryId;
+          const res = await axios.get(`${API_BASE}/catalog`, { params });
 
-    const res = await axios.get(`${API_BASE}/catalog`, { params });
+          if (res.data.success) {
+            set({
+              products: res.data.products || [],
+              loading: false,
+            });
+          } else {
+            toast.error("Failed to load product catalog");
+            set({ loading: false });
+          }
+        } catch (error) {
+          set({ loading: false });
+          handleError(error, "Error fetching products");
+        }
+      },
 
-    if (res.data.success) {
-      set({
-        products: res.data.products || [],
-        loading: false,
-      });
-    } else {
-      toast.error("⚠️ Failed to load product catalog");
-      set({ loading: false });
-    }
-  } catch (error) {
-    set({ loading: false });
-    handleError(error, "Error fetching products");
-  }
-},
-
-      /** 🏪 Fetch inventory for a specific shop */
-      fetchShopInventory: async (shopId) => {
+      /* -------------------- 🏪 Fetch All Products in a Shop -------------------- */
+      fetchProductsByShop: async (shopId) => {
         set({ loading: true });
         try {
           const res = await axios.get(`${API_BASE}/shop/${shopId}`);
           if (res.data.success) {
             set({
+              shopInventory: res.data.products,
               loading: false,
-              shopInventory: res.data.inventory ?? [],
-              products: res.data.products ?? [],
             });
+          } else {
+            toast.error("Failed to load shop products");
+            set({ loading: false });
           }
         } catch (error) {
           set({ loading: false });
-          handleError(error, "Failed to load shop inventory");
+          handleError(error, "Error fetching shop products");
         }
       },
 
-      /** ➕ Create new product and link to shop inventory */
+      /* -------------------- ➕ Add Existing Product to Shop -------------------- */
+      addExistingProductToShop: async (
+        productId,
+        shopId,
+        price,
+        quantity = 0,
+        netQtyValue,
+        unit
+      ) => {
+        set({ loading: true });
+
+        try {
+          const res = await axios.post(`${API_BASE}/add-to-shop`, {
+            productId,
+            shopId,
+            price,
+            quantity,
+            netQtyValue,
+            unit,
+          });
+
+          if (res.data.success) {
+            const { inventory } = res.data;
+            toast.success("✅ Product added to shop successfully!");
+
+            set((state) => ({
+              loading: false,
+              shopInventory: [...state.shopInventory, inventory],
+            }));
+
+            // ✅ Sync with shop store (if available)
+            const shopStore = useShopStore.getState();
+            shopStore?.addProductToShop?.(inventory);
+          } else {
+            toast.error(res.data.message || "Failed to add product to shop");
+            set({ loading: false });
+          }
+        } catch (error: any) {
+          set({ loading: false });
+          handleError(error, "Error adding product to shop");
+        }
+      },
+
+      /* -------------------- 🆕 Create New Product + Add to Shop -------------------- */
       createProduct: async (formData, shopId) => {
         set({ loading: true });
         try {
@@ -131,9 +184,9 @@ export const useProductStore = create<ProductStoreState>()(
                 : state.shopInventory,
             }));
 
-            // ✅ Sync with shop store (inventory contains product)
+            // Sync with shop store
             const shopStore = useShopStore.getState();
-            if (inventory) shopStore?.addProductToShop?.(inventory);
+            shopStore?.addProductToShop?.(inventory);
           }
         } catch (error) {
           set({ loading: false });
@@ -141,7 +194,7 @@ export const useProductStore = create<ProductStoreState>()(
         }
       },
 
-      /** ✏️ Edit product details */
+      /* -------------------- ✏️ Edit Product -------------------- */
       editProduct: async (productId, formData) => {
         set({ loading: true });
         try {
@@ -151,7 +204,7 @@ export const useProductStore = create<ProductStoreState>()(
 
           if (res.data.success) {
             const { product } = res.data;
-            toast.success("Product updated successfully");
+            toast.success("✅ Product updated successfully!");
 
             set((state) => ({
               loading: false,
@@ -159,21 +212,15 @@ export const useProductStore = create<ProductStoreState>()(
                 p.id === product.id ? product : p
               ),
             }));
-
-            const shopStore = useShopStore.getState();
-            shopStore?.updateProductInShop?.(product);
           }
         } catch (error) {
           set({ loading: false });
-          handleError(error, "Product update failed");
+          handleError(error, "Error updating product");
         }
       },
-
-      /** 🧹 Clear product cache */
-      clearProducts: () => set({ products: [], shopInventory: [] }),
     }),
     {
-      name: "prime-deal-product-store",
+      name: "product-store",
       storage: createJSONStorage(() => localStorage),
     }
   )

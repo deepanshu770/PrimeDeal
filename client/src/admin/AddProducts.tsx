@@ -36,7 +36,7 @@ const AddProducts = () => {
   const [error, setError] = useState<Partial<ProductListFormSchema>>({});
   const [editOpen, setEditOpen] = useState<boolean>(false);
 
-  const { loading, createProduct, products, fetchProducts } = useProductStore();
+  const { loading, createProduct, products, fetchShopInventory } = useProductStore();
   const { shop } = useShopStore();
 
   const changeEventHandler = (
@@ -49,7 +49,7 @@ const AddProducts = () => {
   };
 
   useEffect(() => {
-    if (shopId) fetchProducts(shopId);
+    if (shopId) fetchShopInventory(shopId);
   }, [shopId]);
 
   const submitHandler = async (e: React.FormEvent<HTMLFormElement>) => {

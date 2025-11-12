@@ -1,26 +1,41 @@
-import {  useState, ChangeEvent, FormEvent } from "react";
+import { useState, ChangeEvent, FormEvent, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { MapPin, Loader2 } from "lucide-react";
-import { useUserStore } from "@/zustand/useUserStore";
-
+import { useNavigate, useParams } from "react-router-dom";
+import { useAddressStore } from "@/zustand/useAddressStore";
+import { Address } from "../../../types/types";
+import { toast } from "sonner";
 
 const SetupAddress = () => {
-  const {loading, setupAddress } = useUserStore();
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const { loading, addAddress, updateAddress } = useAddressStore();
 
-  const [address, setAddress] = useState({
+  const [address, setAddress] = useState<Omit<Address, "id">>({
     addressLine1: "",
     addressLine2: "",
     city: "",
     state: "",
     postalCode: "",
     country: "",
-    latitude: null as number | null,
-    longitude: null as number | null,
+    isDefault: false,
   });
 
   const [locating, setLocating] = useState(false);
+
+  useEffect(() => {
+    if (id && !isNaN(Number(id))) {
+      const _id = Number(id);
+      const address = useAddressStore
+        .getState()
+        .addresses.find((a) => a.id === _id);
+      if (address) {
+        setAddress(address);
+      }
+    } 
+  }, [id]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -47,8 +62,6 @@ const SetupAddress = () => {
             const addr = data.address;
             setAddress((prev) => ({
               ...prev,
-              addressLine1:
-                addr.road || addr.neighbourhood || addr.suburb || "",
               city: addr.city || addr.town || addr.village || "",
               state: addr.state || "",
               postalCode: addr.postcode || "",
@@ -70,11 +83,23 @@ const SetupAddress = () => {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-   try {
-    await setupAddress(address);
-   } catch (error) {
-    console.log(error)
-   }
+    if (!address.latitude || !address.longitude) {
+      toast.warning("Please Provide Location !");
+      return;
+    }
+    try {
+      if (useAddressStore.getState().addresses.length === 0) {
+        address.isDefault = true;
+      }
+      if (id) {
+        await updateAddress(Number(id), address);
+      } else {
+        await addAddress(address);
+      }
+      navigate(-1);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (

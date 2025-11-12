@@ -1,22 +1,17 @@
 import { MapPin, Plus, Star, Edit, Trash } from "lucide-react";
 import { useEffect } from "react";
-import { toast } from "sonner";
 import { Button } from "./ui/button";
 import { useAddressStore } from "@/zustand/useAddressStore";
+import { useNavigate } from "react-router-dom";
 
 function AddressSection() {
-  const { loading, addresses, getAddress } = useAddressStore();
+  const { loading, addresses, getAddresses ,deleteAddress,makeDefaultAddress } = useAddressStore();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    getAddress();
+    getAddresses();
   }, []);
-  const handleAddNewAddress = () => {};
 
-  const handleDeleteAddress = (id: number) => {
-    toast.success("Address deleted");
-  };
-
-  const handleMakeDefault = (id: number) => {};
   if (loading) return <AddressSkeleton />;
   return (
     <div className="mt-12">
@@ -26,7 +21,7 @@ function AddressSection() {
           Saved Addresses
         </h2>
         <Button
-          onClick={handleAddNewAddress}
+          onClick={()=>navigate("/setup-address")}
           className="bg-brandOrange text-white hover:bg-opacity-90"
         >
           <Plus className="w-4 h-4 mr-2" /> Add New Address
@@ -61,7 +56,7 @@ function AddressSection() {
             <div className="flex gap-2">
               {!addr.isDefault && (
                 <Button
-                  onClick={() => handleMakeDefault(addr.id)}
+                  onClick={() => makeDefaultAddress(addr.id)}
                   variant="outline"
                   className="text-brandOrange border-brandOrange hover:bg-brandOrange hover:text-white"
                 >
@@ -71,12 +66,13 @@ function AddressSection() {
               <Button
                 variant="outline"
                 className="text-gray-600 border-gray-400"
+                onClick={()=>navigate(`/setup-address/${addr.id}`)}
               >
                 <Edit className="w-4 h-4" />
               </Button>
               <Button
                 variant="outline"
-                onClick={() => handleDeleteAddress(addr.id)}
+                onClick={() => deleteAddress(addr.id)}
                 className="text-red-500 border-red-400"
               >
                 <Trash className="w-4 h-4" />

@@ -109,6 +109,8 @@ function App() {
             <Route path="cart" element={<Cart />} />
             <Route path="order" element={<OrderPage />} />
             <Route path="order/:id" element={<OrderDetailPage />} />
+            <Route path="setup-address" element={<SetupAddress />} />
+            <Route path="setup-address/:id" element={<SetupAddress />} />
           </Route>
 
           {/* Admin Routes */}

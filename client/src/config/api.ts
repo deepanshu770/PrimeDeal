@@ -35,7 +35,7 @@ API.interceptors.response.use(
     }
 
     const { status, data } = error.response;
-
+    console.log(status,data);
     switch (status) {
       case 400:
         toast.error(data?.message || "Bad Request — check your input.");
@@ -48,10 +48,6 @@ API.interceptors.response.use(
 
       case 403:
         toast.error("You are not authorized to perform this action.");
-        break;
-
-      case 404:
-        toast.error("Requested resource not found.");
         break;
 
       case 408:

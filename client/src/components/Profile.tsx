@@ -4,9 +4,6 @@ import {
   Plus,
   User,
   Loader2,
-  MapPin,
-  Trash2,
-  Star,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useEffect, useRef, useState } from "react";
@@ -16,8 +13,8 @@ import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
 import { ProfileInputState, userProfileSchema } from "@/schema/userSchema";
 import { useUserStore } from "@/zustand/useUserStore";
-import { useAddressStore } from "@/zustand/useAddressStore";
 import { toast } from "sonner";
+import AddressSection from "./AddressSection";
 
 const Profile = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -220,146 +217,3 @@ const ProfileField = ({
   </div>
 );
 
-/* ===========================================================
-   🏠 Address Section Integrated with useAddressStore
-=========================================================== */
-const AddressSection = () => {
-  const {
-    addresses,
-    getAddresses,
-    loading,
-    deleteAddress,
-    setSelectedAddress,
-    selectedAddress,
-  } = useAddressStore();
-
-  const [adding, setAdding] = useState(false);
-  const [form, setForm] = useState({
-    addressLine1: "",
-    city: "",
-    state: "",
-    postalCode: "",
-    country: "India",
-  });
-
-  useEffect(() => {
-    getAddresses();
-  }, [getAddresses]);
-
-  const handleAdd = async () => {
-    if (!form.addressLine1 || !form.city || !form.postalCode) {
-      toast.error("Please fill all required address fields.");
-      return;
-    }
-    try {
-      const res = await fetch("http://localhost:3000/api/v1/address", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      const data = await res.json();
-      if (data.success) {
-        toast.success("Address added!");
-        setForm({
-          addressLine1: "",
-          city: "",
-          state: "",
-          postalCode: "",
-          country: "India",
-        });
-        setAdding(false);
-        await getAddresses();
-      }
-    } catch {
-      toast.error("Failed to add address.");
-    }
-  };
-
-  return (
-    <div>
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold text-gray-800 dark:text-white">
-          Saved Addresses
-        </h2>
-        <Button
-          onClick={() => setAdding(!adding)}
-          variant="outline"
-          className="flex items-center gap-2 text-sm border-brandGreen text-brandGreen hover:bg-brandGreen/10"
-        >
-          <Plus className="w-4 h-4" /> Add Address
-        </Button>
-      </div>
-
-      {adding && (
-        <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-5 space-y-3 border border-gray-200 dark:border-gray-700">
-          {["addressLine1", "city", "state", "postalCode"].map((field) => (
-            <Input
-              key={field}
-              placeholder={field.replace("Line1", " Line 1")}
-              value={(form as any)[field]}
-              onChange={(e) => setForm({ ...form, [field]: e.target.value })}
-              className="text-sm"
-            />
-          ))}
-          <Button onClick={handleAdd} className="bg-brandGreen text-white w-full">
-            Save Address
-          </Button>
-        </div>
-      )}
-
-      {loading ? (
-        <div className="flex justify-center py-8">
-          <Loader2 className="animate-spin text-brandGreen w-6 h-6" />
-        </div>
-      ) : addresses.length === 0 ? (
-        <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
-          No addresses found.
-        </p>
-      ) : (
-        <div className="space-y-3">
-          {addresses.map((addr) => (
-            <div
-              key={addr.id}
-              onClick={() => setSelectedAddress(addr)}
-              className={`p-4 rounded-lg border transition-all cursor-pointer ${
-                selectedAddress?.id === addr.id
-                  ? "border-brandGreen bg-brandGreen/5"
-                  : "border-gray-200 dark:border-gray-700"
-              }`}
-            >
-              <div className="flex justify-between items-center">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-brandGreen" />
-                    <p className="font-semibold text-gray-800 dark:text-gray-200">
-                      {addr.city}, {addr.state}
-                    </p>
-                  </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    {addr.addressLine1}, {addr.postalCode}
-                  </p>
-                </div>
-                <div className="flex gap-2 items-center">
-                  {addr.isDefault && (
-                    <Star className="w-4 h-4 text-yellow-500"  />
-                  )}
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deleteAddress(addr.id);
-                    }}
-                  >
-                    <Trash2 className="w-4 h-4 text-red-500" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};

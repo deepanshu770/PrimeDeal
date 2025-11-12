@@ -19,17 +19,17 @@ type User = {
   admin: boolean;
   isverified: boolean;
 };
-type Address = {
-  addressLine1: string;
-  addressLine2: string;
-  city: string;
-  state: string;
-  postalCode: string;
-  country: string;
-  latitude?: number;
-  longitude?: number;
-  isDefault?: boolean;
-};
+// type Address = {
+//   addressLine1: string;
+//   addressLine2: string;
+//   city: string;
+//   state: string;
+//   postalCode: string;
+//   country: string;
+//   latitude?: number;
+//   longitude?: number;
+//   isDefault?: boolean;
+// };
 type UserState = {
   user: User | null;
   isAuthenticated: boolean;
@@ -41,7 +41,6 @@ type UserState = {
   checkAuthentication: () => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (input: ProfileInputState) => Promise<void>;
-  setupAddress: (address:Address) => Promise<void>;
 };
 
 export const useUserStore = create<UserState>()(
@@ -67,9 +66,10 @@ export const useUserStore = create<UserState>()(
               loading: false,
               user: response.data.user,
             });
-          } else {
-            set({ loading: false });
           }
+
+          set({ loading: false });
+
           return response.data.success;
         } catch (error: any) {
           console.error("Signup error:", error);
@@ -128,7 +128,7 @@ export const useUserStore = create<UserState>()(
             toast.success(response.data.message);
             useCartStore.getState().clearCart();
             useShopStore.getState().clearShop();
-          }else{
+          } else {
             toast.error(response.data.message);
           }
           set({ loading: false, user: null, isAuthenticated: false });
@@ -136,23 +136,6 @@ export const useUserStore = create<UserState>()(
           set({ loading: false });
         }
       },
-      
-      setupAddress: async (address:Address) => {
-        try {
-          set({ loading: true });
-          address.isDefault =true;
-          const response = await API.post(`/address`, address);
-          if (response.data.success) {
-            set({ loading: false, isAuthenticated: true });
-          } else {
-            toast.error(response.data.message);
-            set({ loading: false });
-          }
-        } catch (error) {
-          set({ loading: false });
-        }
-      },
-
       //update user profile api implementation
       updateProfile: async (input: ProfileInputState) => {
         try {

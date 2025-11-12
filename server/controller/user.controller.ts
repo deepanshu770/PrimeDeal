@@ -45,8 +45,8 @@ export const Login = asyncHandler(async (req, res) => {
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) throw new AppError("No user found with this email", 400);
 
-  // const isPasswordCorrect = await bcrypt.compare(password, user.passwordHash);
-  // if (!isPasswordCorrect) throw new AppError("Incorrect Password", 400);
+  const isPasswordCorrect = await bcrypt.compare(password, user.passwordHash);
+  if (!isPasswordCorrect) throw new AppError("Incorrect Password", 400);
 
   generateToken(res, user);
 
