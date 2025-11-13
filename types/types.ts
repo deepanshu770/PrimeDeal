@@ -112,7 +112,8 @@ export interface Product {
   description: string;
   brand?: string;
   image: string;
-  netQty: string; // e.g., "500g", "1L"
+  netQty?: number; 
+  unit ?: Unit
   outOfStock: boolean;
   createdAt: string;
   updatedAt: string;

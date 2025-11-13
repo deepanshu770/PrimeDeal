@@ -5,13 +5,14 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import axios, { AxiosError } from "axios";
 import { Address } from "../../../types/types";
 
-/* ===========================================================
-   🧠 Centralized API Error Handler
-=========================================================== */
-const handleApiError = (error: unknown, defaultMessage = "Something went wrong") => {
+const handleApiError = (
+  error: unknown,
+  defaultMessage = "Something went wrong"
+) => {
   let message = defaultMessage;
 
   if (axios.isAxiosError(error)) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const err = error as AxiosError<any>;
     if (err.response?.data?.message) message = err.response.data.message;
     else if (err.message) message = err.message;
@@ -20,42 +21,27 @@ const handleApiError = (error: unknown, defaultMessage = "Something went wrong")
   }
 
   toast.error(message);
-  console.error("❌ API Error:", message);
+  console.error(" API Error:", message);
 };
 
-/* ===========================================================
-   🏠 Address Zustand Store
-=========================================================== */
 type AddressStore = {
   loading: boolean;
   addresses: Address[];
   selectedAddress: Address | null;
 
-  /** Get all saved addresses of user */
   getAddresses: () => Promise<void>;
 
-  /** Add new address */
   addAddress: (data: Omit<Address, "id">) => Promise<void>;
 
-  /** Update existing address */
   updateAddress: (id: number, updatedData: Partial<Address>) => Promise<void>;
 
-  /** Delete an address */
   deleteAddress: (id: number) => Promise<void>;
 
-  /** Make address default */
   makeDefaultAddress: (id: number) => Promise<void>;
 
-  /** Select an address (for checkout, etc.) */
   setSelectedAddress: (address: Address) => void;
-
-  /** Clear everything */
-  clearAddresses: () => void;
 };
 
-/* ===========================================================
-   🧱 Implementation
-=========================================================== */
 export const useAddressStore = create<AddressStore>()(
   persist(
     (set, get) => ({
@@ -63,7 +49,6 @@ export const useAddressStore = create<AddressStore>()(
       addresses: [],
       selectedAddress: null,
 
-      /** 📦 Fetch all user addresses */
       getAddresses: async () => {
         set({ loading: true });
         try {
@@ -87,7 +72,6 @@ export const useAddressStore = create<AddressStore>()(
         }
       },
 
-      /** ➕ Add new address */
       addAddress: async (data) => {
         set({ loading: true });
         try {
@@ -105,7 +89,6 @@ export const useAddressStore = create<AddressStore>()(
         }
       },
 
-      /** ✏️ Update existing address */
       updateAddress: async (id, updatedData) => {
         set({ loading: true });
         try {
@@ -131,7 +114,6 @@ export const useAddressStore = create<AddressStore>()(
         }
       },
 
-      /** ⭐ Make address default */
       makeDefaultAddress: async (id) => {
         set({ loading: true });
         try {
@@ -156,7 +138,6 @@ export const useAddressStore = create<AddressStore>()(
         }
       },
 
-      /** ❌ Delete address */
       deleteAddress: async (id) => {
         set({ loading: true });
         try {
@@ -176,13 +157,11 @@ export const useAddressStore = create<AddressStore>()(
         }
       },
 
-      /** 📍 Select address */
       setSelectedAddress: (address) => {
         set({ selectedAddress: address });
         toast.success(`📦 Selected address: ${address.city}`);
       },
 
-      /** 🧹 Clear */
       clearAddresses: () => {
         localStorage.removeItem("prime-deal-addresses");
         set({ addresses: [], selectedAddress: null });

@@ -7,7 +7,7 @@ import { Unit } from "@prisma/client";
 // ----------------- Add Product -----------------
 export const addProduct = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name, description, price, categoryId, shopId, netQtyValue, unit } = req.body;
+    const { name, description, categoryId, netQtyValue, unit } = req.body;
     const file = req.file;
 
     if (!file) {
@@ -31,14 +31,6 @@ export const addProduct = async (req: Request, res: Response): Promise<void> => 
       });
       return;
     }
-
-    // ✅ Validate shop
-    const shop = await prisma.shop.findUnique({ where: { id: Number(shopId) } });
-    if (!shop) {
-      res.status(404).json({ success: false, message: "Shop not found" });
-      return;
-    }
-
     // ✅ Normalize fields
     const trimmedName = name.trim();
     const trimmedDescription = description?.trim();
@@ -58,42 +50,16 @@ export const addProduct = async (req: Request, res: Response): Promise<void> => 
           description: trimmedDescription || "",
           image: imageURL,
           categoryId: Number(categoryId),
-          netQty: `${netQtyValue}${unit}`, // e.g. “500g”
+          netQty: netQtyValue,
+          unit
         },
       });
     }
 
-    // ✅ Check inventory duplicate
-    const existingInventory = await prisma.shopInventory.findUnique({
-      where: { shopId_productId: { shopId: shop.id, productId: product.id } },
-    });
-
-    if (existingInventory) {
-      res.status(400).json({
-        success: false,
-        message: "Product already exists in this shop",
-      });
-      return;
-    }
-
-    // ✅ Add to shop inventory
-    const inventory = await prisma.shopInventory.create({
-      data: {
-        shopId: shop.id,
-        productId: product.id,
-        price: parseFloat(price),
-        quantity: 0,
-        netQty: parseFloat(netQtyValue),
-        unit: unit as Unit,
-        isAvailable: true,
-      },
-    });
-
     res.status(201).json({
       success: true,
       message: "Product added successfully",
-      product,
-      inventory,
+      product
     });
   } catch (error) {
     console.error("❌ Error adding product:", error);
@@ -428,7 +394,6 @@ export const getAllCategories = asyncHandler(async (req, res) => {
 export const addProductToShop = asyncHandler(async (req: Request, res: Response) => {
   const { productId, shopId, price, quantity, netQtyValue, unit } = req.body;
   console.log(req.body)
-  // ✅ Validate required fields
   if (!productId || !shopId || !price || !netQtyValue || !unit) {
     return res.status(400).json({
       success: false,
@@ -436,7 +401,6 @@ export const addProductToShop = asyncHandler(async (req: Request, res: Response)
     });
   }
 
-  // ✅ Check product existence
   const product = await prisma.product.findUnique({
     where: { id: Number(productId) },
   });

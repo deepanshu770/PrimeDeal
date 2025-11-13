@@ -31,9 +31,8 @@ model Product {
   description String
   brand       String?
   image       String
-  netQty      String // e.g., "250g", "1L"
-  outOfStock  Boolean  @default(false)
-
+  netQty      Int? 
+  unit        Unit?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

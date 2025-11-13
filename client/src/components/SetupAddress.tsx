@@ -93,10 +93,11 @@ const SetupAddress = () => {
       }
       if (id) {
         await updateAddress(Number(id), address);
+        navigate(-1);
       } else {
         await addAddress(address);
+      
       }
-      navigate(-1);
     } catch (error) {
       console.log(error);
     }

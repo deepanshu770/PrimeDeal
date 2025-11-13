@@ -1,28 +1,26 @@
-// src/zustand/useOrderStore.ts
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { toast } from "sonner";
 import axios, { AxiosError } from "axios";
-import { Order, OrderStatus } from "@/types/orderType";
+import { Order, OrderStatus } from "../../../types/types";
+import API from "@/config/api";
 
-// ✅ Axios instance (centralized config)
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1",
-  withCredentials: true,
-  headers: { "Content-Type": "application/json" },
-});
 
-// ✅ Centralized API error handler
-export const handleApiError = (error: unknown, defaultMessage?: string) => {
-  let message = defaultMessage || "Something went wrong";
+
+const handleApiError = (
+  error: unknown,
+  defaultMessage = "Something went wrong"
+) => {
+  let message = defaultMessage;
 
   if (axios.isAxiosError(error)) {
-    const axiosError = error as AxiosError<any>;
-    if (axiosError.response?.data?.message) {
-      message = axiosError.response.data.message;
-    } else if (axiosError.message) {
-      message = axiosError.message;
-    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const err = error as AxiosError<any>;
+    message =
+      err.response?.data?.message ||
+      err.message ||
+      err.response?.statusText ||
+      defaultMessage;
   } else if (error instanceof Error) {
     message = error.message;
   }
@@ -40,30 +38,19 @@ interface OrderState {
   shopOrders: Order[];
   singleOrder: Order | null;
 
-  /** Create a new order (multi-shop checkout supported) */
   createOrder: (payload: {
     cartItems: any[];
     addressId: number;
   }) => Promise<void>;
-
-  /** Get logged-in user's orders */
   getUserOrders: () => Promise<void>;
-
-  /** Get all orders of a shop (for shop owner dashboard) */
   getShopOrders: (shopId: number) => Promise<void>;
-
-  /** Get detailed order info by ID */
   getOrderById: (orderId: number) => Promise<void>;
-
-  /** Update order status (shop/admin only) */
   updateOrderStatus: (orderId: number, status: OrderStatus) => Promise<void>;
-
-  /** Clear all orders from local storage */
   clearOrders: () => void;
 }
 
 /* ===========================================================
-   🧠 STORE IMPLEMENTATION
+   🧠 IMPLEMENTATION
 =========================================================== */
 export const useOrderStore = create<OrderState>()(
   persist(
@@ -73,11 +60,11 @@ export const useOrderStore = create<OrderState>()(
       shopOrders: [],
       singleOrder: null,
 
-      /** 🧾 Create Order */
+      /** 🧾 CREATE ORDER */
       createOrder: async ({ cartItems, addressId }) => {
         set({ loading: true });
         try {
-          const res = await api.post("/order/checkout", {
+          const res = await API.post("/order/checkout", {
             cartItems,
             addressId,
           });
@@ -86,6 +73,8 @@ export const useOrderStore = create<OrderState>()(
             set((state) => ({
               orders: [...res.data.orders, ...state.orders],
             }));
+          } else {
+            toast.error(res.data.message || "Failed to place order");
           }
         } catch (error) {
           handleApiError(error, "Failed to place order");
@@ -94,28 +83,32 @@ export const useOrderStore = create<OrderState>()(
         }
       },
 
-      /** 👤 Fetch all user orders */
+      /** 👤 FETCH USER ORDERS */
       getUserOrders: async () => {
         set({ loading: true });
         try {
-          const res = await api.get("/order/user");
+          const res = await API.get("/order/user");
           if (res.data.success) {
             set({ orders: res.data.orders });
+          } else {
+            toast.error("Failed to load orders");
           }
         } catch (error) {
-          handleApiError(error, "Unable to fetch your orders");
+          handleApiError(error, "Unable to fetch orders");
         } finally {
           set({ loading: false });
         }
       },
 
-      /** 🏪 Fetch shop orders */
+      /** 🏪 FETCH SHOP ORDERS */
       getShopOrders: async (shopId) => {
         set({ loading: true });
         try {
-          const res = await api.get(`/order/shop/${shopId}`);
+          const res = await API.get(`/order/shop/${shopId}`);
           if (res.data.success) {
             set({ shopOrders: res.data.orders });
+          } else {
+            toast.error("Failed to fetch shop orders");
           }
         } catch (error) {
           handleApiError(error, "Unable to fetch shop orders");
@@ -124,41 +117,70 @@ export const useOrderStore = create<OrderState>()(
         }
       },
 
-      /** 🔍 Fetch a single order by ID */
+      /** 🔍 FETCH SINGLE ORDER DETAILS */
       getOrderById: async (orderId) => {
         set({ loading: true, singleOrder: null });
         try {
-          const res = await api.get(`/order/${orderId}`);
+          const res = await API.get(`/order/${orderId}`);
           if (res.data.success) {
             set({ singleOrder: res.data.order });
           } else {
             toast.error("Failed to fetch order details");
           }
-        } catch (err: any) {
-          console.error("Order fetch error:", err);
-          toast.error(err?.response?.data?.message || "Failed to load order");
+        } catch (error) {
+          handleApiError(error, "Unable to fetch order details");
         } finally {
           set({ loading: false });
         }
       },
-      /** 🔄 Update order status */
+
+      /** 🔄 UPDATE ORDER STATUS */
       updateOrderStatus: async (orderId, status) => {
+        const validStatuses: OrderStatus[] = [
+          OrderStatus.cancelled,
+          OrderStatus.confirmed,
+          OrderStatus.delivered,
+          OrderStatus.failed,
+          OrderStatus.out_for_delivery,
+          OrderStatus.pending,
+          OrderStatus.preparing,
+        ];
+
+        if (!validStatuses.includes(status)) {
+          toast.error("Invalid order status");
+          return;
+        }
+
+        set({ loading: true });
         try {
-          const res = await api.put(`/order/${orderId}/status`, { status });
+          const res = await API.put(`/order/${orderId}/status`, { status });
           if (res.data.success) {
-            toast.success(res.data.message);
+            toast.success(res.data.message || `Status updated to ${status}`);
+
+            // Update state locally (optimistic update)
             set((state) => ({
-              shopOrders: state.shopOrders.map((order) =>
-                order.id === orderId ? { ...order, orderStatus: status } : order
+              shopOrders: state.shopOrders.map((o) =>
+                o.id === orderId ? { ...o, orderStatus: status } : o
               ),
+              orders: state.orders.map((o) =>
+                o.id === orderId ? { ...o, orderStatus: status } : o
+              ),
+              singleOrder:
+                state.singleOrder?.id === orderId
+                  ? { ...state.singleOrder, orderStatus: status }
+                  : state.singleOrder,
             }));
+          } else {
+            toast.error("Failed to update order");
           }
         } catch (error) {
           handleApiError(error, "Failed to update order status");
+        } finally {
+          set({ loading: false });
         }
       },
 
-      /** 🧹 Clear local order cache */
+      /** 🧹 CLEAR STORE */
       clearOrders: () => {
         localStorage.removeItem("prime-deal-orders");
         set({ orders: [], shopOrders: [], singleOrder: null });

@@ -1,7 +1,8 @@
-import { Unit } from "@/types/types";
+
 import { toast } from "sonner";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import { Unit } from "../../../types/types";
 
 // ---------------------------------------------------------
 // 🧾 CART ITEM TYPE

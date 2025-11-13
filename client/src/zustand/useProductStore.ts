@@ -1,26 +1,11 @@
-import axios from "axios";
 import { toast } from "sonner";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { useShopStore } from "./useShopStore";
+import { Product } from "../../../types/types";
+import API from "@/config/api";
 
-const API_BASE = "http://localhost:3000/api/v1/product";
 
-axios.defaults.withCredentials = true;
-
-// ---------- TYPES ----------
-export interface Product {
-  id: number;
-  name: string;
-  description: string;
-  netQty: string;
-  image: string;
-  category?: string;
-  price?: number;
-  quantity?: number;
-  isAvailable?: boolean;
-  createdAt?: Date;
-}
 
 export interface ShopInventory {
   id: number;
@@ -45,8 +30,7 @@ type ProductStoreState = {
   products: Product[];
   shopInventory: ShopInventory[];
 
-  // Actions
-  fetchAllProducts: () => Promise<void>;
+  fetchAllProducts: (search?: string, categoryId?: number) => Promise<void>;
   fetchProductsByShop: (shopId: number) => Promise<void>;
   addExistingProductToShop: (
     productId: number,
@@ -60,14 +44,15 @@ type ProductStoreState = {
   editProduct: (productId: number, formData: FormData) => Promise<void>;
 };
 
-// ---------- HELPER ----------
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const handleError = (error: any, fallback: string) => {
   console.error("❌ Product Store Error:", error);
   const message = error?.response?.data?.message || error.message || fallback;
   toast.error(message);
 };
 
-// ---------- STORE ----------
+
 export const useProductStore = create<ProductStoreState>()(
   persist(
     (set) => ({
@@ -83,7 +68,7 @@ export const useProductStore = create<ProductStoreState>()(
           if (search) params.search = search.trim();
           if (categoryId) params.categoryId = categoryId;
 
-          const res = await axios.get(`${API_BASE}/catalog`, { params });
+          const res = await API.get(`/product/catalog`, { params });
 
           if (res.data.success) {
             set({
@@ -104,7 +89,7 @@ export const useProductStore = create<ProductStoreState>()(
       fetchProductsByShop: async (shopId) => {
         set({ loading: true });
         try {
-          const res = await axios.get(`${API_BASE}/shop/${shopId}`);
+          const res = await API.get(`/product/shop/${shopId}`);
           if (res.data.success) {
             set({
               shopInventory: res.data.products,
@@ -132,7 +117,7 @@ export const useProductStore = create<ProductStoreState>()(
         set({ loading: true });
 
         try {
-          const res = await axios.post(`${API_BASE}/add-to-shop`, {
+          const res = await API.post(`/product/add-to-shop`, {
             productId,
             shopId,
             price,
@@ -157,7 +142,8 @@ export const useProductStore = create<ProductStoreState>()(
             toast.error(res.data.message || "Failed to add product to shop");
             set({ loading: false });
           }
-        } catch (error: any) {
+        } catch (error) {
+          console.log(error)
           set({ loading: false });
           handleError(error, "Error adding product to shop");
         }
@@ -167,7 +153,7 @@ export const useProductStore = create<ProductStoreState>()(
       createProduct: async (formData, shopId) => {
         set({ loading: true });
         try {
-          const res = await axios.post(`${API_BASE}`, formData, {
+          const res = await API.post(`/product`, formData, {
             headers: { "Content-Type": "multipart/form-data" },
             params: { shopId },
           });
@@ -198,7 +184,7 @@ export const useProductStore = create<ProductStoreState>()(
       editProduct: async (productId, formData) => {
         set({ loading: true });
         try {
-          const res = await axios.put(`${API_BASE}/${productId}`, formData, {
+          const res = await API.put(`/product/${productId}`, formData, {
             headers: { "Content-Type": "multipart/form-data" },
           });
 

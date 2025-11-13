@@ -100,7 +100,7 @@ const Profile = () => {
           {/* Avatar Section */}
           <div className="relative w-28 h-28 md:w-32 md:h-32">
             <Avatar className="w-full h-full">
-              <AvatarImage src={selectedFile || ""} />
+              <AvatarImage src={selectedFile || profileData.profilePicture} />
               <AvatarFallback className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100">
                 {profileData.fullname?.[0] || "U"}
               </AvatarFallback>

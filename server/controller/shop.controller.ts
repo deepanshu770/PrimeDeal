@@ -238,12 +238,11 @@ export const updateOrderStatus = asyncHandler(async (req: Request, res: Response
   });
 });
 
-/* ---------------------------------------------------
-   GET SINGLE SHOP DETAILS
---------------------------------------------------- */
+
 export const getSingleShop = asyncHandler(async (req: Request, res: Response) => {
   const shopId = Number(req.params.id);
-  console.log("Getting Shop ID : ",shopId);
+  console.log("Getting Shop ID :", shopId);
+
   const shop = await prisma.shop.findUnique({
     where: { id: shopId },
     include: {
@@ -251,8 +250,24 @@ export const getSingleShop = asyncHandler(async (req: Request, res: Response) =>
         select: { fullname: true, email: true, phoneNumber: true },
       },
       inventory: {
-        include: {
-          product: { include: { category: true } },
+        select: {
+          id: true,
+          price: true,
+          quantity: true,
+          netQty: true,       
+          unit: true,        
+          isAvailable: true,
+
+          product: {
+            select: {
+              id: true,
+              name: true,
+              description: true,
+              brand: true,
+              image: true,
+              category: true,
+            },
+          },
         },
       },
     },

@@ -14,6 +14,7 @@ import { useShopStore } from "@/zustand/useShopStore";
 import { useProductStore } from "@/zustand/useProductStore";
 import axios from "axios";
 import { unitOptions } from "@/config/data"; // 🧠 Should be like ["pcs", "g", "kg", "ml", "ltr"]
+import { Product, Unit } from "../../../types/types";
 
 export default function ProductCatalog() {
   const { shop: shopList } = useShopStore();
@@ -26,12 +27,12 @@ export default function ProductCatalog() {
     []
   );
 
-  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedShop, setSelectedShop] = useState<number | null>(null);
   const [price, setPrice] = useState("");
   const [quantity, setQuantity] = useState("");
-  const [netQtyValue, setNetQtyValue] = useState("");
-  const [unit, setUnit] = useState("pcs");
+  const [netQtyValue, setNetQtyValue] = useState(0);
+  const [unit, setUnit] = useState<Unit>(Unit.pcs);
   const [openAddToShop, setOpenAddToShop] = useState(false);
 
   // ✅ Fetch categories once
@@ -59,7 +60,7 @@ export default function ProductCatalog() {
 
   // 🛒 Add product to shop
   const handleAdd = async () => {
-    if (!selectedShop || !price || !quantity || !netQtyValue || !unit) {
+    if (!selectedShop || !price || !quantity || !netQtyValue || !unit || !selectedProduct) {
       toast.error("⚠️ Please fill all fields");
       return;
     }
@@ -182,7 +183,7 @@ export default function ProductCatalog() {
                     {p.name}
                   </h3>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {p.netQty}
+                    {p.netQty} {p?.unit}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
                     {p.category?.name || "Uncategorized"}
@@ -192,6 +193,9 @@ export default function ProductCatalog() {
                   onClick={() => {
                     setSelectedProduct(p);
                     setOpenAddToShop(true);
+                    if(p.netQty) setNetQtyValue(p.netQty);
+                    if(p.unit) setUnit(p.unit);
+
                   }}
                   className="w-full bg-brandOrange hover:bg-hoverOrange text-white"
                 >
@@ -251,12 +255,12 @@ export default function ProductCatalog() {
                 placeholder="Net Quantity (e.g. 500)"
                 type="number"
                 value={netQtyValue}
-                onChange={(e) => setNetQtyValue(e.target.value)}
+                onChange={(e) => setNetQtyValue(Number(e.target.value))}
                 className="flex-1 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
               />
               <select
                 value={unit}
-                onChange={(e) => setUnit(e.target.value)}
+                onChange={(e) => setUnit(e.target.value as Unit)}
                 className="border rounded-md p-2 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 border-gray-300 dark:border-gray-700"
               >
                 {unitOptions.map((u) => (

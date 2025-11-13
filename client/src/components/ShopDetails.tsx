@@ -132,7 +132,7 @@ const ProductCard = ({ product, inventory, shopId, addToCart }: any) => {
         name: product.name,
         image: product.image,
         price: inventory.price,
-        netQty: product.netQty,
+        netQty: inventory.netQty,
         unit: inventory.unit,
         shopId,
         isAvailable: inventory.isAvailable,
@@ -166,7 +166,7 @@ const ProductCard = ({ product, inventory, shopId, addToCart }: any) => {
           </p>
           <div className="flex justify-between items-center mt-3">
             <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              {product.netQty} {inventory.unit}
+              {inventory.netQty} {inventory.unit}
             </p>
             <p className="text-lg font-bold text-brandGreen">
               ₹{inventory.price.toFixed(2)}

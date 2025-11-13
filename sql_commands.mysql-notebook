@@ -2,7 +2,7 @@
     "type": "MySQLNotebook",
     "version": "1.0",
     "caption": "DB Notebook",
-    "content": "\\about\nuse primedeal;\nshow TABLES\nuse primedeal;\nSELECT * from user\nINSERT INTO Category (id, name, description) VALUES\n(1,  'Dairy', 'Milk, butter, cheese, paneer and other dairy products'),\n(2,  'Beverages', 'Tea, coffee, juices, soft drinks and other beverages'),\n(3,  'Staples & Oils', 'Rice, wheat, pulses, cooking oils and flours'),\n(4,  'Snacks & Confectionery', 'Chips, biscuits, chocolates, namkeens and sweets'),\n(5,  'Instant Food & Noodles', 'Instant mixes, noodles, soups and ready-to-cook products'),\n(6,  'Personal Care', 'Soaps, shampoos, toothpaste and personal care items'),\n(7,  'Household Cleaning', 'Detergents, dish wash, floor cleaner and cleaning essentials'),\n(8,  'Spices & Condiments', 'Masalas, sauces, pickles and seasonings'),\n(9,  'Bakery & Bread', 'Bread, cakes, rusks and bakery items'),\n(10, 'Frozen & Ready-to-Eat', 'Frozen vegetables, parathas, ready-to-eat meals'),\n(11, 'Baby Care', 'Baby food, diapers and baby personal care'),\n(12, 'Health & Nutrition', 'Supplements, protein powders, health foods'),\n(13, 'Bakery Ingredients & Sugar', 'Sugar, baking soda, flour specific to baking'),\n(14, 'Tea & Coffee', 'Loose tea, tea bags, instant coffee and coffee beans'),\n(15, 'Eggs & Meat', 'Fresh eggs, packaged meat and meat products'),\n(16, 'Seafood', 'Packaged and frozen seafood products'),\n(17, 'Breakfast & Cereals', 'Cereals, oats, muesli and breakfast mixes'),\n(18, 'Sauces & Cooking Pastes', 'Ketchups, pastes, chutneys and cooking sauces'),\n(19, 'Health Drinks & Horlicks', 'Malted drinks, energy mixes and tonics'),\n(20, 'Miscellaneous', 'Other grocery & household items');\nINSERT INTO Product (categoryId, name, description, brand, image, netQty, outOfStock, createdAt, updatedAt) VALUES\n-- Dairy (Category 1)\n(1, 'Amul Butter', 'Fresh and creamy Amul butter, perfect for toast and cooking.', 'Amul', 'https://example.com/images/amul-butter.jpg', '500g', false, NOW(), NOW()),\n(1, 'Amul Milk Full Cream', 'Full cream toned milk, pasteurized.', 'Amul', 'https://example.com/images/amul-milk-full-cream.jpg', '1L', false, NOW(), NOW()),\n(1, 'Britannia Cheese Slices', 'Processed cheese slices for sandwiches and burgers.', 'Britannia', 'https://example.com/images/britannia-cheese.jpg', '200g', false, NOW(), NOW()),\n(1, 'Mother Dairy Paneer', 'Fresh cottage cheese (paneer) made from cow milk.', 'Mother Dairy', 'https://example.com/images/mother-dairy-paneer.jpg', '200g', false, NOW(), NOW()),\n(1, 'Amul Fresh Cream', 'Rich fresh cream suitable for desserts and cooking.', 'Amul', 'https://example.com/images/amul-cream.jpg', '200ml', false, NOW(), NOW()),\n\n-- Beverages (Category 2)\n(2, 'Tata Tea Premium', 'Strong and aromatic tea blend for daily brewing.', 'Tata Tea', 'https://example.com/images/tata-tea-premium.jpg', '1kg', false, NOW(), NOW()),\n(2, 'Bru Instant Coffee', 'Rich and aromatic instant coffee granules.', 'Bru', 'https://example.com/images/bru-instant-coffee.jpg', '100g', false, NOW(), NOW()),\n(2, 'Tropicana Mixed Fruit Juice', '100% real fruit juice, no preservatives.', 'Tropicana', 'https://example.com/images/tropicana-juice.jpg', '1L', false, NOW(), NOW()),\n(2, 'Red Bull Energy Drink', 'Energy drink to boost stamina and alertness.', 'Red Bull', 'https://example.com/images/redbull.jpg', '250ml', false, NOW(), NOW()),\n(2, 'Tetley Green Tea', 'Green tea bags with natural antioxidants.', 'Tetley', 'https://example.com/images/tetley-green.jpg', '25 bags', false, NOW(), NOW()),\n\n-- Staples & Oils (Category 3)\n(3, 'Tata Salt Iodized', 'Fortified iodized salt for daily use.', 'Tata Salt', 'https://example.com/images/tata-salt.jpg', '1kg', false, NOW(), NOW()),\n(3, 'Fortune Sunflower Oil', 'Refined sunflower oil for healthy cooking.', 'Fortune', 'https://example.com/images/fortune-sunflower.jpg', '1L', false, NOW(), NOW()),\n(3, 'Daawat Basmati Rice', 'Aromatic long-grain basmati rice.', 'Daawat', 'https://example.com/images/daawat-basmati.jpg', '5kg', false, NOW(), NOW()),\n(3, 'Aashirvaad Atta', 'Whole wheat atta for daily rotis.', 'Aashirvaad', 'https://example.com/images/aashirvaad-atta.jpg', '5kg', false, NOW(), NOW()),\n(3, 'Tata Sampann Toor Dal', 'Premium quality toor dal/pigeon pea.', 'Tata Sampann', 'https://example.com/images/tata-sampann-toor.jpg', '1kg', false, NOW(), NOW()),\n\n-- Snacks & Confectionery (Category 4)\n(4, 'Lay\\'s Classic Potato Chips', 'Crispy salted potato chips.', 'Lay''s', 'https://example.com/images/lays-classic.jpg', '52g', false, NOW(), NOW()),\n(4, 'Parle-G Biscuits', 'Classic glucose biscuits, good for tea-time.', 'Parle', 'https://example.com/images/parle-g.jpg', '250g', false, NOW(), NOW()),\n(4, 'Cadbury Dairy Milk', 'Smooth milk chocolate bar.', 'Cadbury', 'https://example.com/images/cadbury-dairymilk.jpg', '60g', false, NOW(), NOW()),\n(4, 'Haldiram\\'s Aloo Bhujia', 'Crispy and spicy potato snack.', 'Haldiram\\'s', 'https://example.com/images/haldirams-aloo.jpg', '200g', false, NOW(), NOW()),\n(4, 'Bikano Moong Dal', 'Crunchy moong dal snack.', 'Bikano', 'https://example.com/images/bikano-moongdal.jpg', '200g', false, NOW(), NOW()),\n\n-- Instant Food & Noodles (Category 5)\n(5, 'Maggi 2-Minute Noodles Masala', 'Instant masala noodles, quick and tasty.', 'Maggi', 'https://example.com/images/maggi-masala.jpg', '70g', false, NOW(), NOW()),\n(5, 'Knorr Soupy Noodles Tomato', 'Quick soupy noodles with tomato flavor.', 'Knorr', 'https://example.com/images/knorr-soupy.jpg', '70g', false, NOW(), NOW()),\n(5, 'ITC Kitchens of India Paneer Butter Masala Ready-to-Eat', 'Ready-to-eat Indian curry with paneer.', 'ITC', 'https://example.com/images/kitchens-paneer.jpg', '300g', false, NOW(), NOW()),\n(5, 'MTR Idli & Dosa Mix', 'South Indian idli and dosa instant mix.', 'MTR', 'https://example.com/images/mtr-idli.jpg', '500g', false, NOW(), NOW()),\n(5, 'Yippee Noodles Masala', 'Flavorful instant noodles.', 'Yippee', 'https://example.com/images/yippee.jpg', '280g', false, NOW(), NOW()),\n\n-- Personal Care (Category 6)\n(6, 'Dove Beauty Bar', 'Moisturizing beauty bar soap for soft skin.', 'Dove', 'https://example.com/images/dove-soap.jpg', '125g', false, NOW(), NOW()),\n(6, 'Patanjali Aloe Vera Gel', 'Multi-purpose aloe vera gel for skin and hair.', 'Patanjali', 'https://example.com/images/patanjali-aloe.jpg', '200g', false, NOW(), NOW()),\n(6, 'Clinic Plus Shampoo', 'Nourishing shampoo for daily use.', 'Clinic Plus', 'https://example.com/images/clinicplus.jpg', '200ml', false, NOW(), NOW()),\n(6, 'Colgate Strong Teeth Toothpaste', 'Toothpaste for strong teeth and fresh breath.', 'Colgate', 'https://example.com/images/colgate.jpg', '100g', false, NOW(), NOW()),\n(6, 'Nivea Men Deodorant', 'Long lasting deodorant for men.', 'Nivea', 'https://example.com/images/nivea-men.jpg', '150ml', false, NOW(), NOW()),\n\n-- Household Cleaning (Category 7)\n(7, 'Surf Excel Matic', 'Detergent for machine wash, removes tough stains.', 'Surf Excel', 'https://example.com/images/surf-excel-matic.jpg', '2kg', false, NOW(), NOW()),\n(7, 'Harpic Toilet Cleaner', 'Powerful toilet bowl cleaner.', 'Harpic', 'https://example.com/images/harpic.jpg', '500ml', false, NOW(), NOW()),\n(7, 'Vim Bar', 'Dish washing bar for sparkling utensils.', 'Vim', 'https://example.com/images/vim-bar.jpg', '200g', false, NOW(), NOW()),\n(7, 'Lizol Floor Cleaner', 'Disinfectant floor cleaner with fresh fragrance.', 'Lizol', 'https://example.com/images/lizol.jpg', '1L', false, NOW(), NOW()),\n(7, 'Dettol Handwash Original', 'Antibacterial handwash for hygiene.', 'Dettol', 'https://example.com/images/dettol-handwash.jpg', '200ml', false, NOW(), NOW()),\n\n-- Spices & Condiments (Category 8)\n(8, 'MDH Chana Masala', 'Classic chana masala spice mix.', 'MDH', 'https://example.com/images/mdh-chana.jpg', '100g', false, NOW(), NOW()),\n(8, 'Everest Garam Masala', 'Signature blend for Indian gravies and curries.', 'Everest', 'https://example.com/images/everest-garam.jpg', '100g', false, NOW(), NOW()),\n(8, 'Maggi Tomato Ketchup', 'Tangy tomato ketchup for sandwiches and snacks.', 'Maggi', 'https://example.com/images/maggi-ketchup.jpg', '500g', false, NOW(), NOW()),\n(8, 'Mother\\'s Recipe Mango Pickle', 'Traditional spicy mango pickle.', 'Mother\\'s Recipe', 'https://example.com/images/mothers-pickle.jpg', '400g', false, NOW(), NOW()),\n(8, 'Fortune Soya Chunks', 'Protein-rich soya chunks for curries and gravies.', 'Fortune', 'https://example.com/images/soya-chunks.jpg', '500g', false, NOW(), NOW()),\n\n-- Bakery & Bread (Category 9)\n(9, 'Modern White Bread Loaf', 'Soft white bread suitable for sandwiches.', 'Modern', 'https://example.com/images/modern-bread.jpg', '400g', false, NOW(), NOW()),\n(9, 'Britannia Cake Treat', 'Soft sponge cake, perfect with tea.', 'Britannia', 'https://example.com/images/britannia-cake.jpg', '200g', false, NOW(), NOW()),\n(9, 'English Oven Rusk', 'Crispy rusk ideal for tea-time.', 'English Oven', 'https://example.com/images/english-oven-rusk.jpg', '250g', false, NOW(), NOW()),\n(9, 'Britannia Good Day Cookies', 'Buttery cookies with chocolate chips.', 'Britannia', 'https://example.com/images/goodday.jpg', '250g', false, NOW(), NOW()),\n(9, 'Parle Hide & Seek', 'Crunchy chocolate cookies for snacking.', 'Parle', 'https://example.com/images/hide-seek.jpg', '200g', false, NOW(), NOW()),\n\n-- Frozen & Ready-to-Eat (Category 10)\n(10, 'McCain French Fries', 'Pre-cut frozen french fries, ready to deep fry.', 'McCain', 'https://example.com/images/mccain-fries.jpg', '1kg', false, NOW(), NOW()),\n(10, 'Al Kabeer Chicken Nuggets', 'Breaded chicken nuggets, ready to cook.', 'Al Kabeer', 'https://example.com/images/alkabeer-nuggets.jpg', '400g', false, NOW(), NOW()),\n(10, 'Haldiram\\'s Frozen Samosa', 'Frozen potato samosa for quick frying.', 'Haldiram\\'s', 'https://example.com/images/haldirams-samosa.jpg', '400g', false, NOW(), NOW()),\n(10, 'ITC Kitchens of India Ready Meal - Dal Makhani', 'Ready-to-eat dal makhani pouch.', 'ITC', 'https://example.com/images/itc-dal.jpg', '300g', false, NOW(), NOW()),\n(10, 'Mother Dairy Frozen Peas', 'Quick frozen green peas for cooking.', 'Mother Dairy', 'https://example.com/images/frozen-peas.jpg', '500g', false, NOW(), NOW()),\n\n-- Baby Care (Category 11)\n(11, 'Pampers Baby Dry Diapers', 'Soft and absorbent diapers for babies.', 'Pampers', 'https://example.com/images/pampers.jpg', 'size-3-40pcs', false, NOW(), NOW()),\n(11, 'Nestle Cerelac Mixed Fruit', 'Weaning food with essential nutrients.', 'Nestle', 'https://example.com/images/cerelac.jpg', '300g', false, NOW(), NOW()),\n(11, 'Johnson\\'s Baby Lotion', 'Mild lotion for baby’s soft skin.', 'Johnson''s', 'https://example.com/images/johnson-lotion.jpg', '200ml', false, NOW(), NOW()),\n(11, 'Himalaya Baby Soap', 'Gentle soap formulated for babies.', 'Himalaya', 'https://example.com/images/himalaya-baby.jpg', '75g', false, NOW(), NOW()),\n(11, 'Pigeon Baby Food Jar', 'Nutritious baby food jar.', 'Pigeon', 'https://example.com/images/pigeon-babyfood.jpg', '120g', false, NOW(), NOW()),\n\n-- Health & Nutrition (Category 12)\n(12, 'Ensure Nutrition Shake', 'Complete balanced nutrition in a shake.', 'Ensure', 'https://example.com/images/ensure.jpg', '400g', false, NOW(), NOW()),\n(12, 'Amway Nutrilite Protein Powder', 'Plant-based protein supplement.', 'Nutrilite', 'https://example.com/images/nutilite-protein.jpg', '500g', false, NOW(), NOW()),\n(12, 'Organic India Triphala Powder', 'Herbal powder for digestive health.', 'Organic India', 'https://example.com/images/triphala.jpg', '100g', false, NOW(), NOW()),\n(12, 'Himalaya Liv.52 Tablets', 'Liver support herbal tablets.', 'Himalaya', 'https://example.com/images/liv52.jpg', '60 tablets', false, NOW(), NOW()),\n(12, 'MuscleBlaze Whey Protein', 'Whey protein concentrate for muscle gain.', 'MuscleBlaze', 'https://example.com/images/muscleblaze.jpg', '1kg', false, NOW(), NOW()),\n\n-- Baking Ingredients & Sugar (Category 13)\n(13, 'Nature Fresh Refined Sugar', 'Pure refined sugar for everyday use.', 'Nature Fresh', 'https://example.com/images/sugar.jpg', '1kg', false, NOW(), NOW()),\n(13, 'Arm & Hammer Baking Soda', 'Baking soda for baking and cleaning.', 'Arm & Hammer', 'https://example.com/images/bakingsoda.jpg', '200g', false, NOW(), NOW()),\n(13, 'Woolworths All Purpose Flour', 'Plain flour suitable for baking.', 'Woolworths', 'https://example.com/images/all-purpose-flour.jpg', '1kg', false, NOW(), NOW()),\n(13, 'Anil Baking Powder', 'Leavening agent for cakes and breads.', 'Anil', 'https://example.com/images/baking-powder.jpg', '100g', false, NOW(), NOW()),\n(13, 'Pillsbury Maida', 'Refined wheat flour for baking and pastries.', 'Pillsbury', 'https://example.com/images/pillsbury-maida.jpg', '1kg', false, NOW(), NOW()),\n\n-- Tea & Coffee (Category 14)\n(14, 'Brooke Bond Red Label Tea', 'Strong Indian tea for daily brew.', 'Brooke Bond', 'https://example.com/images/redlabel.jpg', '500g', false, NOW(), NOW()),\n(14, 'Nescafe Classic Coffee', 'Instant coffee for a quick cup.', 'Nescafe', 'https://example.com/images/nescafe-classic.jpg', '200g', false, NOW(), NOW()),\n(14, 'Tata Tea Gold', 'Premium tea blend for better aroma.', 'Tata Tea', 'https://example.com/images/tata-gold.jpg', '500g', false, NOW(), NOW()),\n(14, 'The Indian Bean Roasted Coffee Beans', 'Fresh roasted coffee beans for filter coffee.', 'The Indian Bean', 'https://example.com/images/coffee-beans.jpg', '250g', false, NOW(), NOW()),\n(14, 'Twinings Earl Grey', 'Classic earl grey tea for refined taste.', 'Twinings', 'https://example.com/images/twinings.jpg', '25 bags', false, NOW(), NOW()),\n\n-- Eggs & Meat (Category 15)\n(15, 'Farm Fresh Eggs', 'Country-fresh graded eggs for daily consumption.', 'Farm Fresh', 'https://example.com/images/farm-eggs.jpg', '12pcs', false, NOW(), NOW()),\n(15, 'Godrej Yummiez Chicken Nuggets', 'Chicken nuggets ready to cook.', 'Godrej Yummiez', 'https://example.com/images/godrej-nuggets.jpg', '500g', false, NOW(), NOW()),\n(15, 'Venky\\'s Frozen Chicken Sausages', 'Chicken sausages for quick meals.', 'Venky''s', 'https://example.com/images/venkys-sausage.jpg', '400g', false, NOW(), NOW()),\n(15, 'Fresh Mutton Cubes', 'Fresh mutton cubes, cleaned and cut.', 'Local Butcher', 'https://example.com/images/mutton-cubes.jpg', '500g', false, NOW(), NOW()),\n(15, 'Keystone Ham Slices', 'Sliced ham for sandwiches and pizzas.', 'Keystone', 'https://example.com/images/ham-slices.jpg', '200g', false, NOW(), NOW()),\n\n-- Seafood (Category 16)\n(16, 'Aqua Marine Frozen Prawns', 'IQF frozen prawns ideal for curries.', 'Aqua Marine', 'https://example.com/images/prawns.jpg', '500g', false, NOW(), NOW()),\n(16, 'Kingfisher Frozen Fish Fillet', 'Firm texture fish fillets for frying and grilling.', 'Kingfisher', 'https://example.com/images/fish-fillet.jpg', '400g', false, NOW(), NOW()),\n(16, 'Freshwater Sampan Pomfret', 'Cleaned and frozen pomfret pieces.', 'Local Fisheries', 'https://example.com/images/pomfret.jpg', '600g', false, NOW(), NOW()),\n(16, 'Catch Surmai Steaks', 'Frozen surmai steaks, easy to cook.', 'Catch', 'https://example.com/images/surmai.jpg', '500g', false, NOW(), NOW()),\n(16, 'Oceanic Squid Rings', 'Ready-to-cook squid rings, frozen.', 'Oceanic', 'https://example.com/images/squid.jpg', '300g', false, NOW(), NOW()),\n\n-- Breakfast & Cereals (Category 17)\n(17, 'Kellogg\\'s Corn Flakes', 'Crispy corn flakes for breakfast.', 'Kellogg''s', 'https://example.com/images/cornflakes.jpg', '500g', false, NOW(), NOW()),\n(17, 'Quaker Oats', 'Rolled oats for healthy breakfasts.', 'Quaker', 'https://example.com/images/quaker-oats.jpg', '1kg', false, NOW(), NOW()),\n(17, 'Bagrry\\'s Muesli', 'Healthy muesli mix with nuts and dried fruits.', 'Bagrry''s', 'https://example.com/images/muesli.jpg', '500g', false, NOW(), NOW()),\n(17, 'MTR Poha', 'Ready-to-cook poha for quick breakfast.', 'MTR', 'https://example.com/images/poha.jpg', '500g', false, NOW(), NOW()),\n(17, 'Patanjali Corn Flakes', 'Natural corn flakes with no artificial colors.', 'Patanjali', 'https://example.com/images/patanjali-cornflakes.jpg', '250g', false, NOW(), NOW()),\n\n-- Sauces & Cooking Pastes (Category 18)\n(18, 'Amul Ketchup', 'Classic tangy tomato ketchup.', 'Amul', 'https://example.com/images/amul-ketchup.jpg', '500g', false, NOW(), NOW()),\n(18, 'Gits Pav Bhaji Masala Paste', 'Ready-to-use pav bhaji cooking paste.', 'Gits', 'https://example.com/images/gits-paste.jpg', '200g', false, NOW(), NOW()),\n(18, 'MDH Curry Paste', 'Instant curry paste for quick gravies.', 'MDH', 'https://example.com/images/mdh-paste.jpg', '250g', false, NOW(), NOW()),\n(18, 'Veeba Schezwan Sauce', 'Spicy schezwan sauce for Indo-Chinese dishes.', 'Veeba', 'https://example.com/images/veeba-schezwan.jpg', '350g', false, NOW(), NOW()),\n(18, 'Mother\\'s Recipe Garlic Pickle', 'Zesty garlic pickle to complement meals.', 'Mother\\'s Recipe', 'https://example.com/images/garlic-pickle.jpg', '300g', false, NOW(), NOW()),\n\n-- Health Drinks & Horlicks (Category 19)\n(19, 'Horlicks Original', 'Nutritional malted drink for growing kids.', 'Horlicks', 'https://example.com/images/horlicks.jpg', '500g', false, NOW(), NOW()),\n(19, 'Boost Health Drink', 'Energy and nutrition drink for active kids.', 'Boost', 'https://example.com/images/boost.jpg', '500g', false, NOW(), NOW()),\n(19, 'Complan Powder', 'Nutrition supplement and energy drink.', 'Complan', 'https://example.com/images/complan.jpg', '500g', false, NOW(), NOW()),\n(19, 'Bournvita Chocolate', 'Malted chocolate health drink for children.', 'Bournvita', 'https://example.com/images/bournvita.jpg', '500g', false, NOW(), NOW()),\n(19, 'Amul Pro Rich Milk Powder', 'High protein milk powder for family use.', 'Amul', 'https://example.com/images/amul-milkpowder.jpg', '1kg', false, NOW(), NOW()),\n\n-- Miscellaneous (Category 20)\n(20, 'Fevicol Adhesive', 'Multipurpose adhesive for household repairs.', 'Pidilite', 'https://example.com/images/fevicol.jpg', '50g', false, NOW(), NOW()),\n(20, 'Bajaj Almond Hair Oil', 'Nourishing almond hair oil for healthy hair.', 'Bajaj', 'https://example.com/images/bajaj-oil.jpg', '200ml', false, NOW(), NOW()),\n(20, 'Bata Shoe Polish Black', 'Long lasting shoe polish for shine and protection.', 'Bata', 'https://example.com/images/shoepolish.jpg', '60ml', false, NOW(), NOW()),\n(20, 'Garnier Face Wash', 'Refreshing face wash for daily cleansing.', 'Garnier', 'https://example.com/images/garnier.jpg', '100ml', false, NOW(), NOW()),\n(20, 'Eveready AA Batteries Pack', 'Long lasting AA batteries for household devices.', 'Eveready', 'https://example.com/images/batteries.jpg', '4pcs', false, NOW(), NOW()),\n\n-- Additional items to reach 110 entries (mix across categories)\n-- Dairy extras\n(1, 'Amul Cheese Spread', 'Creamy cheese spread suitable for bread and snacks.', 'Amul', 'https://example.com/images/amul-cheese-spread.jpg', '200g', false, NOW(), NOW()),\n(1, 'Britannia Yogurt Dahi', 'Fresh curd/yogurt from Britannia.', 'Britannia', 'https://example.com/images/britannia-dahi.jpg', '400g', false, NOW(), NOW()),\n\n-- Snacks extras\n(4, 'Pringles Sour Cream & Onion', 'Stackable potato crisps in sour cream flavor.', 'Pringles', 'https://example.com/images/pringles.jpg', '165g', false, NOW(), NOW()),\n(4, 'Unibic Choco Chip Cookies', 'Chocolate chip cookies for snacking.', 'Unibic', 'https://example.com/images/unibic.jpg', '150g', false, NOW(), NOW()),\n\n-- Staples extras\n(3, 'Patanjali Organic Honey', 'Pure honey sourced from organic farms.', 'Patanjali', 'https://example.com/images/organic-honey.jpg', '500g', false, NOW(), NOW()),\n(3, 'Saffola Gold Edible Oil', 'Heart-healthy blend of oils.', 'Saffola', 'https://example.com/images/saffola.jpg', '1L', false, NOW(), NOW()),\n\n-- Personal care extras\n(6, 'Savlon Antiseptic Liquid', 'Disinfectant for cuts and wounds.', 'Savlon', 'https://example.com/images/savlon.jpg', '100ml', false, NOW(), NOW()),\n(6, 'Garnier Skin Naturals Face Pack', 'Brightening face pack with natural extracts.', 'Garnier', 'https://example.com/images/garnier-facepack.jpg', '75g', false, NOW(), NOW()),\n\n-- Household extras\n(7, 'Comfort Fabric Conditioner', 'Fabric softener for softer clothes and fragrance.', 'Comfort', 'https://example.com/images/comfort.jpg', '500ml', false, NOW(), NOW()),\n(7, 'Vim Liquid Dishwash', 'Effective dish wash liquid for greasy utensils.', 'Vim', 'https://example.com/images/vim-liquid.jpg', '750ml', false, NOW(), NOW()),\n\n-- Spices extras\n(8, 'Patanjali Turmeric Powder', 'Pure haldi powder for cooking and immunity.', 'Patanjali', 'https://example.com/images/patanjali-turmeric.jpg', '200g', false, NOW(), NOW()),\n(8, 'Everest Red Chilli Powder', 'Hot red chilli powder for everyday use.', 'Everest', 'https://example.com/images/everest-chilli.jpg', '200g', false, NOW(), NOW()),\n\n-- Bakery extras\n(9, 'Nature\\'s Basket Multigrain Bread', 'Healthy multigrain bread loaf.', 'Nature''s Basket', 'https://example.com/images/multigrain-bread.jpg', '400g', false, NOW(), NOW()),\n(9, 'Saffola Oatmeal Cookies', 'Oat based cookies low in sugar.', 'Saffola', 'https://example.com/images/oat-cookies.jpg', '150g', false, NOW(), NOW()),\n\n-- Frozen extras\n(10, 'ITC MasterChef Veg Spring Roll', 'Frozen veg spring rolls for appetizers.', 'ITC', 'https://example.com/images/veg-springroll.jpg', '300g', false, NOW(), NOW()),\n(10, 'McCain Potato Wedges', 'Crispy frozen potato wedges.', 'McCain', 'https://example.com/images/potato-wedges.jpg', '700g', false, NOW(), NOW()),\n\n-- Baby care extras\n(11, 'Mee Mee Baby Wipes', 'Soft wipes for infant care.', 'Mee Mee', 'https://example.com/images/baby-wipes.jpg', '72pcs', false, NOW(), NOW()),\n(11, 'Parent\\'s Choice Baby Powder', 'Mild talc-free baby powder.', 'Parent\\'s Choice', 'https://example.com/images/baby-powder.jpg', '100g', false, NOW(), NOW()),\n\n-- Health extras\n(12, 'Dabur Chyawanprash', 'Ayurvedic immunity booster rich in herbs.', 'Dabur', 'https://example.com/images/chyawanprash.jpg', '500g', false, NOW(), NOW()),\n(12, 'Patanjali Giloy Juice', 'Herbal juice for immunity and well-being.', 'Patanjali', 'https://example.com/images/giloy.jpg', '500ml', false, NOW(), NOW()),\n\n-- Baking extras\n(13, 'Dalda Vanaspati', 'Vanaspati for baking and deep frying.', 'Dalda', 'https://example.com/images/dalda.jpg', '1kg', false, NOW(), NOW()),\n(13, 'Ankit Instant Yeast', 'Dry yeast for baking breads.', 'Ankit', 'https://example.com/images/yeast.jpg', '7g', false, NOW(), NOW()),\n\n-- Tea & Coffee extras\n(14, 'Gopaldhara Tea Leaves', 'Premium Assam tea leaves.', 'Gopaldhara', 'https://example.com/images/gopaldhara.jpg', '250g', false, NOW(), NOW()),\n(14, 'Bru Gold Instant Coffee', 'Rich instant coffee granules with aroma.', 'Bru', 'https://example.com/images/bru-gold.jpg', '50g', false, NOW(), NOW()),\n\n-- Eggs & Meat extras\n(15, 'Organic Brown Eggs', 'Free-range brown eggs from organic farms.', 'Organic Farms', 'https://example.com/images/brown-eggs.jpg', '12pcs', false, NOW(), NOW()),\n(15, 'Al Kabeer Fish Fingers', 'Breaded fish fingers for quick frying.', 'Al Kabeer', 'https://example.com/images/fish-fingers.jpg', '250g', false, NOW(), NOW()),\n\n-- Seafood extras\n(16, 'Oceanic Basa Fillet', 'Frozen basa fillets, boneless and skinless.', 'Oceanic', 'https://example.com/images/basa.jpg', '500g', false, NOW(), NOW()),\n(16, 'Catch Crab Meat', 'Canned/packaged crab meat for salads and recipes.', 'Catch', 'https://example.com/images/crab-meat.jpg', '200g', false, NOW(), NOW()),\n\n-- Breakfast & Cereals extras\n(17, 'Saffola Oats Masala', 'Instant masala oats for savory breakfast.', 'Saffola', 'https://example.com/images/masala-oats.jpg', '250g', false, NOW(), NOW()),\n(17, 'Weetabix Original', 'Whole grain wheat cereal biscuits for breakfast.', 'Weetabix', 'https://example.com/images/weetabix.jpg', '430g', false, NOW(), NOW()),\n\n-- Sauces & Pastes extras\n(18, 'Kissan Tomato Ketchup', 'Classic tomato ketchup for everyday use.', 'Kissan', 'https://example.com/images/kissan-ketchup.jpg', '500g', false, NOW(), NOW()),\n(18, 'Gits Biryani Paste', 'Ready biryani paste to simplify cooking.', 'Gits', 'https://example.com/images/gits-biryani.jpg', '200g', false, NOW(), NOW()),\n\n-- Health drinks extras\n(19, 'Zote Health Drink', 'Energy and nutrition drink for family.', 'Zote', 'https://example.com/images/zote.jpg', '500g', false, NOW(), NOW()),\n(19, 'Protinex Original', 'Protein supplement powder for adults and kids.', 'Protinex', 'https://example.com/images/protinex.jpg', '400g', false, NOW(), NOW()),\n\n-- Misc extras\n(20, 'Borosil Glass Storage Set', 'Tempered glass storage containers for kitchen.', 'Borosil', 'https://example.com/images/borosil.jpg', 'set-3', false, NOW(), NOW()),\n(20, 'Rumale Kitchen Towels 2pcs', 'Absorbent kitchen towels for cleaning and drying.', 'Rumale', 'https://example.com/images/kitchen-towels.jpg', '2pcs', false, NOW(), NOW()),\n\n-- Final fillers to ensure 110 products (quick smaller SKUs)\n(4, 'Bikano Bhujia', 'Classic crunchy snack from Bikano.', 'Bikano', 'https://example.com/images/bikano-bhujia.jpg', '150g', false, NOW(), NOW()),\n(3, 'Organic Ragi Flour', 'Finger millet flour for healthy rotis.', 'Local Organic', 'https://example.com/images/ragi.jpg', '1kg', false, NOW(), NOW()),\n(6, 'Dabur Amla Hair Oil', 'Amla hair oil for hair nourishment and shine.', 'Dabur', 'https://example.com/images/dabur-amla.jpg', '200ml', false, NOW(), NOW()),\n(8, 'Kitchen King Masala', 'Versatile curry masala for Indian dishes.', 'MDH', 'https://example.com/images/kitchen-king.jpg', '100g', false, NOW(), NOW()),\n(5, 'Yummiez Instant Pasta Masala', 'Quick cook pasta with masala seasoning.', 'Yummiez', 'https://example.com/images/pasta-masala.jpg', '200g', false, NOW(), NOW()),\n(17, 'Quick Oats Chocolate Flavor', 'Instant oats with chocolate flavor for kids.', 'Quaker', 'https://example.com/images/choco-oats.jpg', '300g', false, NOW(), NOW()),\n(2, 'Minute Maid Orange Juice', 'Pure orange juice for breakfast.', 'Minute Maid', 'https://example.com/images/minutemaid.jpg', '1L', false, NOW(), NOW()),\n(7, 'Lizol Disinfectant Spray', 'Surface disinfectant spray for home.', 'Lizol', 'https://example.com/images/lizol-spray.jpg', '250ml', false, NOW(), NOW()),\n(6, 'Dove Shampoo Intense Repair', 'Shampoo for damaged hair repair.', 'Dove', 'https://example.com/images/dove-shampoo.jpg', '340ml', false, NOW(), NOW());\n\n-- End of product inserts\nuse primedeal;\nselect * from product\n",
+    "content": "\\about\nuse primedeal;\nshow TABLES\nuse primedeal;\nSELECT * from user\n-- ✅ CATEGORY SEED DATA\nINSERT INTO `Category` (`id`, `name`, `description`) VALUES\n(1, 'Dairy & Bakery', 'Milk, butter, cheese, paneer, breads, and bakery products'),\n(2, 'Snacks & Beverages', 'Chips, biscuits, soft drinks, juices, and tea'),\n(3, 'Grocery & Staples', 'Rice, flour, pulses, spices, oils, and essentials'),\n(4, 'Personal Care', 'Soap, shampoo, toothpaste, creams, and cosmetics'),\n(5, 'Household Essentials', 'Detergents, cleaners, and daily home products'),\n(6, 'Fruits & Vegetables', 'Fresh farm produce and greens'),\n(7, 'Baby Care', 'Baby food, diapers, and lotions'),\n(8, 'Meat & Seafood', 'Chicken, fish, prawns, and frozen meats'),\n(9, 'Beverages', 'Tea, coffee, soft drinks, and juices'),\n(10, 'Frozen Foods', 'Frozen snacks, ready-to-cook and desserts'),\n(11, 'Health & Nutrition', 'Protein powders, supplements, and healthy snacks'),\n(12, 'Pet Care', 'Pet food, grooming, and accessories'),\n(13, 'Stationery & Office', 'Books, pens, and office supplies');\n\n-- ✅ PRODUCT SEED DATA\n\nINSERT INTO `Product` (`categoryId`, `name`, `description`, `brand`, `image`, `netQty`, `unit`, `createdAt`, `updatedAt`) VALUES\n-- Dairy & Bakery\n(1, 'Amul Butter 500g', 'Delicious and creamy butter from Amul.', 'Amul', 'https://placehold.co/300x300?text=Amul+Butter', 500, 'g', NOW(), NOW()),\n(1, 'Britannia Whole Wheat Bread', 'Soft and fresh whole wheat bread loaf.', 'Britannia', 'https://placehold.co/300x300?text=Britannia+Bread', 400, 'g', NOW(), NOW()),\n(1, 'Mother Dairy Toned Milk', 'Rich in calcium and protein.', 'Mother Dairy', 'https://placehold.co/300x300?text=Mother+Dairy+Milk', 1, 'l', NOW(), NOW()),\n\n-- Snacks & Beverages\n(2, 'Lays Classic Salted Chips', 'Crispy and light potato chips with salted flavor.', 'Lays', 'https://placehold.co/300x300?text=Lays+Chips', 52, 'g', NOW(), NOW()),\n(2, 'Parle-G Biscuits', 'Iconic glucose biscuits loved by all ages.', 'Parle', 'https://placehold.co/300x300?text=Parle+G', 250, 'g', NOW(), NOW()),\n(2, 'Pepsi Soft Drink', 'Refreshing carbonated drink.', 'Pepsi', 'https://placehold.co/300x300?text=Pepsi', 750, 'ml', NOW(), NOW()),\n\n-- Grocery & Staples\n(3, 'Aashirvaad Atta', 'Whole wheat flour for soft rotis.', 'Aashirvaad', 'https://placehold.co/300x300?text=Aashirvaad+Atta', 10, 'kg', NOW(), NOW()),\n(3, 'Tata Salt', 'Iodized salt for everyday cooking.', 'Tata', 'https://placehold.co/300x300?text=Tata+Salt', 1, 'kg', NOW(), NOW()),\n(3, 'India Gate Basmati Rice', 'Premium long grain basmati rice.', 'India Gate', 'https://placehold.co/300x300?text=India+Gate+Rice', 5, 'kg', NOW(), NOW()),\n\n-- Personal Care\n(4, 'Dove Shampoo', 'Moisturizing shampoo for smooth and silky hair.', 'Dove', 'https://placehold.co/300x300?text=Dove+Shampoo', 180, 'ml', NOW(), NOW()),\n(4, 'Pears Soap', 'Gentle soap with glycerine for glowing skin.', 'Pears', 'https://placehold.co/300x300?text=Pears+Soap', 125, 'g', NOW(), NOW()),\n(4, 'Colgate Toothpaste', 'Strong teeth and fresh breath.', 'Colgate', 'https://placehold.co/300x300?text=Colgate', 200, 'g', NOW(), NOW()),\n\n-- Household Essentials\n(5, 'Surf Excel Matic Detergent', 'Removes tough stains easily.', 'Surf Excel', 'https://placehold.co/300x300?text=Surf+Excel', 2, 'kg', NOW(), NOW()),\n(5, 'Lizol Floor Cleaner', 'Kills 99.9% germs and cleans floors.', 'Lizol', 'https://placehold.co/300x300?text=Lizol', 1, 'l', NOW(), NOW()),\n(5, 'Vim Dishwash Liquid', 'Removes grease easily from utensils.', 'Vim', 'https://placehold.co/300x300?text=Vim+Liquid', 750, 'ml', NOW(), NOW()),\n\n-- Fruits & Vegetables\n(6, 'Fresh Tomatoes', 'Juicy red tomatoes for everyday use.', 'Local Farm', 'https://placehold.co/300x300?text=Tomatoes', 1, 'kg', NOW(), NOW()),\n(6, 'Onions', 'Fresh onions with strong flavor.', 'Local Farm', 'https://placehold.co/300x300?text=Onions', 1, 'kg', NOW(), NOW()),\n(6, 'Bananas', 'Ripe and sweet bananas.', 'Local Farm', 'https://placehold.co/300x300?text=Bananas', 6, 'pcs', NOW(), NOW()),\n\n-- Beverages\n(9, 'Tata Tea Gold', 'Premium Assam blend for perfect chai.', 'Tata Tea', 'https://placehold.co/300x300?text=Tata+Tea+Gold', 250, 'g', NOW(), NOW()),\n(9, 'Bru Instant Coffee', 'Rich aroma instant coffee.', 'Bru', 'https://placehold.co/300x300?text=Bru+Coffee', 100, 'g', NOW(), NOW()),\n(9, 'Real Mixed Fruit Juice', 'Healthy and tasty fruit juice.', 'Real', 'https://placehold.co/300x300?text=Real+Juice', 1, 'l', NOW(), NOW()),\n\n-- Frozen Foods\n(10, 'McCain French Fries', 'Crispy golden fries ready to fry.', 'McCain', 'https://placehold.co/300x300?text=McCain+Fries', 750, 'g', NOW(), NOW()),\n(10, 'Veg Momos', 'Delicious ready-to-steam momos.', 'WOW Momos', 'https://placehold.co/300x300?text=Veg+Momos', 12, 'pcs', NOW(), NOW()),\n\n-- Health & Nutrition\n(11, 'Horlicks Classic Malt', 'Health drink for energy and immunity.', 'Horlicks', 'https://placehold.co/300x300?text=Horlicks', 500, 'g', NOW(), NOW()),\n(11, 'ProteinX Powder', 'Protein supplement for daily nutrition.', 'ProteinX', 'https://placehold.co/300x300?text=ProteinX', 400, 'g', NOW(), NOW());\n\nuse primedeal;\nSELECT * FROM `ORDER`;\n\n",
     "options": {
         "tabSize": 4,
         "indentSize": 4,
@@ -15,22 +15,22 @@
             {
                 "inSelectionMode": false,
                 "selectionStart": {
-                    "lineNumber": 254,
-                    "column": 22
+                    "lineNumber": 70,
+                    "column": 1
                 },
                 "position": {
-                    "lineNumber": 254,
-                    "column": 22
+                    "lineNumber": 70,
+                    "column": 1
                 }
             }
         ],
         "viewState": {
             "scrollLeft": 0,
             "firstPosition": {
-                "lineNumber": 242,
+                "lineNumber": 70,
                 "column": 1
             },
-            "firstPositionDeltaTop": -9
+            "firstPositionDeltaTop": 319
         },
         "contributionsState": {
             "editor.contrib.folding": {},
@@ -77,7 +77,7 @@
                 "result": {
                     "type": "resultIds",
                     "list": [
-                        "f86c0c95-df41-4f56-f70e-0e55f5b9a221"
+                        "8e24fddf-3835-48d1-808d-32853cfa56a5"
                     ]
                 },
                 "currentHeight": 352,
@@ -105,8 +105,8 @@
             },
             "data": [
                 {
-                    "tabId": "68154174-3551-43a1-d059-089b3b2f5e0a",
-                    "resultId": "f86c0c95-df41-4f56-f70e-0e55f5b9a221",
+                    "tabId": "19601a1b-3b18-40f4-9110-a17cf21828f8",
+                    "resultId": "8e24fddf-3835-48d1-808d-32853cfa56a5",
                     "rows": [
                         {
                             "0": "_prisma_migrations"
@@ -227,7 +227,7 @@
         {
             "state": {
                 "start": 6,
-                "end": 26,
+                "end": 21,
                 "language": "mysql",
                 "result": {
                     "type": "text",
@@ -235,8 +235,8 @@
                         {
                             "type": 2,
                             "index": 0,
-                            "resultId": "43c0d1fb-6196-433a-a60a-21f3038303b9",
-                            "content": "OK, 20 rows affected in 3.978ms"
+                            "resultId": "135ed213-edce-4737-cb3e-2fa67bf1273a",
+                            "content": "OK, 13 rows affected in 28.632ms"
                         }
                     ]
                 },
@@ -247,10 +247,19 @@
                         "delimiter": ";",
                         "span": {
                             "start": 0,
-                            "length": 1549
+                            "length": 981
                         },
-                        "contentStart": 0,
+                        "contentStart": 24,
                         "state": 0
+                    },
+                    {
+                        "delimiter": ";",
+                        "span": {
+                            "start": 981,
+                            "length": 1
+                        },
+                        "contentStart": 980,
+                        "state": 3
                     }
                 ]
             },
@@ -258,8 +267,8 @@
         },
         {
             "state": {
-                "start": 27,
-                "end": 252,
+                "start": 22,
+                "end": 67,
                 "language": "mysql",
                 "result": {
                     "type": "text",
@@ -267,37 +276,31 @@
                         {
                             "type": 2,
                             "index": 0,
-                            "resultId": "3334b48f-dd30-4ec4-ab35-4c6c1a7555e0",
-                            "content": "OK, 145 rows affected in 9.841ms"
-                        },
-                        {
-                            "type": 2,
-                            "index": 1,
-                            "resultId": "5c5cc2c4-2dec-470c-cc4c-36dd314b378d",
-                            "content": "OK, 0 records retrieved in 0.423ms"
+                            "resultId": "d8367979-7047-445e-da9b-c8bc1093cd2d",
+                            "content": "OK, 25 rows affected in 8.118ms"
                         }
                     ]
                 },
-                "currentHeight": 45.328125,
+                "currentHeight": 28,
                 "currentSet": 1,
                 "statements": [
                     {
                         "delimiter": ";",
                         "span": {
                             "start": 0,
-                            "length": 24527
+                            "length": 4014
                         },
-                        "contentStart": 0,
+                        "contentStart": 24,
                         "state": 0
                     },
                     {
                         "delimiter": ";",
                         "span": {
-                            "start": 24527,
-                            "length": 27
+                            "start": 4014,
+                            "length": 1
                         },
-                        "contentStart": 24527,
-                        "state": 1
+                        "contentStart": 4013,
+                        "state": 3
                     }
                 ]
             },
@@ -305,9 +308,17 @@
         },
         {
             "state": {
-                "start": 253,
-                "end": 254,
+                "start": 68,
+                "end": 69,
                 "language": "mysql",
+                "result": {
+                    "type": "resultIds",
+                    "list": [
+                        "659e6f88-712b-4cf3-b9aa-407823e6d980",
+                        "8109dfbc-38ab-4a26-9eff-a88ad4db2f6c"
+                    ]
+                },
+                "currentHeight": 352,
                 "currentSet": 1,
                 "statements": [
                     {
@@ -323,10 +334,347 @@
                         "delimiter": ";",
                         "span": {
                             "start": 14,
-                            "length": 22
+                            "length": 23
                         },
                         "contentStart": 15,
-                        "state": 3
+                        "state": 0
+                    }
+                ]
+            },
+            "data": [
+                {
+                    "tabId": "19601a1b-3b18-40f4-9110-a17cf21828f8",
+                    "resultId": "659e6f88-712b-4cf3-b9aa-407823e6d980",
+                    "rows": [
+                        {
+                            "0": 1,
+                            "1": 2,
+                            "2": 1,
+                            "3": 1,
+                            "4": 90,
+                            "5": "cancelled",
+                            "6": "pending",
+                            "7": "2025-11-12 14:34:37.883000",
+                            "8": "2025-11-12 15:14:01.468000"
+                        },
+                        {
+                            "0": 2,
+                            "1": 2,
+                            "2": 1,
+                            "3": 1,
+                            "4": 210,
+                            "5": "delivered",
+                            "6": "pending",
+                            "7": "2025-11-12 16:35:00.224000",
+                            "8": "2025-11-12 16:38:39.151000"
+                        },
+                        {
+                            "0": 3,
+                            "1": 2,
+                            "2": 1,
+                            "3": 1,
+                            "4": 60,
+                            "5": "confirmed",
+                            "6": "pending",
+                            "7": "2025-11-12 16:38:16.499000",
+                            "8": "2025-11-12 16:56:59.052000"
+                        },
+                        {
+                            "0": 4,
+                            "1": 1,
+                            "2": 1,
+                            "3": 5,
+                            "4": 60,
+                            "5": "pending",
+                            "6": "pending",
+                            "7": "2025-11-13 13:40:55.075000",
+                            "8": "2025-11-13 13:40:55.075000"
+                        },
+                        {
+                            "0": 5,
+                            "1": 1,
+                            "2": 1,
+                            "3": 5,
+                            "4": 60,
+                            "5": "pending",
+                            "6": "pending",
+                            "7": "2025-11-13 13:40:55.075000",
+                            "8": "2025-11-13 13:40:55.075000"
+                        },
+                        {
+                            "0": 6,
+                            "1": 1,
+                            "2": 2,
+                            "3": 5,
+                            "4": 40,
+                            "5": "pending",
+                            "6": "pending",
+                            "7": "2025-11-13 13:40:55.151000",
+                            "8": "2025-11-13 13:40:55.151000"
+                        },
+                        {
+                            "0": 7,
+                            "1": 1,
+                            "2": 2,
+                            "3": 5,
+                            "4": 40,
+                            "5": "pending",
+                            "6": "pending",
+                            "7": "2025-11-13 13:40:55.166000",
+                            "8": "2025-11-13 13:40:55.166000"
+                        },
+                        {
+                            "0": 8,
+                            "1": 1,
+                            "2": 1,
+                            "3": 5,
+                            "4": 90,
+                            "5": "pending",
+                            "6": "pending",
+                            "7": "2025-11-13 13:43:21.121000",
+                            "8": "2025-11-13 13:43:21.121000"
+                        },
+                        {
+                            "0": 9,
+                            "1": 1,
+                            "2": 1,
+                            "3": 5,
+                            "4": 90,
+                            "5": "pending",
+                            "6": "pending",
+                            "7": "2025-11-13 13:43:21.121000",
+                            "8": "2025-11-13 13:43:21.121000"
+                        },
+                        {
+                            "0": 10,
+                            "1": 1,
+                            "2": 2,
+                            "3": 5,
+                            "4": 20,
+                            "5": "pending",
+                            "6": "pending",
+                            "7": "2025-11-13 13:43:21.127000",
+                            "8": "2025-11-13 13:43:21.127000"
+                        },
+                        {
+                            "0": 11,
+                            "1": 1,
+                            "2": 2,
+                            "3": 5,
+                            "4": 20,
+                            "5": "pending",
+                            "6": "pending",
+                            "7": "2025-11-13 13:43:21.136000",
+                            "8": "2025-11-13 13:43:21.136000"
+                        }
+                    ],
+                    "columns": [
+                        {
+                            "title": "id",
+                            "field": "0",
+                            "dataType": {
+                                "type": 4,
+                                "flags": [
+                                    "SIGNED",
+                                    "ZEROFILL"
+                                ],
+                                "numericPrecision": 10,
+                                "parameterFormatType": "OneOrZero",
+                                "synonyms": [
+                                    "INTEGER",
+                                    "INT4"
+                                ]
+                            },
+                            "inPK": true,
+                            "nullable": false,
+                            "autoIncrement": true
+                        },
+                        {
+                            "title": "userId",
+                            "field": "1",
+                            "dataType": {
+                                "type": 4,
+                                "flags": [
+                                    "SIGNED",
+                                    "ZEROFILL"
+                                ],
+                                "numericPrecision": 10,
+                                "parameterFormatType": "OneOrZero",
+                                "synonyms": [
+                                    "INTEGER",
+                                    "INT4"
+                                ]
+                            },
+                            "inPK": false,
+                            "nullable": false,
+                            "autoIncrement": false
+                        },
+                        {
+                            "title": "shopId",
+                            "field": "2",
+                            "dataType": {
+                                "type": 4,
+                                "flags": [
+                                    "SIGNED",
+                                    "ZEROFILL"
+                                ],
+                                "numericPrecision": 10,
+                                "parameterFormatType": "OneOrZero",
+                                "synonyms": [
+                                    "INTEGER",
+                                    "INT4"
+                                ]
+                            },
+                            "inPK": false,
+                            "nullable": false,
+                            "autoIncrement": false
+                        },
+                        {
+                            "title": "deliveryAddressId",
+                            "field": "3",
+                            "dataType": {
+                                "type": 4,
+                                "flags": [
+                                    "SIGNED",
+                                    "ZEROFILL"
+                                ],
+                                "numericPrecision": 10,
+                                "parameterFormatType": "OneOrZero",
+                                "synonyms": [
+                                    "INTEGER",
+                                    "INT4"
+                                ]
+                            },
+                            "inPK": false,
+                            "nullable": false,
+                            "autoIncrement": false
+                        },
+                        {
+                            "title": "totalAmount",
+                            "field": "4",
+                            "dataType": {
+                                "type": 9,
+                                "flags": [
+                                    "UNSIGNED",
+                                    "ZEROFILL"
+                                ],
+                                "numericPrecision": 53,
+                                "numericScale": 30,
+                                "parameterFormatType": "TwoOrZero",
+                                "synonyms": [
+                                    "FLOAT8"
+                                ]
+                            },
+                            "inPK": false,
+                            "nullable": false,
+                            "autoIncrement": false
+                        },
+                        {
+                            "title": "orderStatus",
+                            "field": "5",
+                            "dataType": {
+                                "type": 43,
+                                "needsQuotes": true
+                            },
+                            "inPK": false,
+                            "nullable": false,
+                            "autoIncrement": false,
+                            "default": "pending"
+                        },
+                        {
+                            "title": "paymentStatus",
+                            "field": "6",
+                            "dataType": {
+                                "type": 43,
+                                "needsQuotes": true
+                            },
+                            "inPK": false,
+                            "nullable": false,
+                            "autoIncrement": false,
+                            "default": "pending"
+                        },
+                        {
+                            "title": "createdAt",
+                            "field": "7",
+                            "dataType": {
+                                "type": 26,
+                                "dateTimePrecision": 8,
+                                "needsQuotes": true,
+                                "parameterFormatType": "OneOrZero"
+                            },
+                            "inPK": false,
+                            "nullable": false,
+                            "autoIncrement": false,
+                            "default": "CURRENT_TIMESTAMP(3)"
+                        },
+                        {
+                            "title": "updatedAt",
+                            "field": "8",
+                            "dataType": {
+                                "type": 26,
+                                "dateTimePrecision": 8,
+                                "needsQuotes": true,
+                                "parameterFormatType": "OneOrZero"
+                            },
+                            "inPK": false,
+                            "nullable": false,
+                            "autoIncrement": false
+                        }
+                    ],
+                    "executionInfo": {
+                        "text": "OK, 11 records retrieved in 0.847ms"
+                    },
+                    "totalRowCount": 11,
+                    "hasMoreRows": false,
+                    "currentPage": 0,
+                    "index": 1,
+                    "sql": "\nSELECT * FROM `ORDER`",
+                    "updatable": true,
+                    "fullTableName": "`ORDER`"
+                },
+                {
+                    "tabId": "19601a1b-3b18-40f4-9110-a17cf21828f8",
+                    "resultId": "8109dfbc-38ab-4a26-9eff-a88ad4db2f6c",
+                    "rows": [],
+                    "columns": [
+                        {
+                            "title": "*",
+                            "field": "0",
+                            "dataType": {
+                                "type": 0
+                            },
+                            "inPK": false,
+                            "nullable": false,
+                            "autoIncrement": false
+                        }
+                    ],
+                    "executionInfo": {
+                        "text": "OK, 0 records retrieved in 0.769ms"
+                    },
+                    "totalRowCount": 0,
+                    "hasMoreRows": false,
+                    "currentPage": 0,
+                    "index": 0,
+                    "sql": "use primedeal",
+                    "updatable": false
+                }
+            ]
+        },
+        {
+            "state": {
+                "start": 70,
+                "end": 70,
+                "language": "mysql",
+                "currentSet": 1,
+                "statements": [
+                    {
+                        "delimiter": ";",
+                        "span": {
+                            "start": 0,
+                            "length": 0
+                        },
+                        "contentStart": 0,
+                        "state": 0
                     }
                 ]
             },
@@ -334,8 +682,8 @@
         },
         {
             "state": {
-                "start": 255,
-                "end": 255,
+                "start": 71,
+                "end": 71,
                 "language": "mysql",
                 "currentSet": 1,
                 "statements": [

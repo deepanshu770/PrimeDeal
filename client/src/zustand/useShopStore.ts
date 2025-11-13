@@ -1,9 +1,8 @@
 import API from "@/config/api";
-import { orderItem } from "@/types/orderType";
 import { toast } from "sonner";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { NearbyShop, Shop, ShopInventory } from "../../../types/types";
+import { NearbyShop, OrderItem, Shop, ShopInventory } from "../../../types/types";
 
 export type ShopState = {
   loading: boolean;
@@ -12,7 +11,7 @@ export type ShopState = {
   searchedShop: Shop[];
   searchedProduct: ShopInventory[];
   singleShop: Shop | null;
-  shopOrders: orderItem[];
+  shopOrders: OrderItem[];
 
   // --- Actions ---
   createShop: (formData: FormData) => Promise<void>;

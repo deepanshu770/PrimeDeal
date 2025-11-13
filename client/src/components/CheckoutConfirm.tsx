@@ -11,10 +11,9 @@ import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
 import { useNavigate } from "react-router-dom";
 import { useUserStore } from "@/zustand/useUserStore";
-import { useCartStore } from "@/zustand/useCartStore";
-import { Loader2, Store, MapPin, Plus } from "lucide-react";
+import {  useCartStore } from "@/zustand/useCartStore";
+import { Store, MapPin, Plus } from "lucide-react";
 import { toast } from "sonner";
-import { useOrderStore } from "@/zustand/useOrderStore";
 import { useAddressStore } from "@/zustand/useAddressStore";
 import { cn } from "@/lib/utils";
 
@@ -26,8 +25,7 @@ type CheckoutConfirmProps = {
 const CheckoutConfirm = ({ open, setOpen }: CheckoutConfirmProps) => {
   const navigate = useNavigate();
   const { user } = useUserStore();
-  const { cartItems, clearShopCart } = useCartStore();
-  const { loading, createOrder } = useOrderStore();
+  const { cartItems } = useCartStore();
   const {
     addresses,
     getAddresses,
@@ -45,18 +43,18 @@ const CheckoutConfirm = ({ open, setOpen }: CheckoutConfirmProps) => {
     country: "India",
   });
 
-  // 🧠 Load user addresses
+  // Load user addresses
   useEffect(() => {
     getAddresses();
   }, [getAddresses]);
 
-  // 💰 Calculate totals
+  // Calculate totals
   const totalAmount = useMemo(
     () => cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0),
     [cartItems]
   );
 
-  // 🏬 Group products by shop
+  // Group products by shop
   const groupedByShop = useMemo(() => {
     const groups: Record<number, typeof cartItems> = {};
     cartItems.forEach((item) => {
@@ -66,9 +64,6 @@ const CheckoutConfirm = ({ open, setOpen }: CheckoutConfirmProps) => {
     return groups;
   }, [cartItems]);
 
-  /* ===========================================================
-     🧾 Checkout Handler
-  ============================================================ */
   const checkoutHandler = async () => {
     if (!user) {
       toast.error("Please sign in to continue checkout.");
@@ -87,34 +82,41 @@ const CheckoutConfirm = ({ open, setOpen }: CheckoutConfirmProps) => {
     }
 
     try {
+      const cartItems: {
+        shopId: number;
+        productId: number;
+        quantity: number;
+      }[] = [];
       for (const [sid, items] of Object.entries(groupedByShop)) {
-        const payload = {
-          shopId: Number(sid),
-          addressId: selectedAddress.id,
-          cartItems: items.map((i) => ({
-            productId: i.id,
-            quantity: i.quantity,
-            shopId:i.shopId
-          })),
-        };
-
-        await createOrder(payload);
-        clearShopCart(Number(sid));
+        items.forEach((item) => {
+          cartItems.push({
+            shopId: Number(sid),
+            productId: item.id,
+            quantity: item.quantity,
+          });
+        });
       }
+      const payload = {
+        totalAmount,
+        addressId: selectedAddress.id,
+        cartItems,
+      };
+      console.log(payload);
+      navigate("/payment", { state: { payload, totalAmount } });
 
       setOpen(false);
-      toast.success("✅ Order placed successfully!");
     } catch (error) {
       console.error("Checkout Error:", error);
       toast.error("Something went wrong while creating your order.");
     }
   };
 
-  /* ===========================================================
-     🧱 Add New Address Inline
-  ============================================================ */
   const handleAddNewAddress = async () => {
-    if (!newAddress.addressLine1 || !newAddress.city || !newAddress.postalCode) {
+    if (
+      !newAddress.addressLine1 ||
+      !newAddress.city ||
+      !newAddress.postalCode
+    ) {
       toast.error("Please fill in all required fields.");
       return;
     }
@@ -143,6 +145,7 @@ const CheckoutConfirm = ({ open, setOpen }: CheckoutConfirmProps) => {
         toast.error(data.message || "Failed to add address");
       }
     } catch (err) {
+      console.log(err);
       toast.error("Failed to add address");
     }
   };
@@ -155,13 +158,17 @@ const CheckoutConfirm = ({ open, setOpen }: CheckoutConfirmProps) => {
             Review Your Order
           </DialogTitle>
           <DialogDescription className="text-center text-sm text-gray-500 dark:text-gray-400">
-            Confirm your delivery address and order details before placing your order.
+            Confirm your delivery address and order details before placing your
+            order.
           </DialogDescription>
 
           {/* 🧍 User Info */}
           <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
             <UserField label="Full Name" value={user?.fullname ?? ""} />
-            <UserField label="Contact" value={`+91 ${user?.phoneNumber ?? ""}`} />
+            <UserField
+              label="Contact"
+              value={`+91 ${user?.phoneNumber ?? ""}`}
+            />
           </div>
 
           {/* 🏠 Address Selector */}
@@ -326,21 +333,12 @@ const CheckoutConfirm = ({ open, setOpen }: CheckoutConfirmProps) => {
 
         {/* Sticky Footer */}
         <DialogFooter className="flex justify-end p-4 border-t bg-white dark:bg-gray-900 sticky bottom-0">
-          {loading ? (
-            <Button
-              disabled
-              className="bg-brandGreen text-white hover:bg-brandGreen/80"
-            >
-              <Loader2 className="animate-spin mr-2 w-4 h-4" /> Please wait...
-            </Button>
-          ) : (
-            <Button
-              onClick={checkoutHandler}
-              className="bg-brandGreen text-white hover:bg-brandGreen/80"
-            >
-              Place Order
-            </Button>
-          )}
+          <Button
+            onClick={checkoutHandler}
+            className="bg-brandGreen text-white hover:bg-brandGreen/80"
+          >
+            Place Order
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

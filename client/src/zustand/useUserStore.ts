@@ -10,7 +10,6 @@ import { useShopStore } from "./useShopStore";
 import API from "@/config/api";
 import { useCartStore } from "./useCartStore";
 
-
 type User = {
   fullname: string;
   email: string;
@@ -66,12 +65,14 @@ export const useUserStore = create<UserState>()(
               loading: false,
               user: response.data.user,
             });
+          } else {
+            throw new Error(response.data.message);
           }
 
           set({ loading: false });
 
           return response.data.success;
-        } catch (error: any) {
+        } catch (error) {
           console.error("Signup error:", error);
           toast.error(error.response.data.message);
           set({ loading: false });

@@ -31,6 +31,8 @@ import SetupAddress from "./components/SetupAddress";
 import LandingPage from "./components/LandingPage";
 import ProductCatalog from "./admin/ProductCatalog";
 import OrderDetailPage from "./components/OrdersDetail";
+import Payment from "./components/Payment";
+import DemoConfirmation from "./components/Confirmation";
 
 const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, user } = useUserStore();
@@ -92,6 +94,38 @@ function App() {
               }
             />
           </Route>
+          <Route
+            path="/login"
+            element={
+              <AuthenticatedUser>
+                <Login />
+              </AuthenticatedUser>
+            }
+          />
+          <Route
+            path="/signup"
+            element={
+              <AuthenticatedUser>
+                <Signup />
+              </AuthenticatedUser>
+            }
+          />
+          <Route
+            path="/setup-intial-address"
+            element={
+              <AuthenticatedUser>
+                <SetupAddress />
+              </AuthenticatedUser>
+            }
+          />
+          <Route
+            path="/forgotpassword"
+            element={
+              <AuthenticatedUser>
+                <ForgotPassword />
+              </AuthenticatedUser>
+            }
+          />
 
           {/* ✅ Normal User Routes */}
           <Route
@@ -111,6 +145,8 @@ function App() {
             <Route path="order/:id" element={<OrderDetailPage />} />
             <Route path="setup-address" element={<SetupAddress />} />
             <Route path="setup-address/:id" element={<SetupAddress />} />
+            <Route path="payment" element={<Payment />}/>
+            <Route path="payment/confirmation" element={<DemoConfirmation />}/>
           </Route>
 
           {/* Admin Routes */}
@@ -138,38 +174,7 @@ function App() {
               </AuthenticatedUser>
             }
           />
-          <Route
-            path="/login"
-            element={
-              <AuthenticatedUser>
-                <Login />
-              </AuthenticatedUser>
-            }
-          />
-          <Route
-            path="/signup"
-            element={
-              <AuthenticatedUser>
-                <Signup />
-              </AuthenticatedUser>
-            }
-          />
-          <Route
-            path="/setup-address"
-            element={
-              <AuthenticatedUser>
-                <SetupAddress />
-              </AuthenticatedUser>
-            }
-          />
-          <Route
-            path="/forgotpassword"
-            element={
-              <AuthenticatedUser>
-                <ForgotPassword />
-              </AuthenticatedUser>
-            }
-          />
+          
           <Route path="/resetpassword" element={<ResetPassword />} />
           <Route path="/verifyemail" element={<VerifyEmail />} />
 

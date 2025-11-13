@@ -42,7 +42,7 @@ const Signup = () => {
     // login API Implementation
     try {
       const success = await signup(input);
-      if (success) navigate("/setup-address");
+      if (success) navigate("/setup-intial-address");
     } catch (error) {
       console.log(error);
     }

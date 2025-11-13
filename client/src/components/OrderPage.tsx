@@ -92,16 +92,16 @@ const OrderPage = () => {
 export default OrderPage;
 
 /* 🟢 Reusable Order Status Badge */
+const colorMap: Record<string, string> = {
+  pending: "bg-yellow-500",
+  confirmed: "bg-blue-500",
+  preparing: "bg-orange-500",
+  out_for_delivery: "bg-teal-600",
+  delivered: "bg-green-600",
+  cancelled: "bg-red-500",
+  failed: "bg-gray-500",
+};
 const OrderStatusBadge = ({ status }: { status: string }) => {
-  const colorMap: Record<string, string> = {
-    pending: "bg-yellow-500/90",
-    confirmed: "bg-blue-500/90",
-    preparing: "bg-orange-500/90",
-    out_for_delivery: "bg-teal-600/90",
-    delivered: "bg-green-600/90",
-    cancelled: "bg-red-500/90",
-    failed: "bg-gray-500/90",
-  };
 
   const label = status.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
   return (
