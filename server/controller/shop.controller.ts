@@ -3,9 +3,6 @@ import { prisma } from "../db/db";
 import uploadImageOnCloudinary from "../utils/imageUpload";
 import { asyncHandler, AppError } from "../utils/asyncHandler";
 
-/* ---------------------------------------------------
-   CREATE SHOP
---------------------------------------------------- */
 export const createShop = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const {
@@ -60,9 +57,7 @@ export const createShop = asyncHandler(
   }
 );
 
-/* ---------------------------------------------------
-   GET ALL SHOPS OWNED BY USER
---------------------------------------------------- */
+
 export const getShop = asyncHandler(async (req: Request, res: Response) => {
   const userId = Number(req.id);
 
@@ -83,9 +78,6 @@ export const getShop = asyncHandler(async (req: Request, res: Response) => {
   res.status(200).json({ success: true, count: shops.length, shops });
 });
 
-/* ---------------------------------------------------
-   GET ALL SHOPS IN USER'S CITY
---------------------------------------------------- */
 export const getShopByCity = asyncHandler(async (req: Request, res: Response) => {
   const userId = Number(req.id);
 
@@ -127,9 +119,7 @@ export const getShopByCity = asyncHandler(async (req: Request, res: Response) =>
   });
 });
 
-/* ---------------------------------------------------
-   UPDATE SHOP DETAILS
---------------------------------------------------- */
+
 export const updateShop = asyncHandler(async (req: Request, res: Response) => {
   const {
     storeName,
@@ -175,9 +165,6 @@ export const updateShop = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-/* ---------------------------------------------------
-   GET SHOP ORDERS
---------------------------------------------------- */
 export const getShopOrder = asyncHandler(async (req: Request, res: Response) => {
   const shopId = Number(req.params.shopId);
 
@@ -203,9 +190,6 @@ export const getShopOrder = asyncHandler(async (req: Request, res: Response) => 
   });
 });
 
-/* ---------------------------------------------------
-   UPDATE ORDER STATUS
---------------------------------------------------- */
 export const updateOrderStatus = asyncHandler(async (req: Request, res: Response) => {
   const { orderId } = req.params;
   const { orderStatus } = req.body;
@@ -281,9 +265,7 @@ export const getSingleShop = asyncHandler(async (req: Request, res: Response) =>
   });
 });
 
-/* ---------------------------------------------------
-   GET NEARBY SHOPS WITHIN 7 KM OF USER
---------------------------------------------------- */
+
 export const getNearbyShops = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     const userId = Number(req.id);
@@ -302,6 +284,7 @@ export const getNearbyShops = asyncHandler(
     if (!user) throw new AppError("User not found", 404);
 
     const defaultAddress = user.addresses[0];
+    console.log(user)
     if (!defaultAddress)
       throw new AppError(
         "Default address not found. Please set one before searching nearby shops.",
@@ -351,12 +334,12 @@ export const getNearbyShops = asyncHandler(
 
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         const distance = EARTH_RADIUS_KM * c;
-
-        return { ...shop, distance:distance };
+        const deliveryTime = (distance/20)*60 + 15;
+        return { ...shop, distance,deliveryTime };
       })
       .filter((s) => s.distance <= 7) // ✅ within 7 km
       .sort((a, b) => a.distance - b.distance); // ✅ sort nearest first
-
+      
     res.status(200).json({
       success: true,
       message: `Found ${nearbyShops.length} shop(s) within 7 km of your location.`,
@@ -370,11 +353,11 @@ export const getNearbyShops = asyncHandler(
         storeName: shop.storeName,
         city: shop.city,
         address: shop.address,
-        deliveryTime: shop.deliveryTime,
+        deliveryTime: shop.deliveryTime.toFixed(0),
         storeBanner: shop.storeBanner,
         latitude: shop.latitude,
         longitude: shop.longitude,
-        distance: shop.distance.toFixed(2), // in km
+        distance: shop.distance.toFixed(2), 
         owner: shop.owner,
         totalProducts: shop.inventory.length,
       })),

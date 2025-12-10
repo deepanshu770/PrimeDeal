@@ -177,14 +177,16 @@ export const updateOrderStatus = asyncHandler(async (req: Request, res: Response
 
   const order = await prisma.order.findUnique({
     where: { id: orderId },
-    include: { shop: true },
+    include: {
+      shop: true,
+      items: true,
+    },
   });
 
   if (!order) throw new AppError("Order not found", 404);
   if (order.shop.userId !== userId)
     throw new AppError("You are not authorized to update this order", 403);
 
-  // ✅ Validate lifecycle transitions
   const validStatuses: OrderStatus[] = [
     "pending",
     "confirmed",
@@ -195,6 +197,23 @@ export const updateOrderStatus = asyncHandler(async (req: Request, res: Response
   ];
   if (!validStatuses.includes(status))
     throw new AppError("Invalid status value", 400);
+
+  // If order is being cancelled -> Restore stock
+  if (status === "cancelled") {
+    for (const item of order.items) {
+      await prisma.shopInventory.updateMany({
+        where: {
+          shopId: order.shopId,
+          productId: item.productId,
+        },
+        data: {
+          quantity: {
+            increment: item.quantity, // 🔁 restore
+          },
+        },
+      });
+    }
+  }
 
   const updated = await prisma.order.update({
     where: { id: orderId },

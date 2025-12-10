@@ -45,8 +45,8 @@ if (!singleOrder) {
   return (
     <div className="max-w-4xl mx-auto my-10 px-4">
       <Button
-        variant="ghost"
-        className="mb-6 flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:text-brandGreen"
+        variant="default"
+        className="mb-6 flex items-center gap-2 bg-brandOrange text-white hover:bg-brandGreen"
         onClick={() => navigate(-1)}
       >
         <ArrowLeft className="w-4 h-4" /> Back to Orders
@@ -96,7 +96,7 @@ if (!singleOrder) {
           Items in this Order
         </h3>
         <div className="space-y-3">
-          {order.items.map((item) => (
+          {(order.items ?? []).map((item) => (
             <div
               key={item.id}
               className="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-3 last:border-none"

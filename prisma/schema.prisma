@@ -18,6 +18,7 @@ model User {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
+
   // Relations
   addresses Address[] // A user can have multiple addresses
   shops     Shop[] // A user can own multiple shops/stores
@@ -152,21 +153,7 @@ model OrderItem {
   product Product @relation(fields: [productId], references: [id])
 }
 
-model DeliveryAgent {
-  id                 Int       @id @default(autoincrement())
-  firstName          String
-  lastName           String
-  phoneNumber        String    @unique
-  passwordHash       String
-  vehicleNumber      String?
-  currentLatitude    Float?
-  currentLongitude   Float?
-  isAvailable        Boolean   @default(true)
-  createdAt          DateTime  @default(now())
 
-  // Relations
-  deliveries Delivery[]
-}
 
 model Delivery {
   id             Int             @id @default(autoincrement())
@@ -179,13 +166,12 @@ model Delivery {
 
   // Relations
   order Order         @relation(fields: [orderId], references: [id])
-  agent DeliveryAgent? @relation(fields: [agentId], references: [id])
 }
 
 model Payment {
   id             Int      @id @default(autoincrement())
   orderId        Int      @unique
-  paymentMethod  String   // e.g., "credit_card", "upi", "cod"
+  paymentMethod  String   
   transactionId  String?
   amount         Float
   paymentStatus  PaymentStatus @default(pending)

@@ -7,9 +7,18 @@ import { Label } from "@/components/ui/label";
 import { useShopStore } from "@/zustand/useShopStore";
 import { toast } from "sonner";
 import { GoogleMap, Marker, useLoadScript } from "@react-google-maps/api";
-import type { Shop } from "@/types/types";
 
-type InputType = Omit<Shop, "id" | "userId">;
+
+type InputType = {
+    storeName: string,
+    description?: string,
+    address: string,
+    city: string,
+    latitude: number,
+    longitude: number,
+    deliveryTime: number,
+    storeBanner?: File | string,
+  }
 
 const mapContainerStyle = {
   width: "100%",
@@ -59,7 +68,7 @@ const AdminStoreDetail = () => {
           deliveryTime: shop.deliveryTime,
           storeBanner: shop.storeBanner,
         });
-        setPreview(shop.storeBanner);
+        setPreview(shop.storeBanner ?? null);
       } else toast.error("Something went wrong!");
     }
   }, [addingStore, id]);
@@ -109,7 +118,7 @@ const AdminStoreDetail = () => {
   const validate = () => {
     if (
       !input.storeName.trim() ||
-      !input.description.trim() ||
+      !input.description?.trim() ||
       !input.address.trim() ||
       !input.city.trim() ||
       !input.latitude ||
@@ -140,7 +149,9 @@ const AdminStoreDetail = () => {
         await createShop(formData);
       } else if (id && !isNaN(Number(id))) {
         formData.append("shopId", id.toString());
-        await updateShop(formData, input.storeBanner || "");
+        const existingBanner =
+          typeof input.storeBanner === "string" ? input.storeBanner : undefined;
+        await updateShop(formData, existingBanner);
       }
       toast.success("Store saved successfully!");
       navigate(-1);
@@ -245,11 +256,12 @@ const AdminStoreDetail = () => {
                 position={{ lat: input.latitude, lng: input.longitude }}
                 draggable
                 onDragEnd={(e) => {
-                  if (e.latLng) {
+                  const ll = e.latLng;
+                  if (ll) {
                     setInput((prev) => ({
                       ...prev,
-                      latitude: e.latLng.lat(),
-                      longitude: e.latLng.lng(),
+                      latitude: ll.lat(),
+                      longitude: ll.lng()
                     }));
                   }
                 }}

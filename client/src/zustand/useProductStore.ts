@@ -5,8 +5,6 @@ import { useShopStore } from "./useShopStore";
 import { Product } from "../../../types/types";
 import API from "@/config/api";
 
-
-
 export interface ShopInventory {
   id: number;
   shopId: number;
@@ -16,6 +14,9 @@ export interface ShopInventory {
   isAvailable: boolean;
   netQty?: number;
   unit?: string;
+  // flattened fields when coming from /product/shop/:shopId
+  name?: string;
+  image?: string;
   product?: Product;
   shop?: {
     id: number;
@@ -32,6 +33,10 @@ type ProductStoreState = {
 
   fetchAllProducts: (search?: string, categoryId?: number) => Promise<void>;
   fetchProductsByShop: (shopId: number) => Promise<void>;
+
+  createCatalogProduct: (formData: FormData) => Promise<void>;
+  editProduct: (productId: number, formData: FormData) => Promise<void>;
+
   addExistingProductToShop: (
     productId: number,
     shopId: number,
@@ -40,10 +45,19 @@ type ProductStoreState = {
     netQtyValue: number,
     unit: string
   ) => Promise<void>;
-  createProduct: (formData: FormData, shopId: number) => Promise<void>;
-  editProduct: (productId: number, formData: FormData) => Promise<void>;
-};
 
+  updateShopInventory: (
+    shopId: number,
+    productId: number,
+    data: {
+      price?: number;
+      quantity?: number;
+      netQtyValue?: number;
+      unit?: string;
+      isAvailable?: boolean;
+    }
+  ) => Promise<void>;
+};
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const handleError = (error: any, fallback: string) => {
@@ -52,7 +66,6 @@ const handleError = (error: any, fallback: string) => {
   toast.error(message);
 };
 
-
 export const useProductStore = create<ProductStoreState>()(
   persist(
     (set) => ({
@@ -60,7 +73,7 @@ export const useProductStore = create<ProductStoreState>()(
       products: [],
       shopInventory: [],
 
-      /* -------------------- 🧾 Fetch All Global Products -------------------- */
+      // 📌 Fetch all global products
       fetchAllProducts: async (search?: string, categoryId?: number) => {
         set({ loading: true });
         try {
@@ -75,9 +88,6 @@ export const useProductStore = create<ProductStoreState>()(
               products: res.data.products || [],
               loading: false,
             });
-          } else {
-            toast.error("Failed to load product catalog");
-            set({ loading: false });
           }
         } catch (error) {
           set({ loading: false });
@@ -85,7 +95,7 @@ export const useProductStore = create<ProductStoreState>()(
         }
       },
 
-      /* -------------------- 🏪 Fetch All Products in a Shop -------------------- */
+      // 📌 Fetch products for a specific shop
       fetchProductsByShop: async (shopId) => {
         set({ loading: true });
         try {
@@ -95,9 +105,6 @@ export const useProductStore = create<ProductStoreState>()(
               shopInventory: res.data.products,
               loading: false,
             });
-          } else {
-            toast.error("Failed to load shop products");
-            set({ loading: false });
           }
         } catch (error) {
           set({ loading: false });
@@ -105,12 +112,60 @@ export const useProductStore = create<ProductStoreState>()(
         }
       },
 
-      /* -------------------- ➕ Add Existing Product to Shop -------------------- */
+      // 📌 Create a new global catalog product
+      createCatalogProduct: async (formData: FormData) => {
+        set({ loading: true });
+
+        try {
+          const res = await API.post(`/product`, formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+          });
+
+          if (res.data.success) {
+            const { product } = res.data;
+
+            toast.success("✅ Product created!");
+            set((state) => ({
+              loading: false,
+              products: [...state.products, product],
+            }));
+          }
+        } catch (error) {
+          set({ loading: false });
+          handleError(error, "Failed to create product");
+        }
+      },
+
+      // 📌 Edit existing catalog product & its inventory
+      editProduct: async (productId: number, formData: FormData) => {
+        set({ loading: true });
+        try {
+          const res = await API.put(`/product/${productId}`, formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+          });
+
+          if (res.data.success) {
+            const { product } = res.data;
+            toast.success("✅ Product updated!");
+            set((state) => ({
+              loading: false,
+              products: state.products.map((p) =>
+                p.id === product.id ? product : p
+              ),
+            }));
+          }
+        } catch (error) {
+          set({ loading: false });
+          handleError(error, "Failed to update product");
+        }
+      },
+
+      // 📌 Add an existing catalog product to a shop
       addExistingProductToShop: async (
         productId,
         shopId,
         price,
-        quantity = 0,
+        quantity,
         netQtyValue,
         unit
       ) => {
@@ -128,80 +183,52 @@ export const useProductStore = create<ProductStoreState>()(
 
           if (res.data.success) {
             const { inventory } = res.data;
-            toast.success("✅ Product added to shop successfully!");
+
+            toast.success("Added to shop!");
 
             set((state) => ({
               loading: false,
               shopInventory: [...state.shopInventory, inventory],
             }));
 
-            // ✅ Sync with shop store (if available)
             const shopStore = useShopStore.getState();
             shopStore?.addProductToShop?.(inventory);
-          } else {
-            toast.error(res.data.message || "Failed to add product to shop");
-            set({ loading: false });
           }
         } catch (error) {
-          console.log(error)
           set({ loading: false });
           handleError(error, "Error adding product to shop");
         }
       },
 
-      /* -------------------- 🆕 Create New Product + Add to Shop -------------------- */
-      createProduct: async (formData, shopId) => {
+      // 📌 Update ONLY Shop Inventory (NOT global product)
+      updateShopInventory: async (
+        shopId,
+        productId,
+        data
+      ) => {
         set({ loading: true });
+
         try {
-          const res = await API.post(`/product`, formData, {
-            headers: { "Content-Type": "multipart/form-data" },
-            params: { shopId },
-          });
+          const res = await API.put(
+            `/product/shop/${shopId}/product/${productId}`,
+            data
+          );
 
           if (res.data.success) {
-            const { product, inventory } = res.data;
-            toast.success("✅ Product created successfully!");
+            const { inventory } = res.data;
+
+            toast.success("Inventory updated!");
 
             set((state) => ({
               loading: false,
-              products: [...state.products, product],
-              shopInventory: inventory
-                ? [...state.shopInventory, inventory]
-                : state.shopInventory,
-            }));
-
-            // Sync with shop store
-            const shopStore = useShopStore.getState();
-            shopStore?.addProductToShop?.(inventory);
-          }
-        } catch (error) {
-          set({ loading: false });
-          handleError(error, "Product creation failed");
-        }
-      },
-
-      /* -------------------- ✏️ Edit Product -------------------- */
-      editProduct: async (productId, formData) => {
-        set({ loading: true });
-        try {
-          const res = await API.put(`/product/${productId}`, formData, {
-            headers: { "Content-Type": "multipart/form-data" },
-          });
-
-          if (res.data.success) {
-            const { product } = res.data;
-            toast.success("✅ Product updated successfully!");
-
-            set((state) => ({
-              loading: false,
-              products: state.products.map((p) =>
-                p.id === product.id ? product : p
+              shopInventory: state.shopInventory.map((item) =>
+                item.productId === inventory.id ? inventory : item
               ),
             }));
           }
         } catch (error) {
           set({ loading: false });
-          handleError(error, "Error updating product");
+          handleError(error, "Error updating shop inventory");
         }
       },
     }),

@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --exec ts-node server/index.ts",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "nodemon --exec ts-node server/index.ts",
+    "dev:client": "npm run dev --prefix client",
     "build": "npm install && npm install --prefix client && npm run build --prefix client",
     "start": "nodemon server/index.ts"
   },
@@ -34,6 +36,7 @@
     "@types/multer": "^1.4.12",
     "@types/node": "^22.13.4",
     "@types/nodemailer": "^6.4.17",
+    "concurrently": "^9.2.1",
     "nodemon": "^3.1.9",
     "prisma": "^6.16.1",
     "ts-node": "^10.9.2",

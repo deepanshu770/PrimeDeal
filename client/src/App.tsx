@@ -6,9 +6,6 @@ import {
   Routes,
 } from "react-router-dom";
 import Signup from "./auth/Signup";
-import ForgotPassword from "./auth/ForgotPassword";
-import ResetPassword from "./auth/ResetPassword";
-import VerifyEmail from "./auth/VerifyEmail";
 import HeroSection from "./components/HeroSection";
 import MainLayout from "./Layout/MainLayout";
 import Profile from "./components/Profile";
@@ -33,6 +30,8 @@ import ProductCatalog from "./admin/ProductCatalog";
 import OrderDetailPage from "./components/OrdersDetail";
 import Payment from "./components/Payment";
 import DemoConfirmation from "./components/Confirmation";
+import InventoryEdit from "./admin/EditInventory";
+import Dashboard from "./admin/Dashboard";
 
 const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, user } = useUserStore();
@@ -118,14 +117,7 @@ function App() {
               </AuthenticatedUser>
             }
           />
-          <Route
-            path="/forgotpassword"
-            element={
-              <AuthenticatedUser>
-                <ForgotPassword />
-              </AuthenticatedUser>
-            }
-          />
+         
 
           {/* ✅ Normal User Routes */}
           <Route
@@ -158,10 +150,13 @@ function App() {
               </AdminRoutes>
             }
           >
+            <Route path="dashboard" element={<Dashboard />} />
             <Route path="store" element={<Store />} />
             <Route path="product-catalog" element={<ProductCatalog />} />
+            <Route path="product-catalog/new" element={<AddProducts />} />
             <Route path="store/:id" element={<AdminStoreDetail />} />
             <Route path="store/product/:id" element={<AddProducts />} />
+            <Route path="store/inventory/:id" element={<InventoryEdit />} />
             <Route path="storeOrders" element={<StoreOrders />} />
           </Route>
 
@@ -175,8 +170,7 @@ function App() {
             }
           />
           
-          <Route path="/resetpassword" element={<ResetPassword />} />
-          <Route path="/verifyemail" element={<VerifyEmail />} />
+          
 
           {/* 404 Not Found */}
           <Route path="*" element={<NotFound />} />

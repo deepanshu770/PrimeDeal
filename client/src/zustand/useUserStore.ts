@@ -18,17 +18,7 @@ type User = {
   admin: boolean;
   isverified: boolean;
 };
-// type Address = {
-//   addressLine1: string;
-//   addressLine2: string;
-//   city: string;
-//   state: string;
-//   postalCode: string;
-//   country: string;
-//   latitude?: number;
-//   longitude?: number;
-//   isDefault?: boolean;
-// };
+
 type UserState = {
   user: User | null;
   isAuthenticated: boolean;
@@ -64,6 +54,7 @@ export const useUserStore = create<UserState>()(
             set({
               loading: false,
               user: response.data.user,
+              isAuthenticated: true,
             });
           } else {
             throw new Error(response.data.message);
@@ -72,9 +63,9 @@ export const useUserStore = create<UserState>()(
           set({ loading: false });
 
           return response.data.success;
-        } catch (error) {
+        } catch (error: any) {
           console.error("Signup error:", error);
-          toast.error(error.response.data.message);
+          toast.error(error?.response?.data?.message || "Signup failed");
           set({ loading: false });
           return false;
         }
@@ -97,8 +88,8 @@ export const useUserStore = create<UserState>()(
             set({ loading: false });
           }
         } catch (error: any) {
-          console.error("Signup error:", error);
-          toast.error(error.response.data.message);
+          console.error("Login error:", error);
+          toast.error(error?.response?.data?.message || "Login failed");
           set({ loading: false });
         }
       },
@@ -150,7 +141,7 @@ export const useUserStore = create<UserState>()(
             set({ user: response.data.user, isAuthenticated: true });
           }
         } catch (error: any) {
-          toast.error(error.response.data.message);
+          toast.error(error?.response?.data?.message || "Failed to update profile");
         }
       },
     }),

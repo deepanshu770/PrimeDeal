@@ -6,15 +6,16 @@ import {
   DialogContent,
   DialogTitle,
   DialogDescription,
-} from "@radix-ui/react-dialog";
+  DialogHeader,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@radix-ui/react-menubar";
+import { Label } from "@/components/ui/label";
 import { Plus, Loader2 } from "lucide-react";
-import { DialogHeader, DialogFooter } from "@/components/ui/dialog";
 import { ProductListFormSchema, ProductListSchema } from "@/schema/ProductList";
 import { useProductStore } from "@/zustand/useProductStore";
 
-const ShopDialog = forwardRef((props, ref) => {
+const ShopDialog = forwardRef((_, ref) => {
   const [input, setInput] = useState<ProductListFormSchema>({
     title: "",
     description: "",
@@ -29,7 +30,7 @@ const ShopDialog = forwardRef((props, ref) => {
   const [error, setError] = useState<Partial<ProductListFormSchema>>({});
 
   const loading = useProductStore((state) => state.loading);
-  const createProduct = useProductStore((state) => state.createProduct);
+  const createProduct = useProductStore((state) => state.createCatalogProduct);
 
   // Expose open() and close() methods to parent
   useImperativeHandle(ref, () => ({
@@ -39,6 +40,16 @@ const ShopDialog = forwardRef((props, ref) => {
     },
     close: () => setOpen(false),
   }));
+
+  const changeEventHandler = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const { name, value, type } = e.target;
+    setInput((prev) => ({
+      ...prev,
+      [name]: type === "number" ? Number(value) : value,
+    }));
+  };
 
   const submitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -80,10 +91,7 @@ const ShopDialog = forwardRef((props, ref) => {
       onOpenChange={(isOpen) => setOpen(isOpen)}
     >
       <DialogTrigger asChild>
-        <Button
-          className="bg-brandOrange hover:bg-brandOrange/80 text-white flex items-center"
-          onClick={() => setSelectedShopId(shopItem?.id)}
-        >
+        <Button className="bg-brandOrange hover:bg-brandOrange/80 text-white flex items-center">
           <Plus className="mr-1" /> Add Product
         </Button>
       </DialogTrigger>
@@ -190,10 +198,10 @@ const ShopDialog = forwardRef((props, ref) => {
                 accept=".png, .jpg, .jpeg"
                 name="image"
                 onChange={(e) =>
-                  props.setInput({
-                    ...input,
+                  setInput((prev) => ({
+                    ...prev,
                     image: e.target.files?.[0] || undefined,
-                  })
+                  }))
                 }
               />
               {error.image && (

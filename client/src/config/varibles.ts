@@ -1,2 +1,2 @@
-export const API_END_POINT = "http://localhost:3000/api/v1";
+export const API_END_POINT = "http://192.168.137.1:3000/api/v1";
  

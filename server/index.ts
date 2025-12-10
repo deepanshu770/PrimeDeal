@@ -11,6 +11,7 @@ import addressRoute from "./routes/address.route";
 import path from "path";
 import { errorHandler } from "./middlewares/errorHandler";
 import orderRoute from "./routes/order.route";
+import adminRoute from "./routes/admin.route";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -23,9 +24,11 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(express.json());
 app.use(cookieParser());
 const corsOptions = {
-  origin: ["http://localhost:5173"],
+  origin: ["http://localhost:5173",
+    "http://192.168.137.1:5173"
+  ],
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+  methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
 };
 app.use(cors(corsOptions));
@@ -38,11 +41,10 @@ app.use("/api/v1/shop", shopRoute);
 app.use("/api/v1/product", productRoute);
 app.use("/api/v1/address", addressRoute);
 app.use("/api/v1/order", orderRoute);
+app.use("/api/v1/admin", adminRoute);
 
 app.use(express.static(path.join(DIRNAME, "/client/dist")));
-// app.use("*", (_, res) => {
-//   res.sendFile(path.resolve(DIRNAME, "client", "dist", "index.html"));
-// });
+
 
 app.use(errorHandler as any);
 

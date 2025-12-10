@@ -94,19 +94,26 @@ const Navbar = () => {
             )}
 
             {/* ✅ Profile Link (Accessible by Both) */}
+            {user?.admin ? <Link
+              to="store"
+              className="text-textPrimary hover:text-brandGreen transition dark:text-white"
+            >
+              Shops
+            </Link>:
             <Link
-              to="/profile"
+              to="profile"
               className="text-textPrimary hover:text-brandGreen transition dark:text-white"
             >
               Profile
             </Link>
+            }
 
             {/* ✅ Admin Dashboard (Only for Admins) */}
             {user?.admin && (
               <Menubar>
                 <MenubarMenu>
                   <MenubarTrigger className="bg-transparent text-textPrimary dark:text-white hover:bg-brandGreen hover:text-white data-[state=open]:bg-brandGreen data-[state=open]:text-white transition">
-                    Dashboard
+                    Menu
                   </MenubarTrigger>
 
                   <MenubarContent className="bg-white dark:bg-gray-800 shadow-lg rounded-md">

@@ -1,310 +1,166 @@
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Loader2, Plus, Store, ShoppingBag } from "lucide-react";
-import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import EditProducts from "./EditProducts";
-import { ProductListFormSchema, ProductListSchema } from "@/schema/ProductList";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { unitOptions } from "@/config/data";
 import { useProductStore } from "@/zustand/useProductStore";
-import { useShopStore } from "@/zustand/useShopStore";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { API_END_POINT } from "@/config/varibles";
 
-const AddProducts = () => {
-  const shopId = Number(useParams().id);
-  const [input, setInput] = useState({
+export default function AddProduct() {
+  const navigate = useNavigate();
+  const { createCatalogProduct, loading } = useProductStore();
+  const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
+
+  const [formData, setFormData] = useState({
     name: "",
     description: "",
-    price: 0,
-    image: undefined,
+    brand: "",
+    categoryId: "",
     netQty: "",
-    id: "",
-    categoryId: 0,
+    unit: "pcs",
+    image: null as File | null,
   });
-  const [unit, setUnit] = useState("kg");
-  const [selectedProduct, setSelectedProduct] =
-    useState<ProductListFormSchema | null>(null);
-  const [open, setOpen] = useState<boolean>(false);
-  const [error, setError] = useState<Partial<ProductListFormSchema>>({});
-  const [editOpen, setEditOpen] = useState<boolean>(false);
 
-  const { loading, createProduct, products, fetchShopInventory } = useProductStore();
-  const { shop } = useShopStore();
+  // Fetch categories
+  useEffect(() => {
+    axios
+      .get(`${API_END_POINT}/product/category`)
+      .then((res) => {
+        if (res.data.success) setCategories(res.data.categories);
+      })
+      .catch(() => toast.error("Failed to load categories"));
+  }, []);
 
-  const changeEventHandler = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
-  ) => {
-    const { name, value, type } = e.target;
-    setInput({ ...input, [name]: type === "number" ? Number(value) : value });
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  useEffect(() => {
-    if (shopId) fetchShopInventory(shopId);
-  }, [shopId]);
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) setFormData((prev) => ({ ...prev, image: file }));
+  };
 
-  const submitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const result = ProductListSchema.safeParse({
-      ...input,
-      netQty: input.netQty + unit,
-    });
-    if (!result.success) {
-      const fieldErrors = result.error.formErrors.fieldErrors;
-      setError(fieldErrors as Partial<ProductListFormSchema>);
+  const handleSubmit = async () => {
+    const { name, categoryId, description, brand, netQty, unit, image } = formData;
+
+    if (!name || !categoryId || !netQty || !unit) {
+      toast.error("Please fill all required fields");
       return;
     }
+
+    const fd = new FormData();
+    fd.append("name", name);
+    fd.append("categoryId", categoryId);
+    fd.append("description", description);
+    fd.append("brand", brand);
+    fd.append("netQty", netQty);
+    fd.append("unit", unit);
+    if (image) fd.append("image", image);
+
     try {
-      const formData = new FormData();
-      formData.append("name", input.name);
-      formData.append("description", input.description);
-      formData.append("price", input.price.toString());
-      formData.append("netQty", input.netQty + unit);
-      formData.append("shopId", shopId.toString());
-      if (input.categoryId) formData.append("categoryId", input.categoryId.toString());
-      if (input.image) formData.append("image", input.image);
-      await createProduct(formData, shopId);
-      setOpen(false);
-      setInput({
-        name: "",
-        description: "",
-        price: 0,
-        netQty: "",
-        id: "",
-        image: undefined,
-        categoryId: 0,
-      });
-    } catch (error) {
-      console.log(error);
+      await createCatalogProduct(fd);
+      toast.success("✅ Product added successfully");
+      navigate(-1);
+    } catch {
+      toast.error("Failed to create product");
     }
   };
 
-  // 🏬 No Shop Created
-  if (!shop) {
-    return (
-      <div className="max-w-6xl mx-auto my-10 p-6 bg-white rounded-lg flex flex-col items-center justify-center min-h-[400px] text-center">
-        <div className="rounded-full bg-brandOrange/10 p-4 mb-4">
-          <Store className="h-12 w-12 text-brandOrange" />
-        </div>
-        <h1 className="font-extrabold text-2xl text-textPrimary  dark:text-white mb-2">
-          Create Your Store First
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400 max-w-md mb-6">
-          You need to set up your store before you can add products. Let's get started!
-        </p>
-        <Link to="/admin/store">
-          <Button className="bg-brandGreen hover:bg-brandGreen/80 text-white">
-            Create Your Store
-          </Button>
-        </Link>
-      </div>
-    );
-  }
-
-  // 🛍 No Products Yet
-  if (products.length === 0) {
-    return (
-      <div className="max-w-6xl mx-auto my-10 p-6 bg-white rounded-lg flex flex-col items-center justify-center min-h-[400px] text-center">
-        <div className="rounded-full bg-brandOrange/10 p-4 mb-4">
-          <ShoppingBag className="h-12 w-12 text-brandOrange" />
-        </div>
-        <h1 className="font-extrabold text-2xl text-textPrimary mb-2 dark:text-white">
-          Your Store Shelves Are Empty
-        </h1>
-        <p className="text-gray-600 max-w-md mb-6 dark:text-gray-400">
-          Time to add your first product! Showcase what makes your store special.
-        </p>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-brandGreen hover:bg-brandGreen/80 text-white flex items-center">
-              <Plus className="mr-2" /> Add Your First Product
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="p-6 space-y-4">
-            <DialogHeader>
-              <DialogTitle className="text-xl font-bold">Add New Product</DialogTitle>
-              <DialogDescription className="text-sm text-gray-500">
-                Add products that will make your store stand out
-              </DialogDescription>
-            </DialogHeader>
-
-            {/* ✅ Form */}
-            <form onSubmit={submitHandler} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex flex-col">
-                  <Label className="mb-1.5 ml-1">Product Name</Label>
-                  <Input
-                    type="text"
-                    name="name"
-                    placeholder="Enter product name"
-                    value={input.name}
-                    onChange={changeEventHandler}
-                  />
-                  {error.name && <span className="text-xs font-medium text-error">{error.name}</span>}
-                </div>
-
-                <div className="flex flex-col">
-                  <Label className="mb-1.5 ml-1">Price (Rs)</Label>
-                  <Input
-                    type="number"
-                    name="price"
-                    placeholder="Enter product price"
-                    value={input.price}
-                    onChange={changeEventHandler}
-                  />
-                  {error.price && <span className="text-xs font-medium text-error">{error.price}</span>}
-                </div>
-
-                <div className="flex flex-col md:col-span-2">
-                  <Label className="mb-1.5 ml-1">Description</Label>
-                  <textarea
-                    name="description"
-                    placeholder="Enter product description"
-                    value={input.description}
-                    onChange={changeEventHandler}
-                    className="border rounded-md p-2 h-20 max-h-40 overflow-y-auto resize-none bg-white dark:bg-gray-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-black"
-                  />
-                  {error.description && <span className="text-xs font-medium text-error">{error.description}</span>}
-                </div>
-
-                <div className="flex flex-col md:col-span-2">
-                  <Label className="mb-1.5 ml-1">Net Quantity</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="number"
-                      name="netQty"
-                      placeholder="Enter quantity"
-                      value={input.netQty}
-                      onChange={changeEventHandler}
-                    />
-                    <select
-                      name="unit"
-                      value={unit}
-                      onChange={(e) => setUnit(e.target.value)}
-                      className="border rounded-md p-2 bg-white dark:bg-gray-800 text-black dark:text-white focus:outline-none focus:ring-2 focus:ring-black"
-                    >
-                      <option value="kg">kg</option>
-                      <option value="gms">gms</option>
-                      <option value="ltr">ltr</option>
-                      <option value="ml">ml</option>
-                    </select>
-                  </div>
-                  {error.netQty && <span className="text-xs font-medium text-error">{error.netQty}</span>}
-                </div>
-
-                <div className="flex flex-col md:col-span-2">
-                  <Label className="mb-1.5 ml-1">Upload Product Image</Label>
-                  <Input
-                    type="file"
-                    accept=".png, .jpg, .jpeg"
-                    name="image"
-                    onChange={(e) =>
-                      setInput({
-                        ...input,
-                        image: e.target.files?.[0] || undefined,
-                      })
-                    }
-                  />
-                  {error.image && (
-                    <span className="text-xs font-medium text-error">
-                      {error.image?.name || "*Product image is required"}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <DialogFooter className="mt-5">
-                {loading ? (
-                  <Button
-                    disabled
-                    className="bg-brandGreen hover:bg-brandGreen/80 text-white flex items-center"
-                  >
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait...
-                  </Button>
-                ) : (
-                  <Button type="submit" className="bg-brandGreen hover:bg-brandGreen/90 text-white">
-                    Submit
-                  </Button>
-                )}
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
-      </div>
-    );
-  }
-
-  // 🧾 Products Exist
   return (
-    <div className="max-w-6xl mx-auto my-10 p-6 bg-white dark:bg-gray-800 rounded-lg">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="font-extrabold text-2xl text-textPrimary dark:text-white">
-          Available Products
-        </h1>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-brandOrange hover:bg-brandOrange/80 text-white flex items-center">
-              <Plus /> Add Product
-            </Button>
-          </DialogTrigger>
-          {/* Reuse same dialog form */}
-        </Dialog>
-      </div>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 px-6 py-10 flex justify-center">
+      <Card className="w-full max-w-2xl bg-white dark:bg-gray-800 shadow-md border border-gray-200 dark:border-gray-700">
+        <CardContent className="p-6 space-y-6">
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
+            ➕ Add New Product
+          </h1>
 
-      <div className="space-y-6">
-        {products.map((item: any, index: number) => (
-          <div
-            key={index}
-            className="relative flex flex-col md:flex-row items-start p-4 shadow-md rounded-lg border bg-white dark:bg-gray-700 space-y-4 md:space-y-0"
-          >
-            <img src={item.image} alt={item.name} className="h-24 w-24 object-cover rounded-lg" />
-            <div className="flex-1 ml-4">
-              <h1 className="text-lg font-semibold text-gray-800 dark:text-white">{item.name}</h1>
-              <p className="text-sm text-gray-600 dark:text-gray-100 mt-1 line-clamp-2">
-                {item.description}
-              </p>
-              <h2 className="text-md font-semibold mt-2">
-                Net Qty: <span className="text-gray-600">{item.netQty}</span>
-              </h2>
-              <h2 className="text-md font-semibold mt-2">
-                Price: <span className="text-brandGreen">₹{item.price}</span>
-              </h2>
-            </div>
-            <div className="absolute top-2 right-2 flex gap-2">
-              <Button
-                onClick={() => {
-                  setSelectedProduct({
-                    ...item,
-                    name: item.name,
-                    id: item.id,
-                  });
-                  setEditOpen(true);
-                }}
-                size="sm"
-                className="bg-brandGreen text-white hover:bg-brandGreen/80 px-6 py-4 rounded-md"
+          <div className="space-y-3">
+            <Input
+              name="name"
+              placeholder="Product Name *"
+              value={formData.name}
+              onChange={handleChange}
+              className="border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+            />
+            <Textarea
+              name="description"
+              placeholder="Product Description"
+              value={formData.description}
+              onChange={(e) => handleChange(e)}
+              className="border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+            />
+            <Input
+              name="brand"
+              placeholder="Brand (optional)"
+              value={formData.brand}
+              onChange={handleChange}
+              className="border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+            />
+
+            {/* Category */}
+            <select
+              name="categoryId"
+              value={formData.categoryId}
+              onChange={handleChange}
+              className="w-full border rounded-md p-2 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 border-gray-300 dark:border-gray-700"
+            >
+              <option value="">Select Category *</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+
+            {/* Net Quantity + Unit */}
+            <div className="flex gap-2">
+              <Input
+                name="netQty"
+                placeholder="Net Quantity (e.g. 500)"
+                type="number"
+                value={formData.netQty}
+                onChange={handleChange}
+                className="flex-1 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+              />
+              <select
+                name="unit"
+                value={formData.unit}
+                onChange={handleChange}
+                className="border rounded-md p-2 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 border-gray-300 dark:border-gray-700"
               >
-                Edit
-              </Button>
+                {unitOptions.map((u) => (
+                  <option key={u} value={u}>
+                    {u}
+                  </option>
+                ))}
+              </select>
             </div>
+
+            {/* Image Upload */}
+            <Input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+            />
           </div>
-        ))}
-        <EditProducts
-          selectedProduct={selectedProduct}
-          editOpen={editOpen}
-          setEditOpen={setEditOpen}
-        />
-      </div>
+
+          <Button
+            onClick={handleSubmit}
+            disabled={loading}
+            className="w-full bg-brandGreen hover:bg-emerald-700 text-white"
+          >
+            {loading && <Loader2 className="animate-spin h-4 w-4 mr-2" />}
+            Add Product
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
-};
-
-export default AddProducts;
+}

@@ -7,7 +7,7 @@ import { Unit } from "@prisma/client";
 // ----------------- Add Product -----------------
 export const addProduct = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name, description, categoryId, netQtyValue, unit } = req.body;
+    const { name, description, categoryId, netQty, unit } = req.body;
     const file = req.file;
 
     if (!file) {
@@ -15,7 +15,7 @@ export const addProduct = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    if (!netQtyValue || !unit) {
+    if (!netQty || !unit) {
       res.status(400).json({
         success: false,
         message: "Net quantity value and unit are required",
@@ -50,7 +50,7 @@ export const addProduct = async (req: Request, res: Response): Promise<void> => 
           description: trimmedDescription || "",
           image: imageURL,
           categoryId: Number(categoryId),
-          netQty: netQtyValue,
+          netQty: Number(netQty),
           unit
         },
       });
@@ -476,5 +476,72 @@ export const addProductToShop = asyncHandler(async (req: Request, res: Response)
     success: true,
     message: "✅ Product successfully added to shop inventory",
     inventory,
+  });
+});
+
+export const updateShopInventory = asyncHandler(async (req: Request, res: Response) => {
+  const { shopId, productId } = req.params;
+  const { price, quantity, netQtyValue, unit, isAvailable } = req.body;
+
+  // 1️⃣ Validate shop exists
+  const shop = await prisma.shop.findUnique({
+    where: { id: Number(shopId) },
+  });
+
+  if (!shop) {
+    throw new AppError("Shop not found", 404);
+  }
+
+  // 2️⃣ Ensure the product exists in global catalog
+  const product = await prisma.product.findUnique({
+    where: { id: Number(productId) },
+  });
+
+  if (!product) {
+    throw new AppError("Product not found in global catalog", 404);
+  }
+
+  // 3️⃣ Check shop inventory entry exists
+  const inventory = await prisma.shopInventory.findUnique({
+    where: {
+      shopId_productId: {
+        shopId: Number(shopId),
+        productId: Number(productId),
+      },
+    },
+  });
+
+  if (!inventory) {
+    throw new AppError("This product is not in your shop inventory", 403);
+  }
+
+  // 4️⃣ Update only shop inventory (NOT global product)
+  const updatedInventory = await prisma.shopInventory.update({
+    where: { id: inventory.id },
+    data: {
+      price: price ? parseFloat(price) : inventory.price,
+      quantity: quantity ? Number(quantity) : inventory.quantity,
+      netQty: netQtyValue ? parseFloat(netQtyValue) : inventory.netQty,
+      unit: unit ? (unit as Unit) : inventory.unit,
+      isAvailable:
+        typeof isAvailable === "boolean" ? isAvailable : inventory.isAvailable,
+    },
+    include: {
+      product: {
+        select: {
+          id: true,
+          name: true,
+          image: true,
+          description: true,
+          category: { select: { id: true, name: true } },
+        },
+      },
+    },
+  });
+
+  return res.status(200).json({
+    success: true,
+    message: "Shop inventory updated successfully",
+    inventory: updatedInventory,
   });
 });

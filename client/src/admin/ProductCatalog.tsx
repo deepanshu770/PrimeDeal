@@ -15,9 +15,11 @@ import { useProductStore } from "@/zustand/useProductStore";
 import axios from "axios";
 import { unitOptions } from "@/config/data"; // 🧠 Should be like ["pcs", "g", "kg", "ml", "ltr"]
 import { Product, Unit } from "../../../types/types";
+import { useNavigate } from "react-router-dom";
 
 export default function ProductCatalog() {
   const { shop: shopList } = useShopStore();
+  const navigate =useNavigate();
   const { products, loading, fetchAllProducts, addExistingProductToShop } =
     useProductStore();
 
@@ -53,14 +55,21 @@ export default function ProductCatalog() {
   // ✅ Fetch products when filters change
   useEffect(() => {
     const timeout = setTimeout(() => {
-      fetchAllProducts(search, selectedCategory);
+      fetchAllProducts(search, selectedCategory ?? undefined);
     }, 400);
     return () => clearTimeout(timeout);
   }, [search, selectedCategory]);
 
   // 🛒 Add product to shop
   const handleAdd = async () => {
-    if (!selectedShop || !price || !quantity || !netQtyValue || !unit || !selectedProduct) {
+    if (
+      !selectedShop ||
+      !price ||
+      !quantity ||
+      !netQtyValue ||
+      !unit ||
+      !selectedProduct
+    ) {
       toast.error("⚠️ Please fill all fields");
       return;
     }
@@ -80,8 +89,8 @@ export default function ProductCatalog() {
       setOpenAddToShop(false);
       setPrice("");
       setQuantity("");
-      setNetQtyValue("");
-      setUnit("pcs");
+      setNetQtyValue(0);
+      setUnit(Unit.pcs);
       setSelectedShop(null);
     } catch {
       toast.error("❌ Failed to add product");
@@ -115,6 +124,14 @@ export default function ProductCatalog() {
         <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
           🛍️ Product Catalog
         </h1>
+      <div className="flex items-center gap-3">
+        <Button
+          onClick={() =>navigate("new")}
+          className="bg-brandOrange hover:bg-hoverOrange text-white"
+        >
+          + Add New Product
+        </Button>
+      </div>
       </div>
 
       {/* Search */}
@@ -193,9 +210,8 @@ export default function ProductCatalog() {
                   onClick={() => {
                     setSelectedProduct(p);
                     setOpenAddToShop(true);
-                    if(p.netQty) setNetQtyValue(p.netQty);
-                    if(p.unit) setUnit(p.unit);
-
+                    if (p.netQty) setNetQtyValue(p.netQty);
+                    if (p.unit) setUnit(p.unit);
                   }}
                   className="w-full bg-brandOrange hover:bg-hoverOrange text-white"
                 >

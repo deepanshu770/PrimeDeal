@@ -27,6 +27,7 @@ const Signup = () => {
 
   const changeEventHandler = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    setErrors({});
     setInput({ ...input, [name]: value });
   };
   const loginSubmitHandler = async (e: FormEvent) => {
@@ -38,6 +39,14 @@ const Signup = () => {
       const fieldErrors = formData.error.formErrors.fieldErrors;
       setErrors(fieldErrors as Partial<SignupInputState>);
       return;
+    }
+    if(input.contact==="0000000000"){
+      setErrors({contact:'Contact should be valid'});
+      return
+    }
+    if(input.email.split('@')[1]!="gmail.com"){
+      setErrors({email:'Email should be valid'});
+      return
     }
     // login API Implementation
     try {

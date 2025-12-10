@@ -50,6 +50,7 @@ const EditProducts = ({ selectedProduct, editOpen, setEditOpen }: { selectedProd
             return;
         }
         try {
+            if (!selectedProduct || typeof selectedProduct.id !== "number") return;
             const formData = new FormData();
             formData.append("title", input.title);
             formData.append("description", input.description);
@@ -58,7 +59,7 @@ const EditProducts = ({ selectedProduct, editOpen, setEditOpen }: { selectedProd
             if (input.image) {
                 formData.append("image", input.image);
             }
-            await editProduct(selectedProduct?.id || "",formData);
+            await editProduct(selectedProduct.id, formData);
         } catch (error) {
             console.log(error);
         }

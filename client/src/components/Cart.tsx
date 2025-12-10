@@ -140,8 +140,8 @@ const Cart = () => {
                           <div className="flex justify-center">
                             <div className="inline-flex items-center gap-2 border border-gray-300 dark:border-gray-600 rounded-full px-2 py-1">
                               <Button
-                                variant="ghost"
-                                className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+                                variant="default"
+                                className="p-1 bg-brandOrange rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
                                 size="icon"
                                 onClick={() =>
                                   decreMentQuantity(item.id, item.shopId)
@@ -153,8 +153,8 @@ const Cart = () => {
                                 {item.quantity}
                               </span>
                               <Button
-                                variant="ghost"
-                                className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+                                variant="default"
+                                className="p-1 bg-brandOrange rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
                                 size="icon"
                                 onClick={() =>
                                   increMentQuantity(item.id, item.shopId)
@@ -174,9 +174,9 @@ const Cart = () => {
                         {/* Remove Button */}
                         <TableCell className="text-center">
                           <Button
-                            variant="ghost"
+                            variant="default"
                             onClick={() => removeFromCart(item.id, item.shopId)}
-                            className="p-2 text-error hover:text-error/80 hover:bg-error/10 dark:hover:bg-error/20 rounded-full transition-colors"
+                            className="p-2 bg-white text-error hover:text-error/80 hover:bg-error/10 dark:hover:bg-error/20 rounded-full transition-colors"
                             size="icon"
                             title="Remove item"
                           >

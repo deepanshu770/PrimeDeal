@@ -6,30 +6,51 @@ import { AppError, asyncHandler } from "../utils/asyncHandler";
 
 /* ---------------------- SIGN UP ---------------------- */
 export const signUp = asyncHandler(async (req, res) => {
-  let { fullname, email, password, contact,admin } = req.body;
+  let { fullname, email, password, contact } = req.body;
+
+  if (!fullname || !email || !password || !contact) {
+    throw new AppError("All fields are required", 400);
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    throw new AppError("Invalid email format", 400);
+  }
+
+  if (password.length < 6) {
+    throw new AppError("Password must be at least 6 characters long", 400);
+  }
 
   // check if user exists
-  let user = await prisma.user.findUnique({ where: { email } });
-  if (user) throw new AppError("User already exists", 400);
+  const existingUser = await prisma.user.findUnique({ where: { email } });
+  if (existingUser) throw new AppError("User already exists", 400);
 
   fullname = fullname.trim();
   contact = contact.trim();
-  password = await bcrypt.hash(password, 10);
+  const hashedPassword = await bcrypt.hash(password, 10);
 
   // create user
-  user = await prisma.user.create({
+  const user = await prisma.user.create({
     data: {
       fullname,
       email,
-      passwordHash:password,
-      phoneNumber:contact, // keep as string since Prisma schema has String
-      admin
+      passwordHash: hashedPassword,
+      phoneNumber: contact,
+      admin: false, // Default to false for security
+    },
+    select: {
+      id: true,
+      fullname: true,
+      email: true,
+      phoneNumber: true,
+      profilePicture: true,
+      admin: true,
+      createdAt: true,
+      updatedAt: true,
     },
   });
 
-  generateToken(res, user);
-  //@ts-ignore
-  delete user.passwordHash;
+  generateToken(res, user as any); // Type assertion if generateToken expects full User model
 
   res.status(201).json({
     success: true,
@@ -39,8 +60,12 @@ export const signUp = asyncHandler(async (req, res) => {
 });
 
 /* ---------------------- LOGIN ---------------------- */
-export const Login = asyncHandler(async (req, res) => {
+export const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
+
+  if (!email || !password) {
+    throw new AppError("Email and password are required", 400);
+  }
 
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) throw new AppError("No user found with this email", 400);
@@ -51,17 +76,25 @@ export const Login = asyncHandler(async (req, res) => {
   generateToken(res, user);
 
   // Update last login
-  const createdUser = await prisma.user.update({
+  const loggedInUser = await prisma.user.update({
     where: { id: user.id },
     data: { updatedAt: new Date() },
+    select: {
+      id: true,
+      fullname: true,
+      email: true,
+      phoneNumber: true,
+      profilePicture: true,
+      admin: true,
+      createdAt: true,
+      updatedAt: true,
+    },
   });
-  //@ts-ignore
-  delete createdUser.passwordHash;
 
   res.status(200).json({
     success: true,
     message: `Welcome back ${user.fullname}`,
-    user: createdUser,
+    user: loggedInUser,
   });
 });
 
@@ -100,11 +133,29 @@ export const updateUserProfile = asyncHandler(async (req, res) => {
   const userId = req.id;
   const { fullname, email, contact, profilePicture } = req.body;
 
+  if (!fullname || !email || !contact) {
+    throw new AppError("Fullname, email, and contact are required", 400);
+  }
+
+  const currentUser = await prisma.user.findUnique({ where: { id: Number(userId) } });
+  if (!currentUser) throw new AppError("User not found", 404);
+
+  if (email !== currentUser.email) {
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser) {
+      throw new AppError("Email already in use", 400);
+    }
+  }
+
   // upload image on cloudinary
-  let uploadedImage = null;
-  if (profilePicture) {
-    const cloudResponse = await cloudinary.uploader.upload(profilePicture);
-    uploadedImage = cloudResponse.secure_url;
+  let uploadedImage = currentUser.profilePicture;
+  if (profilePicture && profilePicture.startsWith("data:")) {
+    try {
+      const cloudResponse = await cloudinary.uploader.upload(profilePicture);
+      uploadedImage = cloudResponse.secure_url;
+    } catch (error) {
+      throw new AppError("Failed to upload image", 500);
+    }
   }
 
   const updatedUser = await prisma.user.update({
@@ -112,25 +163,20 @@ export const updateUserProfile = asyncHandler(async (req, res) => {
     data: {
       fullname: fullname.trim(),
       email,
-      phoneNumber:contact,
-      profilePicture: uploadedImage || profilePicture,
+      phoneNumber: contact,
+      profilePicture: uploadedImage,
     },
     select: {
       id: true,
       fullname: true,
       email: true,
+      phoneNumber: true,
       profilePicture: true,
       admin: true,
       createdAt: true,
       updatedAt: true,
     },
   });
-
-  if (!updatedUser)
-    throw new AppError(
-      "Please make sure all the fields are filled correctly",
-      400
-    );
 
   res.status(200).json({
     success: true,

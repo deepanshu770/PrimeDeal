@@ -2,14 +2,15 @@ import API from "@/config/api";
 import { toast } from "sonner";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { NearbyShop, OrderItem, Shop, ShopInventory } from "../../../types/types";
+import { NearbyShop, OrderItem, Shop } from "../../../types/types";
+import type { ProductResult } from "@/components/AvailableProducts";
 
 export type ShopState = {
   loading: boolean;
   shop: Shop[];
   nearbyShops: NearbyShop[];
   searchedShop: Shop[];
-  searchedProduct: ShopInventory[];
+  searchedProduct: ProductResult[];
   singleShop: Shop | null;
   shopOrders: OrderItem[];
 
@@ -22,8 +23,8 @@ export type ShopState = {
   getShopOrders: () => Promise<void>;
   updateShopOrders: (orderId: string, orderStatus: string) => Promise<void>;
   getNearbyShops: (radiusKm?: number) => Promise<void>;
-  addProductToShop: (product: ShopInventory) => void;
-  updateProductInShop: (updatedProduct: ShopInventory) => void;
+  addProductToShop: (product: ProductResult) => void;
+  updateProductInShop: (updatedProduct: ProductResult) => void;
   clearShop: () => void;
 };
 
@@ -188,7 +189,7 @@ export const useShopStore = create<ShopState>()(
           if (data.success) {
             set({
               shopOrders: get().shopOrders.map((o) =>
-                o.id === orderId ? { ...o, status: orderStatus } : o
+                o.id === Number(orderId) ? { ...o, status: orderStatus } : o
               ),
             });
             toast.success("✅ Order status updated");
@@ -207,7 +208,22 @@ export const useShopStore = create<ShopState>()(
         set((state) => ({
           shop: state.shop.map((shop) =>
             shop.id === product.shopId
-              ? { ...shop, products: [...(shop.products || []), product] }
+              ? {
+                  ...shop,
+                  inventory: [
+                    ...(shop.inventory || []),
+                    {
+                      id: product.id,
+                      productId: product.id,
+                      shopId: product.shopId,
+                      price: product.price,
+                      quantity: 0,
+                      netQty: Number(product.netQty),
+                      unit: product.unit as any,
+                      isAvailable: product.isAvailable ?? true,
+                    },
+                  ],
+                }
               : shop
           ),
         }));
@@ -220,8 +236,15 @@ export const useShopStore = create<ShopState>()(
             shop.id === updatedProduct.shopId
               ? {
                   ...shop,
-                  products: shop.products?.map((p) =>
-                    p.id === updatedProduct.id ? updatedProduct : p
+                  inventory: shop.inventory?.map((item) =>
+                    item.productId === updatedProduct.id
+                      ? {
+                          ...item,
+                          price: updatedProduct.price,
+                          netQty: Number(updatedProduct.netQty),
+                          unit: updatedProduct.unit as any,
+                        }
+                      : item
                   ),
                 }
               : shop

@@ -34,11 +34,15 @@ API.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    const { status, data } = error.response;
-    console.log(status,data);
+    const { status, data } = error.response as {
+      status: number;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      data: { message?: string } | any;
+    };
+    console.log(status, data);
     switch (status) {
       case 400:
-        toast.error(data?.message || "Bad Request — check your input.");
+        toast.error((data as any)?.message || "Bad Request — check your input.");
         break;
 
       case 401:
@@ -63,7 +67,7 @@ API.interceptors.response.use(
         break;
 
       default:
-        toast.error(data?.message || "An unexpected error occurred.");
+        toast.error((data as any)?.message || "An unexpected error occurred.");
     }
 
     return Promise.reject(error);

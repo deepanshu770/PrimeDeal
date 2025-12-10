@@ -24,10 +24,14 @@ const ShopDetails = () => {
   /** 🧠 Extract unique categories — memoized */
   const allCategories = useMemo(() => {
     if (!inventory.length) return ["All"];
-    const unique = new Set(
-      inventory.map((item) => item.product?.category?.name).filter(Boolean)
+    const unique = Array.from(
+      new Set(
+        inventory
+          .map((item) => item.product?.category?.name)
+          .filter((name): name is string => Boolean(name))
+      )
     );
-    return ["All", ...Array.from(unique)];
+    return ["All", ...unique];
   }, [inventory]);
 
   /** ⚡ Filter inventory efficiently */
@@ -136,8 +140,7 @@ const ProductCard = ({ product, inventory, shopId, addToCart }: any) => {
         unit: inventory.unit,
         shopId,
         isAvailable: inventory.isAvailable,
-      },
-      shopId
+      }
     );
 
     if (added) {

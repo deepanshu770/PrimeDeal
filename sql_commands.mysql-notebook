@@ -2,7 +2,7 @@
     "type": "MySQLNotebook",
     "version": "1.0",
     "caption": "DB Notebook",
-    "content": "\\about\nuse primedeal;\nshow TABLES\nuse primedeal;\nSELECT * from user\n-- ✅ CATEGORY SEED DATA\nINSERT INTO `Category` (`id`, `name`, `description`) VALUES\n(1, 'Dairy & Bakery', 'Milk, butter, cheese, paneer, breads, and bakery products'),\n(2, 'Snacks & Beverages', 'Chips, biscuits, soft drinks, juices, and tea'),\n(3, 'Grocery & Staples', 'Rice, flour, pulses, spices, oils, and essentials'),\n(4, 'Personal Care', 'Soap, shampoo, toothpaste, creams, and cosmetics'),\n(5, 'Household Essentials', 'Detergents, cleaners, and daily home products'),\n(6, 'Fruits & Vegetables', 'Fresh farm produce and greens'),\n(7, 'Baby Care', 'Baby food, diapers, and lotions'),\n(8, 'Meat & Seafood', 'Chicken, fish, prawns, and frozen meats'),\n(9, 'Beverages', 'Tea, coffee, soft drinks, and juices'),\n(10, 'Frozen Foods', 'Frozen snacks, ready-to-cook and desserts'),\n(11, 'Health & Nutrition', 'Protein powders, supplements, and healthy snacks'),\n(12, 'Pet Care', 'Pet food, grooming, and accessories'),\n(13, 'Stationery & Office', 'Books, pens, and office supplies');\n\n-- ✅ PRODUCT SEED DATA\n\nINSERT INTO `Product` (`categoryId`, `name`, `description`, `brand`, `image`, `netQty`, `unit`, `createdAt`, `updatedAt`) VALUES\n-- Dairy & Bakery\n(1, 'Amul Butter 500g', 'Delicious and creamy butter from Amul.', 'Amul', 'https://placehold.co/300x300?text=Amul+Butter', 500, 'g', NOW(), NOW()),\n(1, 'Britannia Whole Wheat Bread', 'Soft and fresh whole wheat bread loaf.', 'Britannia', 'https://placehold.co/300x300?text=Britannia+Bread', 400, 'g', NOW(), NOW()),\n(1, 'Mother Dairy Toned Milk', 'Rich in calcium and protein.', 'Mother Dairy', 'https://placehold.co/300x300?text=Mother+Dairy+Milk', 1, 'l', NOW(), NOW()),\n\n-- Snacks & Beverages\n(2, 'Lays Classic Salted Chips', 'Crispy and light potato chips with salted flavor.', 'Lays', 'https://placehold.co/300x300?text=Lays+Chips', 52, 'g', NOW(), NOW()),\n(2, 'Parle-G Biscuits', 'Iconic glucose biscuits loved by all ages.', 'Parle', 'https://placehold.co/300x300?text=Parle+G', 250, 'g', NOW(), NOW()),\n(2, 'Pepsi Soft Drink', 'Refreshing carbonated drink.', 'Pepsi', 'https://placehold.co/300x300?text=Pepsi', 750, 'ml', NOW(), NOW()),\n\n-- Grocery & Staples\n(3, 'Aashirvaad Atta', 'Whole wheat flour for soft rotis.', 'Aashirvaad', 'https://placehold.co/300x300?text=Aashirvaad+Atta', 10, 'kg', NOW(), NOW()),\n(3, 'Tata Salt', 'Iodized salt for everyday cooking.', 'Tata', 'https://placehold.co/300x300?text=Tata+Salt', 1, 'kg', NOW(), NOW()),\n(3, 'India Gate Basmati Rice', 'Premium long grain basmati rice.', 'India Gate', 'https://placehold.co/300x300?text=India+Gate+Rice', 5, 'kg', NOW(), NOW()),\n\n-- Personal Care\n(4, 'Dove Shampoo', 'Moisturizing shampoo for smooth and silky hair.', 'Dove', 'https://placehold.co/300x300?text=Dove+Shampoo', 180, 'ml', NOW(), NOW()),\n(4, 'Pears Soap', 'Gentle soap with glycerine for glowing skin.', 'Pears', 'https://placehold.co/300x300?text=Pears+Soap', 125, 'g', NOW(), NOW()),\n(4, 'Colgate Toothpaste', 'Strong teeth and fresh breath.', 'Colgate', 'https://placehold.co/300x300?text=Colgate', 200, 'g', NOW(), NOW()),\n\n-- Household Essentials\n(5, 'Surf Excel Matic Detergent', 'Removes tough stains easily.', 'Surf Excel', 'https://placehold.co/300x300?text=Surf+Excel', 2, 'kg', NOW(), NOW()),\n(5, 'Lizol Floor Cleaner', 'Kills 99.9% germs and cleans floors.', 'Lizol', 'https://placehold.co/300x300?text=Lizol', 1, 'l', NOW(), NOW()),\n(5, 'Vim Dishwash Liquid', 'Removes grease easily from utensils.', 'Vim', 'https://placehold.co/300x300?text=Vim+Liquid', 750, 'ml', NOW(), NOW()),\n\n-- Fruits & Vegetables\n(6, 'Fresh Tomatoes', 'Juicy red tomatoes for everyday use.', 'Local Farm', 'https://placehold.co/300x300?text=Tomatoes', 1, 'kg', NOW(), NOW()),\n(6, 'Onions', 'Fresh onions with strong flavor.', 'Local Farm', 'https://placehold.co/300x300?text=Onions', 1, 'kg', NOW(), NOW()),\n(6, 'Bananas', 'Ripe and sweet bananas.', 'Local Farm', 'https://placehold.co/300x300?text=Bananas', 6, 'pcs', NOW(), NOW()),\n\n-- Beverages\n(9, 'Tata Tea Gold', 'Premium Assam blend for perfect chai.', 'Tata Tea', 'https://placehold.co/300x300?text=Tata+Tea+Gold', 250, 'g', NOW(), NOW()),\n(9, 'Bru Instant Coffee', 'Rich aroma instant coffee.', 'Bru', 'https://placehold.co/300x300?text=Bru+Coffee', 100, 'g', NOW(), NOW()),\n(9, 'Real Mixed Fruit Juice', 'Healthy and tasty fruit juice.', 'Real', 'https://placehold.co/300x300?text=Real+Juice', 1, 'l', NOW(), NOW()),\n\n-- Frozen Foods\n(10, 'McCain French Fries', 'Crispy golden fries ready to fry.', 'McCain', 'https://placehold.co/300x300?text=McCain+Fries', 750, 'g', NOW(), NOW()),\n(10, 'Veg Momos', 'Delicious ready-to-steam momos.', 'WOW Momos', 'https://placehold.co/300x300?text=Veg+Momos', 12, 'pcs', NOW(), NOW()),\n\n-- Health & Nutrition\n(11, 'Horlicks Classic Malt', 'Health drink for energy and immunity.', 'Horlicks', 'https://placehold.co/300x300?text=Horlicks', 500, 'g', NOW(), NOW()),\n(11, 'ProteinX Powder', 'Protein supplement for daily nutrition.', 'ProteinX', 'https://placehold.co/300x300?text=ProteinX', 400, 'g', NOW(), NOW());\n\nuse primedeal;\nSELECT * FROM `ORDER`;\n\n",
+    "content": "\\about\nuse primedeal;\nshow TABLES\nuse primedeal;\nSELECT * from user\n\n\nuse primedeal;\nSELECT email,admin FROM `user`;\n\n",
     "options": {
         "tabSize": 4,
         "indentSize": 4,
@@ -15,11 +15,11 @@
             {
                 "inSelectionMode": false,
                 "selectionStart": {
-                    "lineNumber": 70,
+                    "lineNumber": 6,
                     "column": 1
                 },
                 "position": {
-                    "lineNumber": 70,
+                    "lineNumber": 6,
                     "column": 1
                 }
             }
@@ -27,10 +27,10 @@
         "viewState": {
             "scrollLeft": 0,
             "firstPosition": {
-                "lineNumber": 70,
+                "lineNumber": 6,
                 "column": 1
             },
-            "firstPositionDeltaTop": 319
+            "firstPositionDeltaTop": 0
         },
         "contributionsState": {
             "editor.contrib.folding": {},
@@ -77,7 +77,7 @@
                 "result": {
                     "type": "resultIds",
                     "list": [
-                        "8e24fddf-3835-48d1-808d-32853cfa56a5"
+                        "267a7719-4f76-4979-ec40-6a92c609856b"
                     ]
                 },
                 "currentHeight": 352,
@@ -105,8 +105,8 @@
             },
             "data": [
                 {
-                    "tabId": "19601a1b-3b18-40f4-9110-a17cf21828f8",
-                    "resultId": "8e24fddf-3835-48d1-808d-32853cfa56a5",
+                    "tabId": "d8a766b9-e260-4698-ebe6-bc83509020a6",
+                    "resultId": "267a7719-4f76-4979-ec40-6a92c609856b",
                     "rows": [
                         {
                             "0": "_prisma_migrations"
@@ -227,7 +227,7 @@
         {
             "state": {
                 "start": 6,
-                "end": 21,
+                "end": 6,
                 "language": "mysql",
                 "result": {
                     "type": "text",
@@ -247,19 +247,10 @@
                         "delimiter": ";",
                         "span": {
                             "start": 0,
-                            "length": 981
+                            "length": 0
                         },
                         "contentStart": 24,
                         "state": 0
-                    },
-                    {
-                        "delimiter": ";",
-                        "span": {
-                            "start": 981,
-                            "length": 1
-                        },
-                        "contentStart": 980,
-                        "state": 3
                     }
                 ]
             },
@@ -267,8 +258,8 @@
         },
         {
             "state": {
-                "start": 22,
-                "end": 67,
+                "start": 7,
+                "end": 7,
                 "language": "mysql",
                 "result": {
                     "type": "text",
@@ -288,19 +279,10 @@
                         "delimiter": ";",
                         "span": {
                             "start": 0,
-                            "length": 4014
+                            "length": 0
                         },
                         "contentStart": 24,
                         "state": 0
-                    },
-                    {
-                        "delimiter": ";",
-                        "span": {
-                            "start": 4014,
-                            "length": 1
-                        },
-                        "contentStart": 4013,
-                        "state": 3
                     }
                 ]
             },
@@ -308,17 +290,16 @@
         },
         {
             "state": {
-                "start": 68,
-                "end": 69,
+                "start": 8,
+                "end": 9,
                 "language": "mysql",
                 "result": {
                     "type": "resultIds",
                     "list": [
-                        "659e6f88-712b-4cf3-b9aa-407823e6d980",
-                        "8109dfbc-38ab-4a26-9eff-a88ad4db2f6c"
+                        "60660a76-bba5-49f0-c125-7000682d63dc"
                     ]
                 },
-                "currentHeight": 352,
+                "currentHeight": 266.65625,
                 "currentSet": 1,
                 "statements": [
                     {
@@ -334,7 +315,7 @@
                         "delimiter": ";",
                         "span": {
                             "start": 14,
-                            "length": 23
+                            "length": 32
                         },
                         "contentStart": 15,
                         "state": 0
@@ -343,157 +324,62 @@
             },
             "data": [
                 {
-                    "tabId": "19601a1b-3b18-40f4-9110-a17cf21828f8",
-                    "resultId": "659e6f88-712b-4cf3-b9aa-407823e6d980",
+                    "tabId": "d8a766b9-e260-4698-ebe6-bc83509020a6",
+                    "resultId": "60660a76-bba5-49f0-c125-7000682d63dc",
                     "rows": [
                         {
-                            "0": 1,
-                            "1": 2,
-                            "2": 1,
-                            "3": 1,
-                            "4": 90,
-                            "5": "cancelled",
-                            "6": "pending",
-                            "7": "2025-11-12 14:34:37.883000",
-                            "8": "2025-11-12 15:14:01.468000"
+                            "0": "deepanshusaini@gmail.com",
+                            "1": 0
                         },
                         {
-                            "0": 2,
-                            "1": 2,
-                            "2": 1,
-                            "3": 1,
-                            "4": 210,
-                            "5": "delivered",
-                            "6": "pending",
-                            "7": "2025-11-12 16:35:00.224000",
-                            "8": "2025-11-12 16:38:39.151000"
+                            "0": "deepanshusaini502@gmail.com",
+                            "1": 0
                         },
                         {
-                            "0": 3,
-                            "1": 2,
-                            "2": 1,
-                            "3": 1,
-                            "4": 60,
-                            "5": "confirmed",
-                            "6": "pending",
-                            "7": "2025-11-12 16:38:16.499000",
-                            "8": "2025-11-12 16:56:59.052000"
+                            "0": "deepanshu@gmail.com",
+                            "1": 0
                         },
                         {
-                            "0": 4,
-                            "1": 1,
-                            "2": 1,
-                            "3": 5,
-                            "4": 60,
-                            "5": "pending",
-                            "6": "pending",
-                            "7": "2025-11-13 13:40:55.075000",
-                            "8": "2025-11-13 13:40:55.075000"
+                            "0": "deepanshu1@gmail.com",
+                            "1": 1
                         },
                         {
-                            "0": 5,
-                            "1": 1,
-                            "2": 1,
-                            "3": 5,
-                            "4": 60,
-                            "5": "pending",
-                            "6": "pending",
-                            "7": "2025-11-13 13:40:55.075000",
-                            "8": "2025-11-13 13:40:55.075000"
+                            "0": "rishi@gmail.com",
+                            "1": 1
                         },
                         {
-                            "0": 6,
-                            "1": 1,
-                            "2": 2,
-                            "3": 5,
-                            "4": 40,
-                            "5": "pending",
-                            "6": "pending",
-                            "7": "2025-11-13 13:40:55.151000",
-                            "8": "2025-11-13 13:40:55.151000"
+                            "0": "jk2.ojitendrarana@gmail.com",
+                            "1": 0
                         },
                         {
-                            "0": 7,
-                            "1": 1,
-                            "2": 2,
-                            "3": 5,
-                            "4": 40,
-                            "5": "pending",
-                            "6": "pending",
-                            "7": "2025-11-13 13:40:55.166000",
-                            "8": "2025-11-13 13:40:55.166000"
-                        },
-                        {
-                            "0": 8,
-                            "1": 1,
-                            "2": 1,
-                            "3": 5,
-                            "4": 90,
-                            "5": "pending",
-                            "6": "pending",
-                            "7": "2025-11-13 13:43:21.121000",
-                            "8": "2025-11-13 13:43:21.121000"
-                        },
-                        {
-                            "0": 9,
-                            "1": 1,
-                            "2": 1,
-                            "3": 5,
-                            "4": 90,
-                            "5": "pending",
-                            "6": "pending",
-                            "7": "2025-11-13 13:43:21.121000",
-                            "8": "2025-11-13 13:43:21.121000"
-                        },
-                        {
-                            "0": 10,
-                            "1": 1,
-                            "2": 2,
-                            "3": 5,
-                            "4": 20,
-                            "5": "pending",
-                            "6": "pending",
-                            "7": "2025-11-13 13:43:21.127000",
-                            "8": "2025-11-13 13:43:21.127000"
-                        },
-                        {
-                            "0": 11,
-                            "1": 1,
-                            "2": 2,
-                            "3": 5,
-                            "4": 20,
-                            "5": "pending",
-                            "6": "pending",
-                            "7": "2025-11-13 13:43:21.136000",
-                            "8": "2025-11-13 13:43:21.136000"
+                            "0": "ayush@gmail.com",
+                            "1": 0
                         }
                     ],
                     "columns": [
                         {
-                            "title": "id",
+                            "title": "email",
                             "field": "0",
                             "dataType": {
-                                "type": 4,
+                                "type": 17,
+                                "characterMaximumLength": 65535,
                                 "flags": [
-                                    "SIGNED",
-                                    "ZEROFILL"
+                                    "BINARY",
+                                    "ASCII",
+                                    "UNICODE"
                                 ],
-                                "numericPrecision": 10,
-                                "parameterFormatType": "OneOrZero",
-                                "synonyms": [
-                                    "INTEGER",
-                                    "INT4"
-                                ]
+                                "needsQuotes": true,
+                                "parameterFormatType": "OneOrZero"
                             },
-                            "inPK": true,
+                            "inPK": false,
                             "nullable": false,
-                            "autoIncrement": true
+                            "autoIncrement": false
                         },
                         {
-                            "title": "userId",
+                            "title": "admin",
                             "field": "1",
                             "dataType": {
-                                "type": 4,
+                                "type": 42,
                                 "flags": [
                                     "SIGNED",
                                     "ZEROFILL"
@@ -504,117 +390,6 @@
                                     "INTEGER",
                                     "INT4"
                                 ]
-                            },
-                            "inPK": false,
-                            "nullable": false,
-                            "autoIncrement": false
-                        },
-                        {
-                            "title": "shopId",
-                            "field": "2",
-                            "dataType": {
-                                "type": 4,
-                                "flags": [
-                                    "SIGNED",
-                                    "ZEROFILL"
-                                ],
-                                "numericPrecision": 10,
-                                "parameterFormatType": "OneOrZero",
-                                "synonyms": [
-                                    "INTEGER",
-                                    "INT4"
-                                ]
-                            },
-                            "inPK": false,
-                            "nullable": false,
-                            "autoIncrement": false
-                        },
-                        {
-                            "title": "deliveryAddressId",
-                            "field": "3",
-                            "dataType": {
-                                "type": 4,
-                                "flags": [
-                                    "SIGNED",
-                                    "ZEROFILL"
-                                ],
-                                "numericPrecision": 10,
-                                "parameterFormatType": "OneOrZero",
-                                "synonyms": [
-                                    "INTEGER",
-                                    "INT4"
-                                ]
-                            },
-                            "inPK": false,
-                            "nullable": false,
-                            "autoIncrement": false
-                        },
-                        {
-                            "title": "totalAmount",
-                            "field": "4",
-                            "dataType": {
-                                "type": 9,
-                                "flags": [
-                                    "UNSIGNED",
-                                    "ZEROFILL"
-                                ],
-                                "numericPrecision": 53,
-                                "numericScale": 30,
-                                "parameterFormatType": "TwoOrZero",
-                                "synonyms": [
-                                    "FLOAT8"
-                                ]
-                            },
-                            "inPK": false,
-                            "nullable": false,
-                            "autoIncrement": false
-                        },
-                        {
-                            "title": "orderStatus",
-                            "field": "5",
-                            "dataType": {
-                                "type": 43,
-                                "needsQuotes": true
-                            },
-                            "inPK": false,
-                            "nullable": false,
-                            "autoIncrement": false,
-                            "default": "pending"
-                        },
-                        {
-                            "title": "paymentStatus",
-                            "field": "6",
-                            "dataType": {
-                                "type": 43,
-                                "needsQuotes": true
-                            },
-                            "inPK": false,
-                            "nullable": false,
-                            "autoIncrement": false,
-                            "default": "pending"
-                        },
-                        {
-                            "title": "createdAt",
-                            "field": "7",
-                            "dataType": {
-                                "type": 26,
-                                "dateTimePrecision": 8,
-                                "needsQuotes": true,
-                                "parameterFormatType": "OneOrZero"
-                            },
-                            "inPK": false,
-                            "nullable": false,
-                            "autoIncrement": false,
-                            "default": "CURRENT_TIMESTAMP(3)"
-                        },
-                        {
-                            "title": "updatedAt",
-                            "field": "8",
-                            "dataType": {
-                                "type": 26,
-                                "dateTimePrecision": 8,
-                                "needsQuotes": true,
-                                "parameterFormatType": "OneOrZero"
                             },
                             "inPK": false,
                             "nullable": false,
@@ -622,48 +397,22 @@
                         }
                     ],
                     "executionInfo": {
-                        "text": "OK, 11 records retrieved in 0.847ms"
+                        "text": "OK, 7 records retrieved in 0.794ms"
                     },
-                    "totalRowCount": 11,
+                    "totalRowCount": 7,
                     "hasMoreRows": false,
                     "currentPage": 0,
                     "index": 1,
-                    "sql": "\nSELECT * FROM `ORDER`",
-                    "updatable": true,
-                    "fullTableName": "`ORDER`"
-                },
-                {
-                    "tabId": "19601a1b-3b18-40f4-9110-a17cf21828f8",
-                    "resultId": "8109dfbc-38ab-4a26-9eff-a88ad4db2f6c",
-                    "rows": [],
-                    "columns": [
-                        {
-                            "title": "*",
-                            "field": "0",
-                            "dataType": {
-                                "type": 0
-                            },
-                            "inPK": false,
-                            "nullable": false,
-                            "autoIncrement": false
-                        }
-                    ],
-                    "executionInfo": {
-                        "text": "OK, 0 records retrieved in 0.769ms"
-                    },
-                    "totalRowCount": 0,
-                    "hasMoreRows": false,
-                    "currentPage": 0,
-                    "index": 0,
-                    "sql": "use primedeal",
-                    "updatable": false
+                    "sql": "\nSELECT email,admin FROM `user`",
+                    "updatable": false,
+                    "fullTableName": "`user`"
                 }
             ]
         },
         {
             "state": {
-                "start": 70,
-                "end": 70,
+                "start": 10,
+                "end": 10,
                 "language": "mysql",
                 "currentSet": 1,
                 "statements": [
@@ -682,8 +431,8 @@
         },
         {
             "state": {
-                "start": 71,
-                "end": 71,
+                "start": 11,
+                "end": 11,
                 "language": "mysql",
                 "currentSet": 1,
                 "statements": [

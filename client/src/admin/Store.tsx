@@ -20,7 +20,7 @@ const AdminStore = () => {
   }, []);
 
   const handleEditShop = (id: number) => navigate(`/admin/store/${id}`);
-  const handleViewProducts = (id: number) => navigate(`/admin/store/product/${id}`);
+  const handleViewProducts = (id: number) => navigate(`/admin/store/inventory/${id}`);
 
   return (
     <div className="max-w-7xl mx-auto my-10 px-4">
@@ -77,11 +77,7 @@ const AdminStore = () => {
 
 export default AdminStore;
 
-/* ------------------------------------------------------------
-   🧱 Reusable Components
------------------------------------------------------------- */
 
-// ✅ Individual Shop Card
 const ShopCard = ({
   shop,
   onEdit,

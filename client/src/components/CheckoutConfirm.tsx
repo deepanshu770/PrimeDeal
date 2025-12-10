@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +12,7 @@ import { Separator } from "./ui/separator";
 import { useNavigate } from "react-router-dom";
 import { useUserStore } from "@/zustand/useUserStore";
 import {  useCartStore } from "@/zustand/useCartStore";
-import { Store, MapPin, Plus } from "lucide-react";
+import { Store, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { useAddressStore } from "@/zustand/useAddressStore";
 import { cn } from "@/lib/utils";
@@ -34,14 +34,6 @@ const CheckoutConfirm = ({ open, setOpen }: CheckoutConfirmProps) => {
     setSelectedAddress,
   } = useAddressStore();
 
-  const [addingNew, setAddingNew] = useState(false);
-  const [newAddress, setNewAddress] = useState({
-    addressLine1: "",
-    city: "",
-    state: "",
-    postalCode: "",
-    country: "India",
-  });
 
   // Load user addresses
   useEffect(() => {
@@ -111,45 +103,6 @@ const CheckoutConfirm = ({ open, setOpen }: CheckoutConfirmProps) => {
     }
   };
 
-  const handleAddNewAddress = async () => {
-    if (
-      !newAddress.addressLine1 ||
-      !newAddress.city ||
-      !newAddress.postalCode
-    ) {
-      toast.error("Please fill in all required fields.");
-      return;
-    }
-
-    try {
-      const response = await fetch("http://localhost:3000/api/v1/address", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newAddress),
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        toast.success("Address added successfully!");
-        await getAddresses();
-        setAddingNew(false);
-        setNewAddress({
-          addressLine1: "",
-          city: "",
-          state: "",
-          postalCode: "",
-          country: "India",
-        });
-      } else {
-        toast.error(data.message || "Failed to add address");
-      }
-    } catch (err) {
-      console.log(err);
-      toast.error("Failed to add address");
-    }
-  };
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="p-0 max-w-2xl rounded-2xl overflow-hidden shadow-2xl">
@@ -183,7 +136,7 @@ const CheckoutConfirm = ({ open, setOpen }: CheckoutConfirmProps) => {
               <div className="text-sm text-gray-500">
                 No saved addresses.{" "}
                 <button
-                  onClick={() => setAddingNew(true)}
+                  onClick={() => navigate("/setup-address")}
                   className="text-brandGreen font-semibold underline hover:text-brandGreen/80"
                 >
                   Add one now.
@@ -196,7 +149,7 @@ const CheckoutConfirm = ({ open, setOpen }: CheckoutConfirmProps) => {
                     key={addr.id}
                     onClick={() => setSelectedAddress(addr)}
                     className={cn(
-                      "flex items-start gap-3 p-3 border rounded-lg transition-all text-left",
+                      "flex bg-white items-start gap-3 p-3 border rounded-lg transition-all text-left",
                       "hover:border-brandGreen/60 dark:hover:border-brandGreen/70",
                       selectedAddress?.id === addr.id
                         ? "border-brandGreen bg-brandGreen/5"
@@ -219,67 +172,12 @@ const CheckoutConfirm = ({ open, setOpen }: CheckoutConfirmProps) => {
                   </button>
                 ))}
 
-                <button
-                  onClick={() => setAddingNew(!addingNew)}
-                  className="flex items-center justify-center w-full py-2 mt-1 border border-dashed rounded-lg border-gray-300 text-brandGreen hover:border-brandGreen/70 transition"
-                >
-                  <Plus className="w-4 h-4 mr-1" /> Add New Address
-                </button>
+            
               </div>
             )}
           </div>
 
-          {/* ➕ New Address Form */}
-          {addingNew && (
-            <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 space-y-2">
-              <h4 className="font-semibold text-gray-800 dark:text-gray-100">
-                Add New Address
-              </h4>
-              <input
-                type="text"
-                placeholder="Address Line 1"
-                className="w-full border rounded-md px-3 py-2 text-sm"
-                value={newAddress.addressLine1}
-                onChange={(e) =>
-                  setNewAddress({ ...newAddress, addressLine1: e.target.value })
-                }
-              />
-              <input
-                type="text"
-                placeholder="City"
-                className="w-full border rounded-md px-3 py-2 text-sm"
-                value={newAddress.city}
-                onChange={(e) =>
-                  setNewAddress({ ...newAddress, city: e.target.value })
-                }
-              />
-              <input
-                type="text"
-                placeholder="State"
-                className="w-full border rounded-md px-3 py-2 text-sm"
-                value={newAddress.state}
-                onChange={(e) =>
-                  setNewAddress({ ...newAddress, state: e.target.value })
-                }
-              />
-              <input
-                type="text"
-                placeholder="Postal Code"
-                className="w-full border rounded-md px-3 py-2 text-sm"
-                value={newAddress.postalCode}
-                onChange={(e) =>
-                  setNewAddress({ ...newAddress, postalCode: e.target.value })
-                }
-              />
-              <Button
-                onClick={handleAddNewAddress}
-                className="w-full bg-brandGreen text-white hover:bg-brandGreen/80"
-              >
-                Save Address
-              </Button>
-            </div>
-          )}
-
+        
           <Separator />
 
           {/* 🏬 Shop Summary */}
