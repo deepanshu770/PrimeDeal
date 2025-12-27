@@ -1,4 +1,4 @@
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 import { API_END_POINT } from "./varibles";
 import { toast } from "sonner";
 
@@ -7,6 +7,9 @@ const API = axios.create({
   baseURL: API_END_POINT, // change this to your base URL
   timeout: 10000, // timeout in milliseconds (e.g., 10000 = 10 seconds)
   withCredentials: true,
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
 // ✅ Request Interceptor
@@ -22,56 +25,5 @@ API.interceptors.request.use(
   }
 );
 
-// ✅ Response Interceptor
-API.interceptors.response.use(
-  (response) => {
-    const  { data} = response;
-    console.log(data)
-    return response;  },
-  async (error: AxiosError) => {
-    if (!error.response) {
-      toast.error("Network error — please check your internet connection.");
-      return Promise.reject(error);
-    }
-
-    const { status, data } = error.response as {
-      status: number;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      data: { message?: string } | any;
-    };
-    console.log(status, data);
-    switch (status) {
-      case 400:
-        toast.error((data as any)?.message || "Bad Request — check your input.");
-        break;
-
-      case 401:
-        toast.error("Session expired. Please log in again.");
-        localStorage.clear();
-        break;
-
-      case 403:
-        toast.error("You are not authorized to perform this action.");
-        break;
-
-      case 408:
-        toast.error("Request timeout. Please try again.");
-        break;
-
-      case 500:
-        toast.error("Internal server error. Please try later.");
-        break;
-
-      case 503:
-        toast.error("Server unavailable. Please try again soon.");
-        break;
-
-      default:
-        toast.error((data as any)?.message || "An unexpected error occurred.");
-    }
-
-    return Promise.reject(error);
-  }
-);
 
 export default API;

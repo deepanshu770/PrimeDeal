@@ -44,11 +44,7 @@ export const useUserStore = create<UserState>()(
       signup: async (input: SignupInputState) => {
         set({ loading: true });
         try {
-          const response = await API.post(`/user/signup`, input, {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          });
+          const response = await API.post(`/user/signup`, input);
           if (response.data.success) {
             toast.success(response.data.message);
             set({

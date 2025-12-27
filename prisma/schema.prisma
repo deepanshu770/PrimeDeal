@@ -110,7 +110,7 @@ model ShopInventory {
   price       Float
   quantity    Int
   netQty      Float    // e.g., 500, 1.5, etc.
-  unit        Unit     // 👈 enum type now
+  unit        Unit     
   isAvailable Boolean  @default(true)
 
   shop    Shop    @relation(fields: [shopId], references: [id], onDelete: Cascade)

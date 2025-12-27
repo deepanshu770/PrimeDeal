@@ -13,7 +13,7 @@ const generateToken = (res, user) => {
         httpOnly: true,
         sameSite: "strict",
         secure: process.env.NODE_ENV === "production", // ✅ recommended for security
-        maxAge: 31 * 24 * 60 * 60 * 1000, // 31 days
+        maxAge: 24 * 60 * 60 * 1000, // 1 day (matches token expiry)
     });
     return token;
 };

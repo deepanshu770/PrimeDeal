@@ -3,7 +3,6 @@ dotenv.config();
 import express from "express";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
-import cors from "cors";
 import userRoute from "./routes/user.route";
 import shopRoute from "./routes/shop.route";
 import productRoute from "./routes/product.route";
@@ -23,17 +22,16 @@ app.use(bodyParser.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(express.json());
 app.use(cookieParser());
-const corsOptions = {
-  origin: ["http://localhost:5173",
-    "http://192.168.137.1:5173"
-  ],
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-};
-app.use(cors(corsOptions));
+// const corsOptions = {
+//   origin: ["http://localhost:5173"
+//   ],
+//   credentials: true,
+//   methods: ["GET", "POST", "PUT", "DELETE"],
+//   allowedHeaders: ["Content-Type", "Authorization"],
+// };
+// app.use(cors(corsOptions));
 
-app.options("*", cors());
+// app.options("*", cors());
 
 //api
 app.use("/api/v1/user", userRoute);
@@ -43,9 +41,13 @@ app.use("/api/v1/address", addressRoute);
 app.use("/api/v1/order", orderRoute);
 app.use("/api/v1/admin", adminRoute);
 
+
+// Serve static files from the React app
 app.use(express.static(path.join(DIRNAME, "/client/dist")));
 
-
+app.get("*", (_, res) => {
+  res.sendFile(path.resolve(DIRNAME, "client", "dist", "index.html"));
+});
 app.use(errorHandler as any);
 
 app.listen(PORT, () => {

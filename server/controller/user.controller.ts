@@ -6,7 +6,7 @@ import { AppError, asyncHandler } from "../utils/asyncHandler";
 
 /* ---------------------- SIGN UP ---------------------- */
 export const signUp = asyncHandler(async (req, res) => {
-  let { fullname, email, password, contact } = req.body;
+  let { fullname, email, password, contact, admin } = req.body;
 
   if (!fullname || !email || !password || !contact) {
     throw new AppError("All fields are required", 400);
@@ -36,7 +36,7 @@ export const signUp = asyncHandler(async (req, res) => {
       email,
       passwordHash: hashedPassword,
       phoneNumber: contact,
-      admin: false, // Default to false for security
+      admin,
     },
     select: {
       id: true,
