@@ -23,8 +23,8 @@ CREATE TABLE `Product` (
     `description` VARCHAR(191) NOT NULL,
     `brand` VARCHAR(191) NULL,
     `image` VARCHAR(191) NOT NULL,
-    `netQty` VARCHAR(191) NOT NULL,
-    `outOfStock` BOOLEAN NOT NULL DEFAULT false,
+    `netQty` INTEGER NULL,
+    `unit` ENUM('g', 'kg', 'mg', 'lb', 'oz', 'ml', 'l', 'cl', 'gal', 'pcs', 'pack', 'box', 'bottle', 'can', 'jar', 'bag', 'dozen', 'pair', 'tray') NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
@@ -117,23 +117,6 @@ CREATE TABLE `OrderItem` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `DeliveryAgent` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `firstName` VARCHAR(191) NOT NULL,
-    `lastName` VARCHAR(191) NOT NULL,
-    `phoneNumber` VARCHAR(191) NOT NULL,
-    `passwordHash` VARCHAR(191) NOT NULL,
-    `vehicleNumber` VARCHAR(191) NULL,
-    `currentLatitude` DOUBLE NULL,
-    `currentLongitude` DOUBLE NULL,
-    `isAvailable` BOOLEAN NOT NULL DEFAULT true,
-    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-
-    UNIQUE INDEX `DeliveryAgent_phoneNumber_key`(`phoneNumber`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
 CREATE TABLE `Delivery` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `orderId` INTEGER NOT NULL,
@@ -193,9 +176,6 @@ ALTER TABLE `OrderItem` ADD CONSTRAINT `OrderItem_productId_fkey` FOREIGN KEY (`
 
 -- AddForeignKey
 ALTER TABLE `Delivery` ADD CONSTRAINT `Delivery_orderId_fkey` FOREIGN KEY (`orderId`) REFERENCES `Order`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `Delivery` ADD CONSTRAINT `Delivery_agentId_fkey` FOREIGN KEY (`agentId`) REFERENCES `DeliveryAgent`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Payment` ADD CONSTRAINT `Payment_orderId_fkey` FOREIGN KEY (`orderId`) REFERENCES `Order`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

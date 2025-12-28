@@ -7,6 +7,12 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 COPY client/package.json client/package-lock.json ./client/
 
+# Define build arguments
+ARG DATABASE_URL
+ARG API_SECRET
+ARG CLOUD_NAME
+ARG API_KEY
+
 # Install dependencies
 RUN npm ci
 RUN npm ci --prefix client
