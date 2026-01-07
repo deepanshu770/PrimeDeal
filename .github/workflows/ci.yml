@@ -11,6 +11,7 @@ on:
       - '**.markdown'
       - '.gitignore'
       - '.dockerignore'
+      - '.github/workflows/cd.yml'
      
   pull_request:
     branches:
@@ -22,6 +23,7 @@ on:
       - '**.markdown'
       - '.gitignore'
       - '.dockerignore'
+      - '.github/workflows/cd.yml'
      
 
 jobs:

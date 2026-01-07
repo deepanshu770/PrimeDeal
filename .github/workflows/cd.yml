@@ -10,6 +10,7 @@ on:
       - main
     paths:
       - 'terraform/**'
+      - '.github/workflows/cd.yml'  
 
 jobs:
   deploy:
@@ -56,7 +57,8 @@ jobs:
           # Go to root to edit Readme
           cd ..
           # Replace the URL line. We use | as delimiter to avoid conflict with / in URL
-          sed -i "s|**URL:** .*|**URL:** [http://$NLB_DNS](http://$NLB_DNS)|g" Readme.md
+          # Escape asterisks in the search pattern because they are regex special characters
+          sed -i "s|\*\*URL:\*\* .*|**URL:** [http://$NLB_DNS](http://$NLB_DNS)|g" Readme.md
           
           # Check if Readme was modified
           if [[ -n $(git status -s Readme.md) ]]; then
