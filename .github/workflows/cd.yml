@@ -49,3 +49,23 @@ jobs:
           
           terraform apply -auto-approve \
             -var="image_tag=$IMAGE_TAG"
+
+      - name: Update Readme with Load Balancer URL
+        run: |
+          NLB_DNS=$(terraform output -raw nlb_dns)
+          # Go to root to edit Readme
+          cd ..
+          # Replace the URL line. We use | as delimiter to avoid conflict with / in URL
+          sed -i "s|**URL:** .*|**URL:** [http://$NLB_DNS](http://$NLB_DNS)|g" Readme.md
+          
+          # Check if Readme was modified
+          if [[ -n $(git status -s Readme.md) ]]; then
+            echo "Readme changed, committing update..."
+            git config --global user.name 'GitHub Actions'
+            git config --global user.email 'actions@github.com'
+            git add Readme.md
+            git commit -m "docs: update load balancer url [skip ci]"
+            git push
+          else
+            echo "No changes to Readme."
+          fi

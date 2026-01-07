@@ -5,6 +5,12 @@ This repository demonstrates a **production-grade DevOps implementation** for a 
 
 The workload deployed is "PrimeDeal" (a MERN (M-MySQL) stack e-commerce app), but the infrastructure is agnostic and designed to host any containerized application.
 
+## 🌐 Live Access
+
+You can access the deployed application here:
+**URL:** [http://primedeal-nlb-v2-9dddf95343f4af35.elb.us-east-2.amazonaws.com](http://primedeal-nlb-v2-9dddf95343f4af35.elb.us-east-2.amazonaws.com)
+
+---
 ---
 
 ## 🏗 Architecture Overview
