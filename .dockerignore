@@ -6,3 +6,4 @@ client/dist
 .git
 .gitignore
 *.log
+*.pem

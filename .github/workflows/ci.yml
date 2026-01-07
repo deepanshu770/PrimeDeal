@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: CI Pipeline
 
 on:
   push:
@@ -60,9 +60,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: deepanshu770/primedeal:latest
-          build-args: |
-            DATABASE_URL=${{ secrets.DATABASE_URL }}
-            API_SECRET=${{ secrets.API_SECRET }}
-            CLOUD_NAME=${{ secrets.CLOUD_NAME }}
-            API_KEY=${{ secrets.API_KEY }}
+          tags: deepanshu770/primedeal:${{ github.sha }}
