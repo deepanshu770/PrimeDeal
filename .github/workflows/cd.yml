@@ -5,11 +5,16 @@ on:
     workflows: ["CI Pipeline"]
     types:
       - completed
+  push:
+    branches:
+      - main
+    paths:
+      - 'terraform/**'
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name == 'push' || github.event.workflow_run.conclusion == 'success' }}
     defaults:
       run:
         working-directory: ./terraform
@@ -36,5 +41,11 @@ jobs:
 
       - name: Terraform Apply
         run: |
+          if [ "${{ github.event_name }}" == "workflow_run" ]; then
+            IMAGE_TAG="${{ github.event.workflow_run.head_sha }}"
+          else
+            IMAGE_TAG="latest"
+          fi
+          
           terraform apply -auto-approve \
-            -var="image_tag=${{ github.event.workflow_run.head_sha }}"
+            -var="image_tag=$IMAGE_TAG"
