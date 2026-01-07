@@ -48,7 +48,7 @@ const LandingPage = () => {
           className="flex-1 text-center md:text-left"
         >
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white leading-tight">
-            Discover <span className="text-brandOrange">local deals</span> like
+            Discover <span className="text-brandOrange">execllent local deals</span> like
             never before.
           </h2>
           <p className="mt-4 text-gray-600 dark:text-gray-300 text-lg">
