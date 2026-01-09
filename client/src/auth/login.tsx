@@ -85,7 +85,7 @@ const Login = () => {
                         loading ? <Button disabled className="w-full bg-brandOrange text-white py-2 rounded-md hover:bg-opacity-90 transition border-transparent focus-visible:outline-noner-transparent">
                             <Loader2 className="animate-spin h-4 w-4" /> Please wait...
                         </Button> : (
-                            <Button type="submit" className="w-full bg-brandOrange text-white py-2 rounded-md hover:bg-opacity-90 transition border-transparent focus-visible:outline-noner-transparent">Login</Button>
+                            <Button type="submit" className="w-full bg-yellow-500 text-white py-2 rounded-md hover:bg-opacity-90 transition border-transparent focus-visible:outline-noner-transparent">Login</Button>
                         )
                     }
                     
