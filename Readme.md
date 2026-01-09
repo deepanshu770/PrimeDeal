@@ -8,7 +8,7 @@ The workload deployed is "PrimeDeal" (a MERN (M-MySQL) stack e-commerce app), bu
 ## 🌐 Live Access
 
 You can access the deployed application here:
-**URL:** [http://primedeal-nlb-v2-9dddf95343f4af35.elb.us-east-2.amazonaws.com](http://primedeal-nlb-v2-9dddf95343f4af35.elb.us-east-2.amazonaws.com)
+**URL:** [http://primedeal-nlb-v2-2881ec424e55207e.elb.us-east-2.amazonaws.com](http://primedeal-nlb-v2-2881ec424e55207e.elb.us-east-2.amazonaws.com)
 
 ---
 ---
